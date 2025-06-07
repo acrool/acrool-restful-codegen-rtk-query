@@ -12,6 +12,7 @@ const config: ConfigFile = {
   // },
   outputFile: './outputFile.ts',
   hooks: true,
+  useEnumType: true,
 };
 
 export default config;

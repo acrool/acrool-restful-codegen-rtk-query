@@ -258,15 +258,15 @@ export type GetAuditApiArg = {
   pageLimit: number;
   /** 站點名稱 */
   stationName?: string;
-  /** 業主ID */
+  /** 老闆ID */
   operatorId?: string;
-  /** 巡檢狀態 */
+  /** 觀察狀態 */
   statusId?: string;
   /** 樣板ID */
   templateId?: string;
-  /** 巡檢日期(開始) */
+  /** 觀察日期(開始) */
   auditStartDate?: string;
-  /** 巡檢日期(結束) */
+  /** 觀察日期(結束) */
   auditEndDate?: string;
   /** 區域代碼 */
   areaCode?: string;
@@ -285,11 +285,11 @@ export type PostAuditApiArg = {
   body: {
     /** 範本ID */
     templateId: string;
-    /** 業主ID */
+    /** 老闆ID */
     operatorId?: string;
     /** 站點名稱 */
     stationName?: string;
-    /** 巡檢日期 */
+    /** 觀察日期 */
     auditDate?: string;
     /** 區域代碼 */
     areaCode?: string;
@@ -297,7 +297,7 @@ export type PostAuditApiArg = {
 };
 export type GetAuditByIdApiResponse = /** status 200 successful operation */ AuditDetail;
 export type GetAuditByIdApiArg = {
-  /** 巡檢表Id */
+  /** 觀察表Id */
   id: string;
   'Client-Id'?: string;
   authorization?: string;
@@ -307,7 +307,7 @@ export type PutAuditByIdApiResponse = /** status 200  */ {
   message: string;
 };
 export type PutAuditByIdApiArg = {
-  /** 巡檢表ID */
+  /** 觀察表ID */
   id: string;
   'Client-Id'?: string;
   authorization?: string;
@@ -330,7 +330,7 @@ export type PostAuditByIdApiArg = {
     questions?: UpdateAuditQuestion[];
     /** 備註 */
     remark?: string;
-    /** 巡檢人員簽名 */
+    /** 觀察人員簽名 */
     auditSignature?: Blob;
     /** 現場人員簽名 */
     managerSignature?: Blob;
@@ -341,7 +341,7 @@ export type PutAuditByIdProfileApiResponse = /** status 200  */ {
   message: string;
 };
 export type PutAuditByIdProfileApiArg = {
-  /** 巡檢表ID */
+  /** 觀察表ID */
   id: string;
   'Client-Id'?: string;
   authorization?: string;
@@ -363,7 +363,7 @@ export type PostAuditByIdAuditSignatureApiArg = {
   'Client-Id'?: string;
   authorization?: string;
   body: {
-    /** 巡檢人員簽名 */
+    /** 觀察人員簽名 */
     auditSignature?: Blob;
     /** 備註 */
     remark?: string;
@@ -419,7 +419,7 @@ export type DeleteAuditByIdAnnexApiResponse = /** status 200  */ {
   message: string;
 };
 export type DeleteAuditByIdAnnexApiArg = {
-  /** 巡檢單單號 */
+  /** 觀察單單號 */
   id: string;
   'Client-Id'?: string;
   authorization?: string;
@@ -435,7 +435,7 @@ export type GetAuditByIdOperatorPasswordApiResponse = /** status 200 successful 
   password: string;
 };
 export type GetAuditByIdOperatorPasswordApiArg = {
-  /** 巡檢表Id */
+  /** 觀察表Id */
   id: string;
   'Client-Id'?: string;
   authorization?: string;
@@ -456,15 +456,15 @@ export type PostAuditExportReportApiArg = {
   body: {
     /** 站點名稱 */
     stationName?: string;
-    /** 業主ID */
+    /** 老闆ID */
     operatorId?: string;
-    /** 巡檢狀態 */
+    /** 觀察狀態 */
     statusId?: string;
     /** 樣板ID */
     templateId?: string;
-    /** 巡檢日期(開始) */
+    /** 觀察日期(開始) */
     auditStartDate?: string;
-    /** 巡檢日期(結束) */
+    /** 觀察日期(結束) */
     auditEndDate?: string;
     /** 區域代碼 */
     areaCode?: string;
@@ -505,15 +505,15 @@ export type PostOperatorIdAuditByIdSignatureApiArg = {
   'Client-Id'?: string;
   authorization?: string;
   body: {
-    /** 業主簽名 */
+    /** 老闆簽名 */
     signature?: Blob;
   };
 };
 export type GetOperatorIdAuditByIdApiResponse = /** status 200 successful operation */ AuditDetail;
 export type GetOperatorIdAuditByIdApiArg = {
-  /** 巡檢表Id */
+  /** 觀察表Id */
   id: string;
-  /** 業主簽核碼 */
+  /** 老闆簽核碼 */
   password: string;
   'Client-Id'?: string;
   authorization?: string;
@@ -526,7 +526,7 @@ export type Param = {
 };
 export type AuditRows = {
   id: string;
-  /** 業主名稱 */
+  /** 老闆名稱 */
   operatorName: string;
   /** 狀態 */
   status: string;
@@ -538,9 +538,9 @@ export type AuditRows = {
   auditDate: string;
   /** 現場人員是否簽名 */
   isManagerSignature: boolean;
-  /** 巡檢員是否已簽名 */
+  /** 觀察員是否已簽名 */
   isAuditSignature: boolean;
-  /** 業主是否已簽名 */
+  /** 老闆是否已簽名 */
   isOperatorSignature: boolean;
   /** 更新者名稱 */
   updaterName: string;
@@ -582,11 +582,11 @@ export type AuditDetailAnnex = {
   order: number;
 };
 export type AuditDetail = {
-  /** 業主名稱 */
+  /** 老闆名稱 */
   operatorName: string;
   /** 站點名稱 */
   stationName: string;
-  /** 巡檢日期 */
+  /** 觀察日期 */
   auditDate: string;
   /** 區域名稱 */
   areaName: string;
@@ -594,11 +594,11 @@ export type AuditDetail = {
   areaCode: string;
   /** 備註 */
   remark: string;
-  /** 巡檢員簽名檔網址 */
+  /** 觀察員簽名檔網址 */
   auditSignatureUrl: string;
   /** 現場人員簽名檔網址 */
   managerSignatureUrl: string;
-  /** 業主簽名檔網址 */
+  /** 老闆簽名檔網址 */
   operatorSignatureUrl: string;
   /** 題目清單 */
   questions: {

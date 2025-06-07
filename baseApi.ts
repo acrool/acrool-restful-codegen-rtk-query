@@ -18,7 +18,7 @@ export const axiosInstance = createAxiosInstance({
   headers: {
     'Cache-Control': 'no-cache',
     'X-Requested-With': 'XMLHttpRequest',
-    'Client-Id': '5000EA53752D4FEA95FA878E3C56F83F',
+    'Client-Id': '5000EA5375',
     // Extend Headers...
   },
   timeout: 1200 * 1000,
@@ -57,8 +57,6 @@ export const baseQueryWithAxios: BaseQueryFn<IQuery> = async (query, BaseQueryAp
   await mutex.waitForUnlock();
   try {
     const { url, method, ...args } = query;
-
-    console.log('args', args);
 
     const data = await createRestFulFetcher(axiosInstance, { url, method }, getContentTypeWithMethod)(args);
 
