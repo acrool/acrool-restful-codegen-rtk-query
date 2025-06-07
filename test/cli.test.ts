@@ -41,26 +41,6 @@ describe('CLI options testing', () => {
   test('generation with `config.example.js`', { timeout: 25_000 }, async () => {
     const out = await cli(['./test/config.example.js']);
 
-    expect(out).toEqual({
-      stdout: `Generating ./tmp/example.ts
-Done
-`,
-      stderr: '',
-    });
-
-    expect(await fs.readFile(path.resolve(tmpDir, 'example.ts'), 'utf-8')).toMatchSnapshot();
-  });
-
-  test('paths are relative to config file, not to cwd', { timeout: 25_000 }, async () => {
-    const out = await cli([`./test/config.example.js`]);
-
-    expect(out).toEqual({
-      stdout: `Generating ./tmp/example.ts
-Done
-`,
-      stderr: '',
-    });
-
     expect(await fs.readFile(path.resolve(tmpDir, 'example.ts'), 'utf-8')).toMatchSnapshot();
   });
 

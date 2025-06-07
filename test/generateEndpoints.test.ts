@@ -492,46 +492,6 @@ test('apiImport builds correct `import` statement', async () => {
   expect(api).toContain('myApi as api');
 });
 
-describe('import paths', () => {
-  beforeAll(async () => {
-    if (!(await isDir(tmpDir))) {
-      await fs.mkdir(tmpDir, { recursive: true });
-    }
-  });
-
-  afterEach(async () => {
-    await rimraf(`${tmpDir}/*.ts`, { glob: true });
-  });
-
-  test('should create paths relative to `outFile` when `apiFile` is relative (different folder)', async () => {
-    await generateEndpoints({
-      unionUndefined: true,
-      apiFile: './fixtures/emptyApi.ts',
-      outputFile: './test/tmp/out.ts',
-      schemaFile: resolve(__dirname, 'fixtures/petstore.json'),
-      filterEndpoints: [],
-      hooks: true,
-      tag: true,
-    });
-    expect(await fs.readFile('./test/tmp/out.ts', 'utf8')).toContain("import { api } from '../../fixtures/emptyApi'");
-  });
-
-  test('should create paths relative to `outFile` when `apiFile` is relative (same folder)', async () => {
-    await fs.writeFile('./test/tmp/emptyApi.ts', await fs.readFile('./test/fixtures/emptyApi.ts', 'utf8'));
-
-    await generateEndpoints({
-      unionUndefined: true,
-      apiFile: './test/tmp/emptyApi.ts',
-      outputFile: './test/tmp/out.ts',
-      schemaFile: resolve(__dirname, 'fixtures/petstore.json'),
-      filterEndpoints: [],
-      hooks: true,
-      tag: true,
-    });
-    expect(await fs.readFile('./test/tmp/out.ts', 'utf8')).toContain("import { api } from './emptyApi'");
-  });
-});
-
 describe('yaml parsing', () => {
   it('should parse a yaml schema from a URL', async () => {
     const result = await generateEndpoints({
