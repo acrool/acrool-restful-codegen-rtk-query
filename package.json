@@ -83,10 +83,5 @@
     "semver": "^7.3.5",
     "swagger2openapi": "^7.0.4",
     "typescript": "^5.8.2"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "pretty-quick --staged"
-    }
   }
 }
