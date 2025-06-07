@@ -9,6 +9,10 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/auth/sign/login`,
         method: "POST",
         body: queryArg.body,
+        headers: {
+          "Client-Id": queryArg["Client-Id"],
+          Authorization: queryArg.authorization,
+        },
       }),
     }),
     postAuthSignRefresh: build.mutation<
@@ -19,19 +23,35 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/auth/sign/refresh`,
         method: "POST",
         body: queryArg.body,
+        headers: {
+          "Client-Id": queryArg["Client-Id"],
+          Authorization: queryArg.authorization,
+        },
       }),
     }),
     getParameterOperators: build.query<
       GetParameterOperatorsApiResponse,
       GetParameterOperatorsApiArg
     >({
-      query: (queryArg) => ({ url: `/parameter/operators` }),
+      query: (queryArg) => ({
+        url: `/parameter/operators`,
+        headers: {
+          "Client-Id": queryArg["Client-Id"],
+          Authorization: queryArg.authorization,
+        },
+      }),
     }),
     getParameterCommon: build.query<
       GetParameterCommonApiResponse,
       GetParameterCommonApiArg
     >({
-      query: (queryArg) => ({ url: `/parameter/common` }),
+      query: (queryArg) => ({
+        url: `/parameter/common`,
+        headers: {
+          "Client-Id": queryArg["Client-Id"],
+          Authorization: queryArg.authorization,
+        },
+      }),
     }),
     putAuthPassword: build.mutation<
       PutAuthPasswordApiResponse,
@@ -41,17 +61,32 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/auth/password`,
         method: "PUT",
         body: queryArg.body,
+        headers: {
+          "Client-Id": queryArg["Client-Id"],
+          Authorization: queryArg.authorization,
+        },
       }),
     }),
     postAuthSignLogout: build.mutation<
       PostAuthSignLogoutApiResponse,
       PostAuthSignLogoutApiArg
     >({
-      query: (queryArg) => ({ url: `/auth/sign/logout`, method: "POST" }),
+      query: (queryArg) => ({
+        url: `/auth/sign/logout`,
+        method: "POST",
+        headers: {
+          "Client-Id": queryArg["Client-Id"],
+          Authorization: queryArg.authorization,
+        },
+      }),
     }),
     getAudit: build.query<GetAuditApiResponse, GetAuditApiArg>({
       query: (queryArg) => ({
         url: `/audit`,
+        headers: {
+          "Client-Id": queryArg["Client-Id"],
+          Authorization: queryArg.authorization,
+        },
         params: {
           currentPage: queryArg.currentPage,
           pageLimit: queryArg.pageLimit,
@@ -70,16 +105,30 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/audit`,
         method: "POST",
         body: queryArg.body,
+        headers: {
+          "Client-Id": queryArg["Client-Id"],
+          Authorization: queryArg.authorization,
+        },
       }),
     }),
     getAuditById: build.query<GetAuditByIdApiResponse, GetAuditByIdApiArg>({
-      query: (queryArg) => ({ url: `/audit/${queryArg.id}` }),
+      query: (queryArg) => ({
+        url: `/audit/${queryArg.id}`,
+        headers: {
+          "Client-Id": queryArg["Client-Id"],
+          Authorization: queryArg.authorization,
+        },
+      }),
     }),
     putAuditById: build.mutation<PutAuditByIdApiResponse, PutAuditByIdApiArg>({
       query: (queryArg) => ({
         url: `/audit/${queryArg.id}`,
         method: "PUT",
         body: queryArg.body,
+        headers: {
+          "Client-Id": queryArg["Client-Id"],
+          Authorization: queryArg.authorization,
+        },
       }),
     }),
     postAuditById: build.mutation<
@@ -90,6 +139,10 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/audit/${queryArg.id}`,
         method: "POST",
         body: queryArg.body,
+        headers: {
+          "Client-Id": queryArg["Client-Id"],
+          Authorization: queryArg.authorization,
+        },
       }),
     }),
     putAuditByIdProfile: build.mutation<
@@ -100,6 +153,10 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/audit/${queryArg.id}/profile`,
         method: "PUT",
         body: queryArg.body,
+        headers: {
+          "Client-Id": queryArg["Client-Id"],
+          Authorization: queryArg.authorization,
+        },
       }),
     }),
     postAuditByIdAuditSignature: build.mutation<
@@ -110,6 +167,10 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/audit/${queryArg.id}/auditSignature`,
         method: "POST",
         body: queryArg.body,
+        headers: {
+          "Client-Id": queryArg["Client-Id"],
+          Authorization: queryArg.authorization,
+        },
       }),
     }),
     postAuditByIdManagerSignature: build.mutation<
@@ -120,6 +181,10 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/audit/${queryArg.id}/managerSignature`,
         method: "POST",
         body: queryArg.body,
+        headers: {
+          "Client-Id": queryArg["Client-Id"],
+          Authorization: queryArg.authorization,
+        },
       }),
     }),
     postAuditByIdExportAudit: build.mutation<
@@ -129,6 +194,10 @@ const injectedRtkApi = api.injectEndpoints({
       query: (queryArg) => ({
         url: `/audit/${queryArg.id}/exportAudit`,
         method: "POST",
+        headers: {
+          "Client-Id": queryArg["Client-Id"],
+          Authorization: queryArg.authorization,
+        },
       }),
     }),
     postAuditByIdExportAssets: build.mutation<
@@ -138,6 +207,10 @@ const injectedRtkApi = api.injectEndpoints({
       query: (queryArg) => ({
         url: `/audit/${queryArg.id}/exportAssets`,
         method: "POST",
+        headers: {
+          "Client-Id": queryArg["Client-Id"],
+          Authorization: queryArg.authorization,
+        },
       }),
     }),
     deleteAuditByIdAnnex: build.mutation<
@@ -148,13 +221,23 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/audit/${queryArg.id}/annex`,
         method: "DELETE",
         body: queryArg.body,
+        headers: {
+          "Client-Id": queryArg["Client-Id"],
+          Authorization: queryArg.authorization,
+        },
       }),
     }),
     getAuditByIdOperatorPassword: build.query<
       GetAuditByIdOperatorPasswordApiResponse,
       GetAuditByIdOperatorPasswordApiArg
     >({
-      query: (queryArg) => ({ url: `/audit/${queryArg.id}/operatorPassword` }),
+      query: (queryArg) => ({
+        url: `/audit/${queryArg.id}/operatorPassword`,
+        headers: {
+          "Client-Id": queryArg["Client-Id"],
+          Authorization: queryArg.authorization,
+        },
+      }),
     }),
     postAuditExportReport: build.mutation<
       PostAuditExportReportApiResponse,
@@ -164,6 +247,10 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/audit/exportReport`,
         method: "POST",
         body: queryArg.body,
+        headers: {
+          "Client-Id": queryArg["Client-Id"],
+          Authorization: queryArg.authorization,
+        },
       }),
     }),
     postAuditByIdInvalid: build.mutation<
@@ -174,6 +261,10 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/audit/${queryArg.id}/invalid`,
         method: "POST",
         body: queryArg.body,
+        headers: {
+          "Client-Id": queryArg["Client-Id"],
+          Authorization: queryArg.authorization,
+        },
       }),
     }),
     postAuditByIdReturns: build.mutation<
@@ -184,6 +275,10 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/audit/${queryArg.id}/returns`,
         method: "POST",
         body: queryArg.body,
+        headers: {
+          "Client-Id": queryArg["Client-Id"],
+          Authorization: queryArg.authorization,
+        },
       }),
     }),
     postOperatorIdAuditByIdSignature: build.mutation<
@@ -194,6 +289,10 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/operatorId/audit/${queryArg.id}/signature`,
         method: "POST",
         body: queryArg.body,
+        headers: {
+          "Client-Id": queryArg["Client-Id"],
+          Authorization: queryArg.authorization,
+        },
       }),
     }),
     getOperatorIdAuditById: build.query<
@@ -202,6 +301,10 @@ const injectedRtkApi = api.injectEndpoints({
     >({
       query: (queryArg) => ({
         url: `/operatorId/audit/${queryArg.id}`,
+        headers: {
+          "Client-Id": queryArg["Client-Id"],
+          Authorization: queryArg.authorization,
+        },
         params: {
           password: queryArg.password,
         },

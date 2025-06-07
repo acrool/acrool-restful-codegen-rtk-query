@@ -22,5 +22,5 @@ This is a utility library meant to be used with [RTK Query](https://redux-toolki
 ### Test
 
 ```bash
-npx acrool-rtk-query-codegen-openapi ./rtk-query-codegen.config.ts
+yarn build && npx acrool-rtk-query-codegen-openapi ./rtk-query-codegen.config.ts
 ```
