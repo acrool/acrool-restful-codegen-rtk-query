@@ -3,8 +3,8 @@
     "after:bump": "yarn && git add -u"
   },
   "git": {
-    "commitMessage": "Release @rtk-query/codegen-openapi ${version}",
-    "tagName": "@rtk-query/codegen-openapi@${version}"
+    "commitMessage": "Release @acrool/rtk-query-codegen-openapi ${version}",
+    "tagName": "@acrool/rtk-query-codegen-openapi@${version}"
   },
   "npm": {
     "versionArgs": ["--workspaces-update=false"]

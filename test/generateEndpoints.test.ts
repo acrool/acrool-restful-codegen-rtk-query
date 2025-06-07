@@ -1,4 +1,4 @@
-import { generateEndpoints } from '@rtk-query/codegen-openapi';
+import { generateEndpoints } from '@acrool/rtk-query-codegen-openapi';
 import fs from 'node:fs/promises';
 import path, { resolve } from 'node:path';
 import { rimraf } from 'rimraf';

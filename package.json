@@ -1,6 +1,6 @@
 {
   "name": "@acrool/rtk-query-codegen-openapi",
-  "version": "0.0.2-test.1",
+  "version": "0.0.2-test.3",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "module": "lib/index.mjs",
@@ -46,6 +46,7 @@
     "src"
   ],
   "devDependencies": {
+    "@acrool/react-fetcher": "^0.0.4-test.6",
     "@babel/core": "^7.12.10",
     "@babel/preset-env": "^7.12.11",
     "@babel/preset-typescript": "^7.12.7",
@@ -56,6 +57,7 @@
     "@types/lodash.camelcase": "^4.3.9",
     "@types/node": "^20.11.10",
     "@types/semver": "^7.3.9",
+    "async-mutex": "^0.5.0",
     "chalk": "^4.1.0",
     "del": "^6.0.0",
     "esbuild": "^0.25.1",

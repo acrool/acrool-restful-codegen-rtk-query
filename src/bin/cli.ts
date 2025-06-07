@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { generateEndpoints, parseConfig } from '@rtk-query/codegen-openapi';
+import { generateEndpoints, parseConfig } from '@acrool/rtk-query-codegen-openapi';
 import program from 'commander';
 import { createRequire } from 'node:module';
 import { dirname, resolve } from 'node:path';

@@ -17,7 +17,7 @@
     "outDir": "lib",
     "rootDir": ".",
     "paths": {
-      "@rtk-query/codegen-openapi": ["./src/index.ts"] // @remap-prod-remove-line
+      "@acrool/rtk-query-codegen-openapi": ["./src/index.ts"] // @remap-prod-remove-line
     },
     "resolveJsonModule": true,
     "skipLibCheck": true,
