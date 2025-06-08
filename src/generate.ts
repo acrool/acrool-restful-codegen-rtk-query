@@ -142,8 +142,8 @@ export async function generateApi(
       const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
 
       // 將 components 轉換為 TypeScript 類型定義
-      const typeDefinitions = Object.entries(components).map(([componentType, componentDefs]) => {
-        const typeEntries = Object.entries(componentDefs as Record<string, unknown>).map(([name, def]) => {
+      const typeDefinitions = Object.entries(components).flatMap(([_, componentDefs]) => {
+        return Object.entries(componentDefs as Record<string, unknown>).map(([name, def]) => {
           const typeNode = apiGen.getTypeFromSchema(def as OpenAPIV3.SchemaObject);
           return factory.createTypeAliasDeclaration(
             [factory.createModifier(ts.SyntaxKind.ExportKeyword)],
@@ -152,13 +152,6 @@ export async function generateApi(
             typeNode
           );
         });
-
-        return factory.createModuleDeclaration(
-          [factory.createModifier(ts.SyntaxKind.ExportKeyword)],
-          factory.createIdentifier(componentType),
-          factory.createModuleBlock(typeEntries),
-          ts.NodeFlags.Namespace
-        );
       });
 
       const output = printer.printNode(
