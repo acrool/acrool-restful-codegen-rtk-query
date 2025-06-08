@@ -212,6 +212,7 @@ export async function generateApi(
       [
         generateImportNode(apiFile, { [apiImport]: 'api' }),
         generateImportNode('@acrool/react-fetcher', { IRestFulEndpointsQueryReturn: 'IRestFulEndpointsQueryReturn' }),
+        ...(sharedTypesFile ? [generateImportNode(sharedTypesFile.replace(/\.[jt]sx?$/, ''), { SharedTypes: 'SharedTypes' })] : []),
         ...(tag ? [generateTagTypes({ addTagTypes: extractAllTagTypes({ operationDefinitions }) })] : []),
         generateCreateApiCall({
           tag,
@@ -231,8 +232,7 @@ export async function generateApi(
           factory.createIdentifier(generatedApiName)
         ),
         ...Object.values(interfaces),
-        ...apiGen.aliases,
-        ...apiGen.enumAliases,
+        ...(sharedTypesFile ? [] : [...apiGen.aliases, ...apiGen.enumAliases]),
         ...(hooks
           ? [
               generateReactHooks({

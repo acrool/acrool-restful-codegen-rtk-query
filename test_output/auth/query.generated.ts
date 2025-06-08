@@ -1,5 +1,6 @@
 import { baseApi as api } from "../../baseApi";
 import { IRestFulEndpointsQueryReturn } from "@acrool/react-fetcher";
+import { SharedTypes } from "./test_output/shared-types";
 const injectedRtkApi = api.injectEndpoints({
   endpoints: (build) => ({
     postAuthSignLogin: build.mutation<
@@ -96,28 +97,6 @@ export type PostAuthSignLogoutApiResponse = /** status 200  */ {
   message: string;
 };
 export type PostAuthSignLogoutApiArg = void;
-export type AuditDetailValue = {
-  /** 單選值 */
-  single?: string | null;
-  /** 多選值 */
-  multiple?: string[] | null;
-  /** 純文字 */
-  plainTxt?: string | null;
-  /** 複合文字 (依複合文字順序依序填入) */
-  richTxt?: string[] | null;
-};
-export type AuditDetailAnnex = {
-  /** 檔案代碼 */
-  fId: string;
-  /** 開啟位置 */
-  src: string;
-  /** 檔名 */
-  name: string;
-  /** 媒體類型 */
-  mime: string | null;
-  /** 顯示順序 */
-  order: number;
-};
 export const {
   usePostAuthSignLoginMutation,
   usePostAuthSignRefreshMutation,
