@@ -182,16 +182,10 @@ export async function generateApi(
             true
           ),
         }),
-        factory.createExportDeclaration(
+        factory.createExportAssignment(
           undefined,
-          false,
-          factory.createNamedExports([
-            factory.createExportSpecifier(
-              factory.createIdentifier(generatedApiName),
-              factory.createIdentifier(exportName)
-            ),
-          ]),
-          undefined
+          undefined,
+          factory.createIdentifier(generatedApiName)
         ),
         ...Object.values(interfaces),
         ...apiGen.aliases,

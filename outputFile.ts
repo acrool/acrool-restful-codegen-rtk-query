@@ -257,7 +257,7 @@ const injectedRtkApi = api.injectEndpoints({
   }),
   overrideExisting: false,
 });
-export { injectedRtkApi as enhancedApi };
+export default injectedRtkApi;
 export type PostAuthSignLoginApiResponse = /** status 200  */ {
   tokenInfo: {
     accessToken: string;
