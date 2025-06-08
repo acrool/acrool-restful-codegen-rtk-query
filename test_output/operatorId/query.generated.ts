@@ -31,18 +31,16 @@ const injectedRtkApi = api.injectEndpoints({
 });
 export default injectedRtkApi;
 export type PostOperatorIdAuditByIdSignatureApiResponse = /** status 200  */ {
-  /** 訊息 */
   message: string;
 };
 export type PostOperatorIdAuditByIdSignatureApiArg = {
-  id: string;
   body: {
-    /** 老闆簽名 */
     signature?: Blob;
   };
+  id: string;
 };
 export type GetOperatorIdAuditByIdApiResponse =
-  /** status 200 successful operation */ AuditDetail;
+  /** status 200 successful operation */ SharedTypes.AuditDetail;
 export type GetOperatorIdAuditByIdApiArg = {
   /** 觀察表Id */
   id: string;

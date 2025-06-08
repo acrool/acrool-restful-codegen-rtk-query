@@ -26,21 +26,16 @@ const injectedRtkApi = api.injectEndpoints({
 });
 export default injectedRtkApi;
 export type GetParameterOperatorsApiResponse = /** status 200  */ {
-  /** 角色列表 */
   rows: {
-    /** ID */
     id: string;
     name: string;
   }[];
 };
 export type GetParameterOperatorsApiArg = void;
 export type GetParameterCommonApiResponse = /** status 200  */ {
-  /** 狀態 */
-  auditStatus: Param[];
-  /** 範本 */
-  templates: Param[];
-  /** 區域 */
-  areas: Param[];
+  auditStatus: SharedTypes.Param[];
+  templates: SharedTypes.Param[];
+  areas: SharedTypes.Param[];
 };
 export type GetParameterCommonApiArg = void;
 export const { useGetParameterOperatorsQuery, useGetParameterCommonQuery } =

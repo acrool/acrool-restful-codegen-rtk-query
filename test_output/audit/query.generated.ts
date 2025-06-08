@@ -176,9 +176,9 @@ const injectedRtkApi = api.injectEndpoints({
 });
 export default injectedRtkApi;
 export type GetAuditApiResponse = /** status 200 successful operation */ {
-  rows: AuditRows[];
-  paginateInfo: PaginateInfo;
-  paginateMeta: PaginateMeta;
+  rows: SharedTypes.AuditRows[];
+  paginateInfo: SharedTypes.PaginateInfo;
+  paginateMeta: SharedTypes.PaginateMeta;
 };
 export type GetAuditApiArg = {
   /** 第幾頁 */
@@ -201,146 +201,110 @@ export type GetAuditApiArg = {
   areaCode?: string;
 };
 export type PostAuditApiResponse = /** status 200  */ {
-  /** 訊息 */
   message: string;
-  /** 新的ID */
   newId: string;
 };
 export type PostAuditApiArg = {
   body: {
-    /** 範本ID */
     templateId: string;
-    /** 老闆ID */
     operatorId?: string;
-    /** 站點名稱 */
     stationName?: string;
-    /** 觀察日期 */
     auditDate?: string;
-    /** 區域代碼 */
     areaCode?: string;
   };
 };
 export type GetAuditByIdApiResponse =
-  /** status 200 successful operation */ AuditDetail;
+  /** status 200 successful operation */ SharedTypes.AuditDetail;
 export type GetAuditByIdApiArg = {
   /** 觀察表Id */
   id: string;
 };
 export type PutAuditByIdApiResponse = /** status 200  */ {
-  /** 訊息 */
   message: string;
 };
 export type PutAuditByIdApiArg = {
+  body: {
+    question: SharedTypes.UpdateAuditQuestion;
+  };
   /** 觀察表ID */
   id: string;
-  body: {
-    question: UpdateAuditQuestion;
-  };
 };
 export type PostAuditByIdApiResponse = /** status 200  */ {
-  /** 訊息 */
   message: string;
-  /** 新的ID */
   newId: string;
 };
 export type PostAuditByIdApiArg = {
-  id: string;
   body: {
-    /** 問題回答 */
-    questions?: UpdateAuditQuestion[];
-    /** 備註 */
+    questions?: SharedTypes.UpdateAuditQuestion[];
     remark?: string;
-    /** 觀察人員簽名 */
     auditSignature?: Blob;
-    /** 現場人員簽名 */
     managerSignature?: Blob;
   };
+  id: string;
 };
 export type PutAuditByIdProfileApiResponse = /** status 200  */ {
-  /** 訊息 */
   message: string;
 };
 export type PutAuditByIdProfileApiArg = {
-  /** 觀察表ID */
-  id: string;
   body: {
-    /** 區域代號 */
     areaCode: string;
-    /** 站點名稱 */
     stationName?: string;
   };
+  /** 觀察表ID */
+  id: string;
 };
 export type PostAuditByIdAuditSignatureApiResponse = /** status 200  */ {
-  /** 訊息 */
   message: string;
-  /** 新的ID */
   newId: string;
 };
 export type PostAuditByIdAuditSignatureApiArg = {
-  id: string;
   body: {
-    /** 觀察人員簽名 */
     auditSignature?: Blob;
-    /** 備註 */
     remark?: string;
   };
+  id: string;
 };
 export type PostAuditByIdManagerSignatureApiResponse = /** status 200  */ {
-  /** 訊息 */
   message: string;
-  /** 新的ID */
   newId: string;
 };
 export type PostAuditByIdManagerSignatureApiArg = {
-  id: string;
   body: {
-    /** 現場人員簽名 */
     managerSignature?: Blob;
   };
+  id: string;
 };
 export type PostAuditByIdExportAuditApiResponse = /** status 200  */ {
-  /** 匯出檔案名稱 */
   name: string;
-  /** 檔案MIME TYPE */
   mimeType: string;
-  /** Buffer */
   buffer: string;
-  /** 訊息 */
   message: string;
 };
 export type PostAuditByIdExportAuditApiArg = {
   id: string;
 };
 export type PostAuditByIdExportAssetsApiResponse = /** status 200  */ {
-  /** 匯出檔案名稱 */
   name: string;
-  /** 檔案MIME TYPE */
   mimeType: string;
-  /** Buffer */
   buffer: string;
-  /** 訊息 */
   message: string;
 };
 export type PostAuditByIdExportAssetsApiArg = {
   id: string;
 };
 export type DeleteAuditByIdAnnexApiResponse = /** status 200  */ {
-  /** 訊息 */
   message: string;
 };
 export type DeleteAuditByIdAnnexApiArg = {
-  /** 觀察單單號 */
-  id: string;
   body: {
-    /** 附件檔案代碼 */
     fId?: string[];
   };
+  /** 觀察單單號 */
+  id: string;
 };
 export type GetAuditByIdOperatorPasswordApiResponse =
   /** status 200 successful operation */ {
-    /** 名稱 */
     operatorName: string;
-    /** 密碼 */
     password: string;
   };
 export type GetAuditByIdOperatorPasswordApiArg = {
@@ -348,54 +312,39 @@ export type GetAuditByIdOperatorPasswordApiArg = {
   id: string;
 };
 export type PostAuditExportReportApiResponse = /** status 200  */ {
-  /** 匯出檔案名稱 */
   name: string;
-  /** 檔案MIME TYPE */
   mimeType: string;
-  /** Buffer */
   buffer: string;
-  /** 訊息 */
   message: string;
 };
 export type PostAuditExportReportApiArg = {
   body: {
-    /** 站點名稱 */
     stationName?: string;
-    /** 老闆ID */
     operatorId?: string;
-    /** 觀察狀態 */
     statusId?: string;
-    /** 樣板ID */
     templateId?: string;
-    /** 觀察日期(開始) */
     auditStartDate?: string;
-    /** 觀察日期(結束) */
     auditEndDate?: string;
-    /** 區域代碼 */
     areaCode?: string;
   };
 };
 export type PostAuditByIdInvalidApiResponse = /** status 200  */ {
-  /** 訊息 */
   message: string;
 };
 export type PostAuditByIdInvalidApiArg = {
-  id: string;
   body: {
-    /** 原因 */
     reason?: string;
   };
+  id: string;
 };
 export type PostAuditByIdReturnsApiResponse = /** status 200  */ {
-  /** 訊息 */
   message: string;
 };
 export type PostAuditByIdReturnsApiArg = {
-  id: string;
   body: {
-    /** 原因 */
     reason: string;
   };
+  id: string;
 };
 export const {
   useGetAuditQuery,

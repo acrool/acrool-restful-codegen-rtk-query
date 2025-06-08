@@ -55,16 +55,12 @@ export type PostAuthSignLoginApiResponse = /** status 200  */ {
     accessToken: string;
     refreshToken: string;
   };
-  /** 角色類型 */
   roleType: string;
-  /** 訊息 */
   message: string;
 };
 export type PostAuthSignLoginApiArg = {
   body: {
-    /** 帳號 */
     account?: string;
-    /** 密碼 */
     password?: string;
   };
 };
@@ -76,24 +72,19 @@ export type PostAuthSignRefreshApiResponse = /** status 200  */ {
 };
 export type PostAuthSignRefreshApiArg = {
   body: {
-    /** 更新用Token */
     refreshToken?: string;
   };
 };
 export type PutAuthPasswordApiResponse = /** status 200  */ {
-  /** 訊息 */
   message: string;
 };
 export type PutAuthPasswordApiArg = {
   body: {
-    /** 舊密碼 */
     oldPassword?: string;
-    /** 新密碼 */
     newPassword?: string;
   };
 };
 export type PostAuthSignLogoutApiResponse = /** status 200  */ {
-  /** 訊息 */
   message: string;
 };
 export type PostAuthSignLogoutApiArg = void;

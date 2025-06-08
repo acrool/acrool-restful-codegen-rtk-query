@@ -302,16 +302,54 @@ export async function generateApi(
 
     const returnsJson = apiGen.getResponseType(responses) === 'json';
     let ResponseType: ts.TypeNode = factory.createKeywordTypeNode(ts.SyntaxKind.UnknownKeyword);
+
+    function replaceReferences(schema: any): ts.TypeNode {
+      if (!schema) return factory.createKeywordTypeNode(ts.SyntaxKind.UnknownKeyword);
+      
+      const refName = getReferenceName(schema);
+      if (refName && sharedTypesFile) {
+        return factory.createTypeReferenceNode(
+          factory.createQualifiedName(
+            factory.createIdentifier('SharedTypes'),
+            factory.createIdentifier(refName)
+          ),
+          undefined
+        );
+      }
+
+      if (schema.type === 'object' && schema.properties) {
+        const members = Object.entries(schema.properties).map(([key, value]: [string, any]) => {
+          return factory.createPropertySignature(
+            undefined,
+            factory.createIdentifier(key),
+            schema.required?.includes(key) ? undefined : factory.createToken(ts.SyntaxKind.QuestionToken),
+            replaceReferences(value)
+          );
+        });
+        return factory.createTypeLiteralNode(members);
+      }
+
+      if (schema.type === 'array' && schema.items) {
+        return factory.createArrayTypeNode(replaceReferences(schema.items));
+      }
+
+      return apiGen.getTypeFromSchema(schema);
+    }
+
     if (returnsJson) {
       const returnTypes = Object.entries(responses || {})
         .map(
-          ([code, response]) =>
-            [
-              code,
-              apiGen.resolve(response),
-              apiGen.getTypeFromResponse(response, 'readOnly') ||
-                factory.createKeywordTypeNode(ts.SyntaxKind.UndefinedKeyword),
-            ] as const
+          ([code, response]) => {
+            const resolvedResponse = apiGen.resolve(response);
+            if (!resolvedResponse.content?.['application/json']?.schema) {
+              return [code, resolvedResponse, factory.createKeywordTypeNode(ts.SyntaxKind.UndefinedKeyword)] as const;
+            }
+            
+            const schema = resolvedResponse.content['application/json'].schema;
+            const type = replaceReferences(schema);
+            
+            return [code, resolvedResponse, type] as const;
+          }
         )
         .filter(([status, response]) =>
           isDataResponse(status, includeDefault, apiGen.resolve(response), responses || {})
@@ -371,22 +409,11 @@ export async function generateApi(
       return name;
     }
 
-    for (const param of parameters) {
-      const name = generateName(param.name, param.in);
-      queryArg[name] = {
-        origin: 'param',
-        name,
-        originalName: param.name,
-        type: apiGen.getTypeFromSchema(isReference(param) ? param : param.schema, undefined, 'writeOnly'),
-        required: param.required,
-        param,
-      };
-    }
-
     if (requestBody) {
       const body = apiGen.resolve(requestBody);
       const schema = apiGen.getSchemaFromContent(body.content);
-      const type = apiGen.getTypeFromSchema(schema);
+      const type = replaceReferences(schema);
+
       const schemaName = camelCase(
         (type as any).name ||
           getReferenceName(schema) ||
@@ -399,9 +426,24 @@ export async function generateApi(
         origin: 'body',
         name,
         originalName: schemaName,
-        type: apiGen.getTypeFromSchema(schema, undefined, 'writeOnly'),
+        type,
         required: true,
         body,
+      };
+    }
+
+    for (const param of parameters) {
+      const name = generateName(param.name, param.in);
+      const paramSchema = isReference(param) ? param : param.schema;
+      const type = replaceReferences(paramSchema);
+
+      queryArg[name] = {
+        origin: 'param',
+        name,
+        originalName: param.name,
+        type,
+        required: param.required,
+        param,
       };
     }
 
