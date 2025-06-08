@@ -203,8 +203,17 @@ export async function generateApi(
       apiFile = apiFile.replace(/\\/g, '/');
       if (!apiFile.startsWith('.')) apiFile = `./${apiFile}`;
     }
+    // 處理 sharedTypesFile 的路徑
+    if (sharedTypesFile && sharedTypesFile.startsWith('.')) {
+      sharedTypesFile = path.relative(path.dirname(outputFile), sharedTypesFile);
+      sharedTypesFile = sharedTypesFile.replace(/\\/g, '/');
+      if (!sharedTypesFile.startsWith('.')) sharedTypesFile = `./${sharedTypesFile}`;
+    }
   }
   apiFile = apiFile.replace(/\.[jt]sx?$/, '');
+  if (sharedTypesFile) {
+    sharedTypesFile = sharedTypesFile.replace(/\.[jt]sx?$/, '');
+  }
 
   return printer.printNode(
     ts.EmitHint.Unspecified,
@@ -212,7 +221,18 @@ export async function generateApi(
       [
         generateImportNode(apiFile, { [apiImport]: 'api' }),
         generateImportNode('@acrool/react-fetcher', { IRestFulEndpointsQueryReturn: 'IRestFulEndpointsQueryReturn' }),
-        ...(sharedTypesFile ? [generateImportNode(sharedTypesFile.replace(/\.[jt]sx?$/, ''), { SharedTypes: 'SharedTypes' })] : []),
+        ...(sharedTypesFile ? [
+          factory.createImportDeclaration(
+            undefined,
+            factory.createImportClause(
+              false,
+              undefined,
+              factory.createNamespaceImport(factory.createIdentifier('SharedTypes'))
+            ),
+            factory.createStringLiteral(sharedTypesFile),
+            undefined
+          )
+        ] : []),
         ...(tag ? [generateTagTypes({ addTagTypes: extractAllTagTypes({ operationDefinitions }) })] : []),
         generateCreateApiCall({
           tag,

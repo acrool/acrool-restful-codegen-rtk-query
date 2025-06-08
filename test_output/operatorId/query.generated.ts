@@ -1,6 +1,6 @@
 import { baseApi as api } from "../../baseApi";
 import { IRestFulEndpointsQueryReturn } from "@acrool/react-fetcher";
-import { SharedTypes } from "./test_output/shared-types";
+import * as SharedTypes from "../shared-types";
 const injectedRtkApi = api.injectEndpoints({
   endpoints: (build) => ({
     postOperatorIdAuditByIdSignature: build.mutation<
