@@ -1,210 +1,257 @@
 import { baseApi as api } from "./baseApi";
+import { IRestFulEndpointsQueryReturn } from "@acrool/react-fetcher";
 const injectedRtkApi = api.injectEndpoints({
   endpoints: (build) => ({
     postAuthSignLogin: build.mutation<
       PostAuthSignLoginApiResponse,
-      PostAuthSignLoginApiArg
+      IRestFulEndpointsQueryReturn<PostAuthSignLoginApiArg>
     >({
       query: (queryArg) => ({
         url: `/auth/sign/login`,
         method: "POST",
-        body: queryArg.body,
+        body: queryArg.variables.body,
+        fetchOptions: queryArg.fetchOptions,
       }),
     }),
     postAuthSignRefresh: build.mutation<
       PostAuthSignRefreshApiResponse,
-      PostAuthSignRefreshApiArg
+      IRestFulEndpointsQueryReturn<PostAuthSignRefreshApiArg>
     >({
       query: (queryArg) => ({
         url: `/auth/sign/refresh`,
         method: "POST",
-        body: queryArg.body,
+        body: queryArg.variables.body,
+        fetchOptions: queryArg.fetchOptions,
       }),
     }),
     getParameterOperators: build.query<
       GetParameterOperatorsApiResponse,
-      GetParameterOperatorsApiArg
+      IRestFulEndpointsQueryReturn<GetParameterOperatorsApiArg>
     >({
-      query: () => ({ url: `/parameter/operators` }),
+      query: (queryArg) => ({
+        url: `/parameter/operators`,
+        fetchOptions: queryArg.fetchOptions,
+      }),
     }),
     getParameterCommon: build.query<
       GetParameterCommonApiResponse,
-      GetParameterCommonApiArg
+      IRestFulEndpointsQueryReturn<GetParameterCommonApiArg>
     >({
-      query: () => ({ url: `/parameter/common` }),
+      query: (queryArg) => ({
+        url: `/parameter/common`,
+        fetchOptions: queryArg.fetchOptions,
+      }),
     }),
     putAuthPassword: build.mutation<
       PutAuthPasswordApiResponse,
-      PutAuthPasswordApiArg
+      IRestFulEndpointsQueryReturn<PutAuthPasswordApiArg>
     >({
       query: (queryArg) => ({
         url: `/auth/password`,
         method: "PUT",
-        body: queryArg.body,
+        body: queryArg.variables.body,
+        fetchOptions: queryArg.fetchOptions,
       }),
     }),
     postAuthSignLogout: build.mutation<
       PostAuthSignLogoutApiResponse,
-      PostAuthSignLogoutApiArg
+      IRestFulEndpointsQueryReturn<PostAuthSignLogoutApiArg>
     >({
-      query: () => ({ url: `/auth/sign/logout`, method: "POST" }),
+      query: (queryArg) => ({
+        url: `/auth/sign/logout`,
+        method: "POST",
+        fetchOptions: queryArg.fetchOptions,
+      }),
     }),
-    getAudit: build.query<GetAuditApiResponse, GetAuditApiArg>({
+    getAudit: build.query<
+      GetAuditApiResponse,
+      IRestFulEndpointsQueryReturn<GetAuditApiArg>
+    >({
       query: (queryArg) => ({
         url: `/audit`,
         params: {
-          currentPage: queryArg.currentPage,
-          pageLimit: queryArg.pageLimit,
-          stationName: queryArg.stationName,
-          operatorId: queryArg.operatorId,
-          statusId: queryArg.statusId,
-          templateId: queryArg.templateId,
-          auditStartDate: queryArg.auditStartDate,
-          auditEndDate: queryArg.auditEndDate,
-          areaCode: queryArg.areaCode,
+          currentPage: queryArg.variables.currentPage,
+          pageLimit: queryArg.variables.pageLimit,
+          stationName: queryArg.variables.stationName,
+          operatorId: queryArg.variables.operatorId,
+          statusId: queryArg.variables.statusId,
+          templateId: queryArg.variables.templateId,
+          auditStartDate: queryArg.variables.auditStartDate,
+          auditEndDate: queryArg.variables.auditEndDate,
+          areaCode: queryArg.variables.areaCode,
         },
+        fetchOptions: queryArg.fetchOptions,
       }),
     }),
-    postAudit: build.mutation<PostAuditApiResponse, PostAuditApiArg>({
+    postAudit: build.mutation<
+      PostAuditApiResponse,
+      IRestFulEndpointsQueryReturn<PostAuditApiArg>
+    >({
       query: (queryArg) => ({
         url: `/audit`,
         method: "POST",
-        body: queryArg.body,
+        body: queryArg.variables.body,
+        fetchOptions: queryArg.fetchOptions,
       }),
     }),
-    getAuditById: build.query<GetAuditByIdApiResponse, GetAuditByIdApiArg>({
-      query: (queryArg) => ({ url: `/audit/${queryArg.id}` }),
-    }),
-    putAuditById: build.mutation<PutAuditByIdApiResponse, PutAuditByIdApiArg>({
+    getAuditById: build.query<
+      GetAuditByIdApiResponse,
+      IRestFulEndpointsQueryReturn<GetAuditByIdApiArg>
+    >({
       query: (queryArg) => ({
-        url: `/audit/${queryArg.id}`,
+        url: `/audit/${queryArg.variables.id}`,
+        fetchOptions: queryArg.fetchOptions,
+      }),
+    }),
+    putAuditById: build.mutation<
+      PutAuditByIdApiResponse,
+      IRestFulEndpointsQueryReturn<PutAuditByIdApiArg>
+    >({
+      query: (queryArg) => ({
+        url: `/audit/${queryArg.variables.id}`,
         method: "PUT",
-        body: queryArg.body,
+        body: queryArg.variables.body,
+        fetchOptions: queryArg.fetchOptions,
       }),
     }),
     postAuditById: build.mutation<
       PostAuditByIdApiResponse,
-      PostAuditByIdApiArg
+      IRestFulEndpointsQueryReturn<PostAuditByIdApiArg>
     >({
       query: (queryArg) => ({
-        url: `/audit/${queryArg.id}`,
+        url: `/audit/${queryArg.variables.id}`,
         method: "POST",
-        body: queryArg.body,
+        body: queryArg.variables.body,
+        fetchOptions: queryArg.fetchOptions,
       }),
     }),
     putAuditByIdProfile: build.mutation<
       PutAuditByIdProfileApiResponse,
-      PutAuditByIdProfileApiArg
+      IRestFulEndpointsQueryReturn<PutAuditByIdProfileApiArg>
     >({
       query: (queryArg) => ({
-        url: `/audit/${queryArg.id}/profile`,
+        url: `/audit/${queryArg.variables.id}/profile`,
         method: "PUT",
-        body: queryArg.body,
+        body: queryArg.variables.body,
+        fetchOptions: queryArg.fetchOptions,
       }),
     }),
     postAuditByIdAuditSignature: build.mutation<
       PostAuditByIdAuditSignatureApiResponse,
-      PostAuditByIdAuditSignatureApiArg
+      IRestFulEndpointsQueryReturn<PostAuditByIdAuditSignatureApiArg>
     >({
       query: (queryArg) => ({
-        url: `/audit/${queryArg.id}/auditSignature`,
+        url: `/audit/${queryArg.variables.id}/auditSignature`,
         method: "POST",
-        body: queryArg.body,
+        body: queryArg.variables.body,
+        fetchOptions: queryArg.fetchOptions,
       }),
     }),
     postAuditByIdManagerSignature: build.mutation<
       PostAuditByIdManagerSignatureApiResponse,
-      PostAuditByIdManagerSignatureApiArg
+      IRestFulEndpointsQueryReturn<PostAuditByIdManagerSignatureApiArg>
     >({
       query: (queryArg) => ({
-        url: `/audit/${queryArg.id}/managerSignature`,
+        url: `/audit/${queryArg.variables.id}/managerSignature`,
         method: "POST",
-        body: queryArg.body,
+        body: queryArg.variables.body,
+        fetchOptions: queryArg.fetchOptions,
       }),
     }),
     postAuditByIdExportAudit: build.mutation<
       PostAuditByIdExportAuditApiResponse,
-      PostAuditByIdExportAuditApiArg
+      IRestFulEndpointsQueryReturn<PostAuditByIdExportAuditApiArg>
     >({
       query: (queryArg) => ({
-        url: `/audit/${queryArg.id}/exportAudit`,
+        url: `/audit/${queryArg.variables.id}/exportAudit`,
         method: "POST",
+        fetchOptions: queryArg.fetchOptions,
       }),
     }),
     postAuditByIdExportAssets: build.mutation<
       PostAuditByIdExportAssetsApiResponse,
-      PostAuditByIdExportAssetsApiArg
+      IRestFulEndpointsQueryReturn<PostAuditByIdExportAssetsApiArg>
     >({
       query: (queryArg) => ({
-        url: `/audit/${queryArg.id}/exportAssets`,
+        url: `/audit/${queryArg.variables.id}/exportAssets`,
         method: "POST",
+        fetchOptions: queryArg.fetchOptions,
       }),
     }),
     deleteAuditByIdAnnex: build.mutation<
       DeleteAuditByIdAnnexApiResponse,
-      DeleteAuditByIdAnnexApiArg
+      IRestFulEndpointsQueryReturn<DeleteAuditByIdAnnexApiArg>
     >({
       query: (queryArg) => ({
-        url: `/audit/${queryArg.id}/annex`,
+        url: `/audit/${queryArg.variables.id}/annex`,
         method: "DELETE",
-        body: queryArg.body,
+        body: queryArg.variables.body,
+        fetchOptions: queryArg.fetchOptions,
       }),
     }),
     getAuditByIdOperatorPassword: build.query<
       GetAuditByIdOperatorPasswordApiResponse,
-      GetAuditByIdOperatorPasswordApiArg
+      IRestFulEndpointsQueryReturn<GetAuditByIdOperatorPasswordApiArg>
     >({
-      query: (queryArg) => ({ url: `/audit/${queryArg.id}/operatorPassword` }),
+      query: (queryArg) => ({
+        url: `/audit/${queryArg.variables.id}/operatorPassword`,
+        fetchOptions: queryArg.fetchOptions,
+      }),
     }),
     postAuditExportReport: build.mutation<
       PostAuditExportReportApiResponse,
-      PostAuditExportReportApiArg
+      IRestFulEndpointsQueryReturn<PostAuditExportReportApiArg>
     >({
       query: (queryArg) => ({
         url: `/audit/exportReport`,
         method: "POST",
-        body: queryArg.body,
+        body: queryArg.variables.body,
+        fetchOptions: queryArg.fetchOptions,
       }),
     }),
     postAuditByIdInvalid: build.mutation<
       PostAuditByIdInvalidApiResponse,
-      PostAuditByIdInvalidApiArg
+      IRestFulEndpointsQueryReturn<PostAuditByIdInvalidApiArg>
     >({
       query: (queryArg) => ({
-        url: `/audit/${queryArg.id}/invalid`,
+        url: `/audit/${queryArg.variables.id}/invalid`,
         method: "POST",
-        body: queryArg.body,
+        body: queryArg.variables.body,
+        fetchOptions: queryArg.fetchOptions,
       }),
     }),
     postAuditByIdReturns: build.mutation<
       PostAuditByIdReturnsApiResponse,
-      PostAuditByIdReturnsApiArg
+      IRestFulEndpointsQueryReturn<PostAuditByIdReturnsApiArg>
     >({
       query: (queryArg) => ({
-        url: `/audit/${queryArg.id}/returns`,
+        url: `/audit/${queryArg.variables.id}/returns`,
         method: "POST",
-        body: queryArg.body,
+        body: queryArg.variables.body,
+        fetchOptions: queryArg.fetchOptions,
       }),
     }),
     postOperatorIdAuditByIdSignature: build.mutation<
       PostOperatorIdAuditByIdSignatureApiResponse,
-      PostOperatorIdAuditByIdSignatureApiArg
+      IRestFulEndpointsQueryReturn<PostOperatorIdAuditByIdSignatureApiArg>
     >({
       query: (queryArg) => ({
-        url: `/operatorId/audit/${queryArg.id}/signature`,
+        url: `/operatorId/audit/${queryArg.variables.id}/signature`,
         method: "POST",
-        body: queryArg.body,
+        body: queryArg.variables.body,
+        fetchOptions: queryArg.fetchOptions,
       }),
     }),
     getOperatorIdAuditById: build.query<
       GetOperatorIdAuditByIdApiResponse,
-      GetOperatorIdAuditByIdApiArg
+      IRestFulEndpointsQueryReturn<GetOperatorIdAuditByIdApiArg>
     >({
       query: (queryArg) => ({
-        url: `/operatorId/audit/${queryArg.id}`,
+        url: `/operatorId/audit/${queryArg.variables.id}`,
         params: {
-          password: queryArg.password,
+          password: queryArg.variables.password,
         },
+        fetchOptions: queryArg.fetchOptions,
       }),
     }),
   }),

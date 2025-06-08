@@ -46,7 +46,7 @@
     "src"
   ],
   "devDependencies": {
-    "@acrool/react-fetcher": "^0.0.4-test.6",
+    "@acrool/react-fetcher": "^0.0.4",
     "@babel/core": "^7.12.10",
     "@babel/preset-env": "^7.12.11",
     "@babel/preset-typescript": "^7.12.7",

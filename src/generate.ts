@@ -168,6 +168,7 @@ export async function generateApi(
     factory.createSourceFile(
       [
         generateImportNode(apiFile, { [apiImport]: 'api' }),
+        generateImportNode('@acrool/react-fetcher', { IRestFulEndpointsQueryReturn: 'IRestFulEndpointsQueryReturn' }),
         ...(tag ? [generateTagTypes({ addTagTypes: extractAllTagTypes({ operationDefinitions }) })] : []),
         generateCreateApiCall({
           tag,
@@ -398,7 +399,10 @@ export async function generateApi(
       operationName: operationNameSuffix ? capitalize(operationName + operationNameSuffix) : operationName,
       type: isQuery ? 'query' : 'mutation',
       Response: ResponseTypeName,
-      QueryArg,
+      QueryArg: factory.createTypeReferenceNode(
+        factory.createIdentifier('IRestFulEndpointsQueryReturn'),
+        [QueryArg]
+      ),
       queryFn: generateQueryFn({
         operationDefinition,
         queryArg,
@@ -434,6 +438,7 @@ export async function generateApi(
     const bodyParameter = Object.values(queryArg).find((def) => def.origin === 'body');
 
     const rootObject = factory.createIdentifier('queryArg');
+    const variablesObject = factory.createPropertyAccessExpression(rootObject, factory.createIdentifier('variables'));
 
     function pickParams(paramIn: string) {
       return Object.values(queryArg).filter((def) => def.origin === 'param' && def.param.in === paramIn);
@@ -443,7 +448,9 @@ export async function generateApi(
       if (parameters.length === 0) return undefined;
 
       const properties = parameters.map((param) => {
-        const value = isFlatArg ? rootObject : accessProperty(rootObject, param.name);
+        const value = isFlatArg 
+          ? variablesObject 
+          : factory.createPropertyAccessExpression(variablesObject, factory.createIdentifier(param.name));
 
         const encodedValue =
           encodeQueryParams && param.param?.in === 'query'
@@ -470,9 +477,7 @@ export async function generateApi(
     return factory.createArrowFunction(
       undefined,
       undefined,
-      Object.keys(queryArg).length
-        ? [factory.createParameterDeclaration(undefined, undefined, rootObject, undefined, undefined, undefined)]
-        : [],
+      [factory.createParameterDeclaration(undefined, undefined, rootObject, undefined, undefined, undefined)],
       undefined,
       factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
       factory.createParenthesizedExpression(
@@ -480,7 +485,7 @@ export async function generateApi(
           [
             factory.createPropertyAssignment(
               factory.createIdentifier('url'),
-              generatePathExpression(path, pickParams('path'), rootObject, isFlatArg, encodePathParams)
+              generatePathExpression(path, pickParams('path'), variablesObject, isFlatArg, encodePathParams)
             ),
             isQuery && verb.toUpperCase() === 'GET'
               ? undefined
@@ -493,11 +498,15 @@ export async function generateApi(
               : factory.createPropertyAssignment(
                   factory.createIdentifier('body'),
                   isFlatArg
-                    ? rootObject
-                    : factory.createPropertyAccessExpression(rootObject, factory.createIdentifier(bodyParameter.name))
+                    ? variablesObject
+                    : factory.createPropertyAccessExpression(variablesObject, factory.createIdentifier(bodyParameter.name))
                 ),
             createObjectLiteralProperty(pickParams('cookie'), 'cookies'),
             createObjectLiteralProperty(pickParams('query'), 'params'),
+            factory.createPropertyAssignment(
+              factory.createIdentifier('fetchOptions'),
+              factory.createPropertyAccessExpression(rootObject, factory.createIdentifier('fetchOptions'))
+            ),
           ].filter(removeUndefined),
           false
         )
@@ -525,7 +534,7 @@ function accessProperty(rootObject: ts.Identifier, propertyName: string) {
 function generatePathExpression(
   path: string,
   pathParameters: QueryArgDefinition[],
-  rootObject: ts.Identifier,
+  rootObject: ts.Identifier | ts.PropertyAccessExpression,
   isFlatArg: boolean,
   encodePathParams: boolean
 ) {
@@ -544,7 +553,9 @@ function generatePathExpression(
     ? factory.createTemplateExpression(
         factory.createTemplateHead(head),
         expressions.map(([prop, literal], index) => {
-          const value = isFlatArg ? rootObject : accessProperty(rootObject, prop);
+          const value = isFlatArg 
+            ? rootObject 
+            : factory.createPropertyAccessExpression(rootObject, factory.createIdentifier(prop));
           const encodedValue = encodePathParams
             ? factory.createCallExpression(factory.createIdentifier('encodeURIComponent'), undefined, [
                 factory.createCallExpression(factory.createIdentifier('String'), undefined, [value]),
