@@ -1,6 +1,6 @@
 {
   "name": "@acrool/rtk-query-codegen-openapi",
-  "version": "0.0.2-test.3",
+  "version": "0.0.2-test.4",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "module": "lib/index.mjs",
