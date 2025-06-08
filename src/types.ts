@@ -132,6 +132,7 @@ export interface OutputFileOptions extends Partial<CommonOptions> {
    * If passed as true it will generate TS enums instead of union of strings
    */
   useEnumType?: boolean;
+  sharedTypesFile?: string;
 }
 
 export type EndpointOverrides = {

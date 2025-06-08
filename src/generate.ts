@@ -117,6 +117,7 @@ export async function generateApi(
     useEnumType = false,
     mergeReadWriteOnly = false,
     httpResolverOptions,
+    sharedTypesFile,
   }: GenerationOptions
 ) {
   const v3Doc = (v3DocCache[spec] ??= await getV3Doc(spec, httpResolverOptions));
@@ -126,6 +127,48 @@ export async function generateApi(
     useEnumType,
     mergeReadWriteOnly,
   });
+
+  // 如果提供了 sharedTypesFile，則將 components 輸出到該文件
+  if (sharedTypesFile) {
+    const components = v3Doc.components;
+    if (components) {
+      const resultFile = ts.createSourceFile(
+        'sharedTypes.ts',
+        '',
+        ts.ScriptTarget.Latest,
+        /*setParentNodes*/ false,
+        ts.ScriptKind.TS
+      );
+      const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
+
+      // 將 components 轉換為 TypeScript 類型定義
+      const typeDefinitions = Object.entries(components).flatMap(([_, componentDefs]) => {
+        return Object.entries(componentDefs as Record<string, unknown>).map(([name, def]) => {
+          const typeNode = apiGen.getTypeFromSchema(def as OpenAPIV3.SchemaObject);
+          return factory.createTypeAliasDeclaration(
+            [factory.createModifier(ts.SyntaxKind.ExportKeyword)],
+            factory.createIdentifier(name),
+            undefined,
+            typeNode
+          );
+        });
+      });
+
+      const output = printer.printNode(
+        ts.EmitHint.Unspecified,
+        factory.createSourceFile(
+          typeDefinitions,
+          factory.createToken(ts.SyntaxKind.EndOfFileToken),
+          ts.NodeFlags.None
+        ),
+        resultFile
+      );
+
+      // 寫入文件
+      const fs = await import('node:fs/promises');
+      await fs.writeFile(sharedTypesFile, output, 'utf-8');
+    }
+  }
 
   // temporary workaround for https://github.com/oazapfts/oazapfts/issues/491
   if (apiGen.spec.components?.schemas) {
@@ -160,14 +203,36 @@ export async function generateApi(
       apiFile = apiFile.replace(/\\/g, '/');
       if (!apiFile.startsWith('.')) apiFile = `./${apiFile}`;
     }
+    // 處理 sharedTypesFile 的路徑
+    if (sharedTypesFile && sharedTypesFile.startsWith('.')) {
+      sharedTypesFile = path.relative(path.dirname(outputFile), sharedTypesFile);
+      sharedTypesFile = sharedTypesFile.replace(/\\/g, '/');
+      if (!sharedTypesFile.startsWith('.')) sharedTypesFile = `./${sharedTypesFile}`;
+    }
   }
   apiFile = apiFile.replace(/\.[jt]sx?$/, '');
+  if (sharedTypesFile) {
+    sharedTypesFile = sharedTypesFile.replace(/\.[jt]sx?$/, '');
+  }
 
   return printer.printNode(
     ts.EmitHint.Unspecified,
     factory.createSourceFile(
       [
         generateImportNode(apiFile, { [apiImport]: 'api' }),
+        generateImportNode('@acrool/react-fetcher', { IRestFulEndpointsQueryReturn: 'IRestFulEndpointsQueryReturn' }),
+        ...(sharedTypesFile ? [
+          factory.createImportDeclaration(
+            undefined,
+            factory.createImportClause(
+              false,
+              undefined,
+              factory.createNamespaceImport(factory.createIdentifier('SharedTypes'))
+            ),
+            factory.createStringLiteral(sharedTypesFile),
+            undefined
+          )
+        ] : []),
         ...(tag ? [generateTagTypes({ addTagTypes: extractAllTagTypes({ operationDefinitions }) })] : []),
         generateCreateApiCall({
           tag,
@@ -181,20 +246,13 @@ export async function generateApi(
             true
           ),
         }),
-        factory.createExportDeclaration(
+        factory.createExportAssignment(
           undefined,
-          false,
-          factory.createNamedExports([
-            factory.createExportSpecifier(
-              factory.createIdentifier(generatedApiName),
-              factory.createIdentifier(exportName)
-            ),
-          ]),
-          undefined
+          undefined,
+          factory.createIdentifier(generatedApiName)
         ),
         ...Object.values(interfaces),
-        ...apiGen.aliases,
-        ...apiGen.enumAliases,
+        ...(sharedTypesFile ? [] : [...apiGen.aliases, ...apiGen.enumAliases]),
         ...(hooks
           ? [
               generateReactHooks({
@@ -244,16 +302,54 @@ export async function generateApi(
 
     const returnsJson = apiGen.getResponseType(responses) === 'json';
     let ResponseType: ts.TypeNode = factory.createKeywordTypeNode(ts.SyntaxKind.UnknownKeyword);
+
+    function replaceReferences(schema: any): ts.TypeNode {
+      if (!schema) return factory.createKeywordTypeNode(ts.SyntaxKind.UnknownKeyword);
+      
+      const refName = getReferenceName(schema);
+      if (refName && sharedTypesFile) {
+        return factory.createTypeReferenceNode(
+          factory.createQualifiedName(
+            factory.createIdentifier('SharedTypes'),
+            factory.createIdentifier(refName)
+          ),
+          undefined
+        );
+      }
+
+      if (schema.type === 'object' && schema.properties) {
+        const members = Object.entries(schema.properties).map(([key, value]: [string, any]) => {
+          return factory.createPropertySignature(
+            undefined,
+            factory.createIdentifier(key),
+            schema.required?.includes(key) ? undefined : factory.createToken(ts.SyntaxKind.QuestionToken),
+            replaceReferences(value)
+          );
+        });
+        return factory.createTypeLiteralNode(members);
+      }
+
+      if (schema.type === 'array' && schema.items) {
+        return factory.createArrayTypeNode(replaceReferences(schema.items));
+      }
+
+      return apiGen.getTypeFromSchema(schema);
+    }
+
     if (returnsJson) {
       const returnTypes = Object.entries(responses || {})
         .map(
-          ([code, response]) =>
-            [
-              code,
-              apiGen.resolve(response),
-              apiGen.getTypeFromResponse(response, 'readOnly') ||
-                factory.createKeywordTypeNode(ts.SyntaxKind.UndefinedKeyword),
-            ] as const
+          ([code, response]) => {
+            const resolvedResponse = apiGen.resolve(response);
+            if (!resolvedResponse.content?.['application/json']?.schema) {
+              return [code, resolvedResponse, factory.createKeywordTypeNode(ts.SyntaxKind.UndefinedKeyword)] as const;
+            }
+            
+            const schema = resolvedResponse.content['application/json'].schema;
+            const type = replaceReferences(schema);
+            
+            return [code, resolvedResponse, type] as const;
+          }
         )
         .filter(([status, response]) =>
           isDataResponse(status, includeDefault, apiGen.resolve(response), responses || {})
@@ -288,9 +384,9 @@ export async function generateApi(
       .resolveArray(pathItem.parameters)
       .filter((pp) => !operationParameters.some((op) => op.name === pp.name && op.in === pp.in));
 
-    const parameters = supportDeepObjects([...pathItemParameters, ...operationParameters]).filter(
-      argumentMatches(overrides?.parameterFilter)
-    );
+    const parameters = supportDeepObjects([...pathItemParameters, ...operationParameters])
+      .filter(argumentMatches(overrides?.parameterFilter))
+      .filter(param => param.in !== 'header');
 
     const allNames = parameters.map((p) => p.name);
     const queryArg: QueryArgDefinitions = {};
@@ -313,22 +409,11 @@ export async function generateApi(
       return name;
     }
 
-    for (const param of parameters) {
-      const name = generateName(param.name, param.in);
-      queryArg[name] = {
-        origin: 'param',
-        name,
-        originalName: param.name,
-        type: apiGen.getTypeFromSchema(isReference(param) ? param : param.schema, undefined, 'writeOnly'),
-        required: param.required,
-        param,
-      };
-    }
-
     if (requestBody) {
       const body = apiGen.resolve(requestBody);
       const schema = apiGen.getSchemaFromContent(body.content);
-      const type = apiGen.getTypeFromSchema(schema);
+      const type = replaceReferences(schema);
+
       const schemaName = camelCase(
         (type as any).name ||
           getReferenceName(schema) ||
@@ -341,9 +426,24 @@ export async function generateApi(
         origin: 'body',
         name,
         originalName: schemaName,
-        type: apiGen.getTypeFromSchema(schema, undefined, 'writeOnly'),
+        type,
         required: true,
         body,
+      };
+    }
+
+    for (const param of parameters) {
+      const name = generateName(param.name, param.in);
+      const paramSchema = isReference(param) ? param : param.schema;
+      const type = replaceReferences(paramSchema);
+
+      queryArg[name] = {
+        origin: 'param',
+        name,
+        originalName: param.name,
+        type,
+        required: param.required,
+        param,
       };
     }
 
@@ -398,7 +498,10 @@ export async function generateApi(
       operationName: operationNameSuffix ? capitalize(operationName + operationNameSuffix) : operationName,
       type: isQuery ? 'query' : 'mutation',
       Response: ResponseTypeName,
-      QueryArg,
+      QueryArg: factory.createTypeReferenceNode(
+        factory.createIdentifier('IRestFulEndpointsQueryReturn'),
+        [QueryArg]
+      ),
       queryFn: generateQueryFn({
         operationDefinition,
         queryArg,
@@ -434,6 +537,7 @@ export async function generateApi(
     const bodyParameter = Object.values(queryArg).find((def) => def.origin === 'body');
 
     const rootObject = factory.createIdentifier('queryArg');
+    const variablesObject = factory.createPropertyAccessExpression(rootObject, factory.createIdentifier('variables'));
 
     function pickParams(paramIn: string) {
       return Object.values(queryArg).filter((def) => def.origin === 'param' && def.param.in === paramIn);
@@ -443,7 +547,9 @@ export async function generateApi(
       if (parameters.length === 0) return undefined;
 
       const properties = parameters.map((param) => {
-        const value = isFlatArg ? rootObject : accessProperty(rootObject, param.name);
+        const value = isFlatArg 
+          ? variablesObject 
+          : factory.createPropertyAccessExpression(variablesObject, factory.createIdentifier(param.name));
 
         const encodedValue =
           encodeQueryParams && param.param?.in === 'query'
@@ -470,9 +576,7 @@ export async function generateApi(
     return factory.createArrowFunction(
       undefined,
       undefined,
-      Object.keys(queryArg).length
-        ? [factory.createParameterDeclaration(undefined, undefined, rootObject, undefined, undefined, undefined)]
-        : [],
+      [factory.createParameterDeclaration(undefined, undefined, rootObject, undefined, undefined, undefined)],
       undefined,
       factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
       factory.createParenthesizedExpression(
@@ -480,7 +584,7 @@ export async function generateApi(
           [
             factory.createPropertyAssignment(
               factory.createIdentifier('url'),
-              generatePathExpression(path, pickParams('path'), rootObject, isFlatArg, encodePathParams)
+              generatePathExpression(path, pickParams('path'), variablesObject, isFlatArg, encodePathParams)
             ),
             isQuery && verb.toUpperCase() === 'GET'
               ? undefined
@@ -493,12 +597,19 @@ export async function generateApi(
               : factory.createPropertyAssignment(
                   factory.createIdentifier('body'),
                   isFlatArg
-                    ? rootObject
-                    : factory.createPropertyAccessExpression(rootObject, factory.createIdentifier(bodyParameter.name))
+                    ? variablesObject
+                    : factory.createPropertyAccessExpression(variablesObject, factory.createIdentifier(bodyParameter.name))
                 ),
             createObjectLiteralProperty(pickParams('cookie'), 'cookies'),
-            createObjectLiteralProperty(pickParams('header'), 'headers'),
             createObjectLiteralProperty(pickParams('query'), 'params'),
+            factory.createPropertyAssignment(
+              factory.createIdentifier('fetchOptions'),
+              factory.createPropertyAccessChain(
+                rootObject,
+                factory.createToken(ts.SyntaxKind.QuestionDotToken),
+                factory.createIdentifier('fetchOptions')
+              )
+            ),
           ].filter(removeUndefined),
           false
         )
@@ -526,7 +637,7 @@ function accessProperty(rootObject: ts.Identifier, propertyName: string) {
 function generatePathExpression(
   path: string,
   pathParameters: QueryArgDefinition[],
-  rootObject: ts.Identifier,
+  rootObject: ts.Identifier | ts.PropertyAccessExpression,
   isFlatArg: boolean,
   encodePathParams: boolean
 ) {
@@ -545,7 +656,9 @@ function generatePathExpression(
     ? factory.createTemplateExpression(
         factory.createTemplateHead(head),
         expressions.map(([prop, literal], index) => {
-          const value = isFlatArg ? rootObject : accessProperty(rootObject, prop);
+          const value = isFlatArg 
+            ? rootObject 
+            : factory.createPropertyAccessExpression(rootObject, factory.createIdentifier(prop));
           const encodedValue = encodePathParams
             ? factory.createCallExpression(factory.createIdentifier('encodeURIComponent'), undefined, [
                 factory.createCallExpression(factory.createIdentifier('String'), undefined, [value]),
