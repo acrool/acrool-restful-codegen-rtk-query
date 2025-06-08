@@ -117,6 +117,7 @@ export async function generateApi(
     useEnumType = false,
     mergeReadWriteOnly = false,
     httpResolverOptions,
+    sharedTypesFile,
   }: GenerationOptions
 ) {
   const v3Doc = (v3DocCache[spec] ??= await getV3Doc(spec, httpResolverOptions));
@@ -126,6 +127,55 @@ export async function generateApi(
     useEnumType,
     mergeReadWriteOnly,
   });
+
+  // 如果提供了 sharedTypesFile，則將 components 輸出到該文件
+  if (sharedTypesFile) {
+    const components = v3Doc.components;
+    if (components) {
+      const resultFile = ts.createSourceFile(
+        'sharedTypes.ts',
+        '',
+        ts.ScriptTarget.Latest,
+        /*setParentNodes*/ false,
+        ts.ScriptKind.TS
+      );
+      const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
+
+      // 將 components 轉換為 TypeScript 類型定義
+      const typeDefinitions = Object.entries(components).map(([componentType, componentDefs]) => {
+        const typeEntries = Object.entries(componentDefs as Record<string, unknown>).map(([name, def]) => {
+          const typeNode = apiGen.getTypeFromSchema(def as OpenAPIV3.SchemaObject);
+          return factory.createTypeAliasDeclaration(
+            [factory.createModifier(ts.SyntaxKind.ExportKeyword)],
+            factory.createIdentifier(name),
+            undefined,
+            typeNode
+          );
+        });
+
+        return factory.createModuleDeclaration(
+          [factory.createModifier(ts.SyntaxKind.ExportKeyword)],
+          factory.createIdentifier(componentType),
+          factory.createModuleBlock(typeEntries),
+          ts.NodeFlags.Namespace
+        );
+      });
+
+      const output = printer.printNode(
+        ts.EmitHint.Unspecified,
+        factory.createSourceFile(
+          typeDefinitions,
+          factory.createToken(ts.SyntaxKind.EndOfFileToken),
+          ts.NodeFlags.None
+        ),
+        resultFile
+      );
+
+      // 寫入文件
+      const fs = await import('node:fs/promises');
+      await fs.writeFile(sharedTypesFile, output, 'utf-8');
+    }
+  }
 
   // temporary workaround for https://github.com/oazapfts/oazapfts/issues/491
   if (apiGen.spec.components?.schemas) {
