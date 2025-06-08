@@ -288,9 +288,9 @@ export async function generateApi(
       .resolveArray(pathItem.parameters)
       .filter((pp) => !operationParameters.some((op) => op.name === pp.name && op.in === pp.in));
 
-    const parameters = supportDeepObjects([...pathItemParameters, ...operationParameters]).filter(
-      argumentMatches(overrides?.parameterFilter)
-    );
+    const parameters = supportDeepObjects([...pathItemParameters, ...operationParameters])
+      .filter(argumentMatches(overrides?.parameterFilter))
+      .filter(param => param.in !== 'header');
 
     const allNames = parameters.map((p) => p.name);
     const queryArg: QueryArgDefinitions = {};
@@ -497,7 +497,6 @@ export async function generateApi(
                     : factory.createPropertyAccessExpression(rootObject, factory.createIdentifier(bodyParameter.name))
                 ),
             createObjectLiteralProperty(pickParams('cookie'), 'cookies'),
-            createObjectLiteralProperty(pickParams('header'), 'headers'),
             createObjectLiteralProperty(pickParams('query'), 'params'),
           ].filter(removeUndefined),
           false

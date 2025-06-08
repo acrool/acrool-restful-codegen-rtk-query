@@ -9,10 +9,6 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/auth/sign/login`,
         method: "POST",
         body: queryArg.body,
-        headers: {
-          "Client-Id": queryArg["Client-Id"],
-          Authorization: queryArg.authorization,
-        },
       }),
     }),
     postAuthSignRefresh: build.mutation<
@@ -23,35 +19,19 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/auth/sign/refresh`,
         method: "POST",
         body: queryArg.body,
-        headers: {
-          "Client-Id": queryArg["Client-Id"],
-          Authorization: queryArg.authorization,
-        },
       }),
     }),
     getParameterOperators: build.query<
       GetParameterOperatorsApiResponse,
       GetParameterOperatorsApiArg
     >({
-      query: (queryArg) => ({
-        url: `/parameter/operators`,
-        headers: {
-          "Client-Id": queryArg["Client-Id"],
-          Authorization: queryArg.authorization,
-        },
-      }),
+      query: () => ({ url: `/parameter/operators` }),
     }),
     getParameterCommon: build.query<
       GetParameterCommonApiResponse,
       GetParameterCommonApiArg
     >({
-      query: (queryArg) => ({
-        url: `/parameter/common`,
-        headers: {
-          "Client-Id": queryArg["Client-Id"],
-          Authorization: queryArg.authorization,
-        },
-      }),
+      query: () => ({ url: `/parameter/common` }),
     }),
     putAuthPassword: build.mutation<
       PutAuthPasswordApiResponse,
@@ -61,32 +41,17 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/auth/password`,
         method: "PUT",
         body: queryArg.body,
-        headers: {
-          "Client-Id": queryArg["Client-Id"],
-          Authorization: queryArg.authorization,
-        },
       }),
     }),
     postAuthSignLogout: build.mutation<
       PostAuthSignLogoutApiResponse,
       PostAuthSignLogoutApiArg
     >({
-      query: (queryArg) => ({
-        url: `/auth/sign/logout`,
-        method: "POST",
-        headers: {
-          "Client-Id": queryArg["Client-Id"],
-          Authorization: queryArg.authorization,
-        },
-      }),
+      query: () => ({ url: `/auth/sign/logout`, method: "POST" }),
     }),
     getAudit: build.query<GetAuditApiResponse, GetAuditApiArg>({
       query: (queryArg) => ({
         url: `/audit`,
-        headers: {
-          "Client-Id": queryArg["Client-Id"],
-          Authorization: queryArg.authorization,
-        },
         params: {
           currentPage: queryArg.currentPage,
           pageLimit: queryArg.pageLimit,
@@ -105,30 +70,16 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/audit`,
         method: "POST",
         body: queryArg.body,
-        headers: {
-          "Client-Id": queryArg["Client-Id"],
-          Authorization: queryArg.authorization,
-        },
       }),
     }),
     getAuditById: build.query<GetAuditByIdApiResponse, GetAuditByIdApiArg>({
-      query: (queryArg) => ({
-        url: `/audit/${queryArg.id}`,
-        headers: {
-          "Client-Id": queryArg["Client-Id"],
-          Authorization: queryArg.authorization,
-        },
-      }),
+      query: (queryArg) => ({ url: `/audit/${queryArg.id}` }),
     }),
     putAuditById: build.mutation<PutAuditByIdApiResponse, PutAuditByIdApiArg>({
       query: (queryArg) => ({
         url: `/audit/${queryArg.id}`,
         method: "PUT",
         body: queryArg.body,
-        headers: {
-          "Client-Id": queryArg["Client-Id"],
-          Authorization: queryArg.authorization,
-        },
       }),
     }),
     postAuditById: build.mutation<
@@ -139,10 +90,6 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/audit/${queryArg.id}`,
         method: "POST",
         body: queryArg.body,
-        headers: {
-          "Client-Id": queryArg["Client-Id"],
-          Authorization: queryArg.authorization,
-        },
       }),
     }),
     putAuditByIdProfile: build.mutation<
@@ -153,10 +100,6 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/audit/${queryArg.id}/profile`,
         method: "PUT",
         body: queryArg.body,
-        headers: {
-          "Client-Id": queryArg["Client-Id"],
-          Authorization: queryArg.authorization,
-        },
       }),
     }),
     postAuditByIdAuditSignature: build.mutation<
@@ -167,10 +110,6 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/audit/${queryArg.id}/auditSignature`,
         method: "POST",
         body: queryArg.body,
-        headers: {
-          "Client-Id": queryArg["Client-Id"],
-          Authorization: queryArg.authorization,
-        },
       }),
     }),
     postAuditByIdManagerSignature: build.mutation<
@@ -181,10 +120,6 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/audit/${queryArg.id}/managerSignature`,
         method: "POST",
         body: queryArg.body,
-        headers: {
-          "Client-Id": queryArg["Client-Id"],
-          Authorization: queryArg.authorization,
-        },
       }),
     }),
     postAuditByIdExportAudit: build.mutation<
@@ -194,10 +129,6 @@ const injectedRtkApi = api.injectEndpoints({
       query: (queryArg) => ({
         url: `/audit/${queryArg.id}/exportAudit`,
         method: "POST",
-        headers: {
-          "Client-Id": queryArg["Client-Id"],
-          Authorization: queryArg.authorization,
-        },
       }),
     }),
     postAuditByIdExportAssets: build.mutation<
@@ -207,10 +138,6 @@ const injectedRtkApi = api.injectEndpoints({
       query: (queryArg) => ({
         url: `/audit/${queryArg.id}/exportAssets`,
         method: "POST",
-        headers: {
-          "Client-Id": queryArg["Client-Id"],
-          Authorization: queryArg.authorization,
-        },
       }),
     }),
     deleteAuditByIdAnnex: build.mutation<
@@ -221,23 +148,13 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/audit/${queryArg.id}/annex`,
         method: "DELETE",
         body: queryArg.body,
-        headers: {
-          "Client-Id": queryArg["Client-Id"],
-          Authorization: queryArg.authorization,
-        },
       }),
     }),
     getAuditByIdOperatorPassword: build.query<
       GetAuditByIdOperatorPasswordApiResponse,
       GetAuditByIdOperatorPasswordApiArg
     >({
-      query: (queryArg) => ({
-        url: `/audit/${queryArg.id}/operatorPassword`,
-        headers: {
-          "Client-Id": queryArg["Client-Id"],
-          Authorization: queryArg.authorization,
-        },
-      }),
+      query: (queryArg) => ({ url: `/audit/${queryArg.id}/operatorPassword` }),
     }),
     postAuditExportReport: build.mutation<
       PostAuditExportReportApiResponse,
@@ -247,10 +164,6 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/audit/exportReport`,
         method: "POST",
         body: queryArg.body,
-        headers: {
-          "Client-Id": queryArg["Client-Id"],
-          Authorization: queryArg.authorization,
-        },
       }),
     }),
     postAuditByIdInvalid: build.mutation<
@@ -261,10 +174,6 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/audit/${queryArg.id}/invalid`,
         method: "POST",
         body: queryArg.body,
-        headers: {
-          "Client-Id": queryArg["Client-Id"],
-          Authorization: queryArg.authorization,
-        },
       }),
     }),
     postAuditByIdReturns: build.mutation<
@@ -275,10 +184,6 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/audit/${queryArg.id}/returns`,
         method: "POST",
         body: queryArg.body,
-        headers: {
-          "Client-Id": queryArg["Client-Id"],
-          Authorization: queryArg.authorization,
-        },
       }),
     }),
     postOperatorIdAuditByIdSignature: build.mutation<
@@ -289,10 +194,6 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/operatorId/audit/${queryArg.id}/signature`,
         method: "POST",
         body: queryArg.body,
-        headers: {
-          "Client-Id": queryArg["Client-Id"],
-          Authorization: queryArg.authorization,
-        },
       }),
     }),
     getOperatorIdAuditById: build.query<
@@ -301,10 +202,6 @@ const injectedRtkApi = api.injectEndpoints({
     >({
       query: (queryArg) => ({
         url: `/operatorId/audit/${queryArg.id}`,
-        headers: {
-          "Client-Id": queryArg["Client-Id"],
-          Authorization: queryArg.authorization,
-        },
         params: {
           password: queryArg.password,
         },
@@ -325,8 +222,6 @@ export type PostAuthSignLoginApiResponse = /** status 200  */ {
   message: string;
 };
 export type PostAuthSignLoginApiArg = {
-  "Client-Id"?: string;
-  authorization?: string;
   body: {
     /** 帳號 */
     account?: string;
@@ -341,8 +236,6 @@ export type PostAuthSignRefreshApiResponse = /** status 200  */ {
   };
 };
 export type PostAuthSignRefreshApiArg = {
-  "Client-Id"?: string;
-  authorization?: string;
   body: {
     /** 更新用Token */
     refreshToken?: string;
@@ -356,10 +249,7 @@ export type GetParameterOperatorsApiResponse = /** status 200  */ {
     name: string;
   }[];
 };
-export type GetParameterOperatorsApiArg = {
-  "Client-Id"?: string;
-  authorization?: string;
-};
+export type GetParameterOperatorsApiArg = void;
 export type GetParameterCommonApiResponse = /** status 200  */ {
   /** 狀態 */
   auditStatus: Param[];
@@ -368,17 +258,12 @@ export type GetParameterCommonApiResponse = /** status 200  */ {
   /** 區域 */
   areas: Param[];
 };
-export type GetParameterCommonApiArg = {
-  "Client-Id"?: string;
-  authorization?: string;
-};
+export type GetParameterCommonApiArg = void;
 export type PutAuthPasswordApiResponse = /** status 200  */ {
   /** 訊息 */
   message: string;
 };
 export type PutAuthPasswordApiArg = {
-  "Client-Id"?: string;
-  authorization?: string;
   body: {
     /** 舊密碼 */
     oldPassword?: string;
@@ -390,10 +275,7 @@ export type PostAuthSignLogoutApiResponse = /** status 200  */ {
   /** 訊息 */
   message: string;
 };
-export type PostAuthSignLogoutApiArg = {
-  "Client-Id"?: string;
-  authorization?: string;
-};
+export type PostAuthSignLogoutApiArg = void;
 export type GetAuditApiResponse = /** status 200 successful operation */ {
   rows: AuditRows[];
   paginateInfo: PaginateInfo;
@@ -418,8 +300,6 @@ export type GetAuditApiArg = {
   auditEndDate?: string;
   /** 區域代碼 */
   areaCode?: string;
-  "Client-Id"?: string;
-  authorization?: string;
 };
 export type PostAuditApiResponse = /** status 200  */ {
   /** 訊息 */
@@ -428,8 +308,6 @@ export type PostAuditApiResponse = /** status 200  */ {
   newId: string;
 };
 export type PostAuditApiArg = {
-  "Client-Id"?: string;
-  authorization?: string;
   body: {
     /** 範本ID */
     templateId: string;
@@ -448,8 +326,6 @@ export type GetAuditByIdApiResponse =
 export type GetAuditByIdApiArg = {
   /** 觀察表Id */
   id: string;
-  "Client-Id"?: string;
-  authorization?: string;
 };
 export type PutAuditByIdApiResponse = /** status 200  */ {
   /** 訊息 */
@@ -458,8 +334,6 @@ export type PutAuditByIdApiResponse = /** status 200  */ {
 export type PutAuditByIdApiArg = {
   /** 觀察表ID */
   id: string;
-  "Client-Id"?: string;
-  authorization?: string;
   body: {
     question: UpdateAuditQuestion;
   };
@@ -472,8 +346,6 @@ export type PostAuditByIdApiResponse = /** status 200  */ {
 };
 export type PostAuditByIdApiArg = {
   id: string;
-  "Client-Id"?: string;
-  authorization?: string;
   body: {
     /** 問題回答 */
     questions?: UpdateAuditQuestion[];
@@ -492,8 +364,6 @@ export type PutAuditByIdProfileApiResponse = /** status 200  */ {
 export type PutAuditByIdProfileApiArg = {
   /** 觀察表ID */
   id: string;
-  "Client-Id"?: string;
-  authorization?: string;
   body: {
     /** 區域代號 */
     areaCode: string;
@@ -509,8 +379,6 @@ export type PostAuditByIdAuditSignatureApiResponse = /** status 200  */ {
 };
 export type PostAuditByIdAuditSignatureApiArg = {
   id: string;
-  "Client-Id"?: string;
-  authorization?: string;
   body: {
     /** 觀察人員簽名 */
     auditSignature?: Blob;
@@ -526,8 +394,6 @@ export type PostAuditByIdManagerSignatureApiResponse = /** status 200  */ {
 };
 export type PostAuditByIdManagerSignatureApiArg = {
   id: string;
-  "Client-Id"?: string;
-  authorization?: string;
   body: {
     /** 現場人員簽名 */
     managerSignature?: Blob;
@@ -545,8 +411,6 @@ export type PostAuditByIdExportAuditApiResponse = /** status 200  */ {
 };
 export type PostAuditByIdExportAuditApiArg = {
   id: string;
-  "Client-Id"?: string;
-  authorization?: string;
 };
 export type PostAuditByIdExportAssetsApiResponse = /** status 200  */ {
   /** 匯出檔案名稱 */
@@ -560,8 +424,6 @@ export type PostAuditByIdExportAssetsApiResponse = /** status 200  */ {
 };
 export type PostAuditByIdExportAssetsApiArg = {
   id: string;
-  "Client-Id"?: string;
-  authorization?: string;
 };
 export type DeleteAuditByIdAnnexApiResponse = /** status 200  */ {
   /** 訊息 */
@@ -570,8 +432,6 @@ export type DeleteAuditByIdAnnexApiResponse = /** status 200  */ {
 export type DeleteAuditByIdAnnexApiArg = {
   /** 觀察單單號 */
   id: string;
-  "Client-Id"?: string;
-  authorization?: string;
   body: {
     /** 附件檔案代碼 */
     fId?: string[];
@@ -587,8 +447,6 @@ export type GetAuditByIdOperatorPasswordApiResponse =
 export type GetAuditByIdOperatorPasswordApiArg = {
   /** 觀察表Id */
   id: string;
-  "Client-Id"?: string;
-  authorization?: string;
 };
 export type PostAuditExportReportApiResponse = /** status 200  */ {
   /** 匯出檔案名稱 */
@@ -601,8 +459,6 @@ export type PostAuditExportReportApiResponse = /** status 200  */ {
   message: string;
 };
 export type PostAuditExportReportApiArg = {
-  "Client-Id"?: string;
-  authorization?: string;
   body: {
     /** 站點名稱 */
     stationName?: string;
@@ -626,8 +482,6 @@ export type PostAuditByIdInvalidApiResponse = /** status 200  */ {
 };
 export type PostAuditByIdInvalidApiArg = {
   id: string;
-  "Client-Id"?: string;
-  authorization?: string;
   body: {
     /** 原因 */
     reason?: string;
@@ -639,8 +493,6 @@ export type PostAuditByIdReturnsApiResponse = /** status 200  */ {
 };
 export type PostAuditByIdReturnsApiArg = {
   id: string;
-  "Client-Id"?: string;
-  authorization?: string;
   body: {
     /** 原因 */
     reason: string;
@@ -652,8 +504,6 @@ export type PostOperatorIdAuditByIdSignatureApiResponse = /** status 200  */ {
 };
 export type PostOperatorIdAuditByIdSignatureApiArg = {
   id: string;
-  "Client-Id"?: string;
-  authorization?: string;
   body: {
     /** 老闆簽名 */
     signature?: Blob;
@@ -666,8 +516,6 @@ export type GetOperatorIdAuditByIdApiArg = {
   id: string;
   /** 老闆簽核碼 */
   password: string;
-  "Client-Id"?: string;
-  authorization?: string;
 };
 export type Param = {
   /** 代碼 */
