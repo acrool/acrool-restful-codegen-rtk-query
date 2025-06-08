@@ -10,7 +10,7 @@ const config: ConfigFile = {
   //         exportName: 'api',
   //     },
   // },
-  outputFile: './outputFile.ts',
+  outputFile: './test_output/outputFile.ts',
   hooks: true,
   useEnumType: true,
 };
