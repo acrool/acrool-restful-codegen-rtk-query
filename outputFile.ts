@@ -10,7 +10,7 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/auth/sign/login`,
         method: "POST",
         body: queryArg.variables.body,
-        fetchOptions: queryArg.fetchOptions,
+        fetchOptions: queryArg?.fetchOptions,
       }),
     }),
     postAuthSignRefresh: build.mutation<
@@ -21,7 +21,7 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/auth/sign/refresh`,
         method: "POST",
         body: queryArg.variables.body,
-        fetchOptions: queryArg.fetchOptions,
+        fetchOptions: queryArg?.fetchOptions,
       }),
     }),
     getParameterOperators: build.query<
@@ -30,7 +30,7 @@ const injectedRtkApi = api.injectEndpoints({
     >({
       query: (queryArg) => ({
         url: `/parameter/operators`,
-        fetchOptions: queryArg.fetchOptions,
+        fetchOptions: queryArg?.fetchOptions,
       }),
     }),
     getParameterCommon: build.query<
@@ -39,7 +39,7 @@ const injectedRtkApi = api.injectEndpoints({
     >({
       query: (queryArg) => ({
         url: `/parameter/common`,
-        fetchOptions: queryArg.fetchOptions,
+        fetchOptions: queryArg?.fetchOptions,
       }),
     }),
     putAuthPassword: build.mutation<
@@ -50,7 +50,7 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/auth/password`,
         method: "PUT",
         body: queryArg.variables.body,
-        fetchOptions: queryArg.fetchOptions,
+        fetchOptions: queryArg?.fetchOptions,
       }),
     }),
     postAuthSignLogout: build.mutation<
@@ -60,7 +60,7 @@ const injectedRtkApi = api.injectEndpoints({
       query: (queryArg) => ({
         url: `/auth/sign/logout`,
         method: "POST",
-        fetchOptions: queryArg.fetchOptions,
+        fetchOptions: queryArg?.fetchOptions,
       }),
     }),
     getAudit: build.query<
@@ -80,7 +80,7 @@ const injectedRtkApi = api.injectEndpoints({
           auditEndDate: queryArg.variables.auditEndDate,
           areaCode: queryArg.variables.areaCode,
         },
-        fetchOptions: queryArg.fetchOptions,
+        fetchOptions: queryArg?.fetchOptions,
       }),
     }),
     postAudit: build.mutation<
@@ -91,7 +91,7 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/audit`,
         method: "POST",
         body: queryArg.variables.body,
-        fetchOptions: queryArg.fetchOptions,
+        fetchOptions: queryArg?.fetchOptions,
       }),
     }),
     getAuditById: build.query<
@@ -100,7 +100,7 @@ const injectedRtkApi = api.injectEndpoints({
     >({
       query: (queryArg) => ({
         url: `/audit/${queryArg.variables.id}`,
-        fetchOptions: queryArg.fetchOptions,
+        fetchOptions: queryArg?.fetchOptions,
       }),
     }),
     putAuditById: build.mutation<
@@ -111,7 +111,7 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/audit/${queryArg.variables.id}`,
         method: "PUT",
         body: queryArg.variables.body,
-        fetchOptions: queryArg.fetchOptions,
+        fetchOptions: queryArg?.fetchOptions,
       }),
     }),
     postAuditById: build.mutation<
@@ -122,7 +122,7 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/audit/${queryArg.variables.id}`,
         method: "POST",
         body: queryArg.variables.body,
-        fetchOptions: queryArg.fetchOptions,
+        fetchOptions: queryArg?.fetchOptions,
       }),
     }),
     putAuditByIdProfile: build.mutation<
@@ -133,7 +133,7 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/audit/${queryArg.variables.id}/profile`,
         method: "PUT",
         body: queryArg.variables.body,
-        fetchOptions: queryArg.fetchOptions,
+        fetchOptions: queryArg?.fetchOptions,
       }),
     }),
     postAuditByIdAuditSignature: build.mutation<
@@ -144,7 +144,7 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/audit/${queryArg.variables.id}/auditSignature`,
         method: "POST",
         body: queryArg.variables.body,
-        fetchOptions: queryArg.fetchOptions,
+        fetchOptions: queryArg?.fetchOptions,
       }),
     }),
     postAuditByIdManagerSignature: build.mutation<
@@ -155,7 +155,7 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/audit/${queryArg.variables.id}/managerSignature`,
         method: "POST",
         body: queryArg.variables.body,
-        fetchOptions: queryArg.fetchOptions,
+        fetchOptions: queryArg?.fetchOptions,
       }),
     }),
     postAuditByIdExportAudit: build.mutation<
@@ -165,7 +165,7 @@ const injectedRtkApi = api.injectEndpoints({
       query: (queryArg) => ({
         url: `/audit/${queryArg.variables.id}/exportAudit`,
         method: "POST",
-        fetchOptions: queryArg.fetchOptions,
+        fetchOptions: queryArg?.fetchOptions,
       }),
     }),
     postAuditByIdExportAssets: build.mutation<
@@ -175,7 +175,7 @@ const injectedRtkApi = api.injectEndpoints({
       query: (queryArg) => ({
         url: `/audit/${queryArg.variables.id}/exportAssets`,
         method: "POST",
-        fetchOptions: queryArg.fetchOptions,
+        fetchOptions: queryArg?.fetchOptions,
       }),
     }),
     deleteAuditByIdAnnex: build.mutation<
@@ -186,7 +186,7 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/audit/${queryArg.variables.id}/annex`,
         method: "DELETE",
         body: queryArg.variables.body,
-        fetchOptions: queryArg.fetchOptions,
+        fetchOptions: queryArg?.fetchOptions,
       }),
     }),
     getAuditByIdOperatorPassword: build.query<
@@ -195,7 +195,7 @@ const injectedRtkApi = api.injectEndpoints({
     >({
       query: (queryArg) => ({
         url: `/audit/${queryArg.variables.id}/operatorPassword`,
-        fetchOptions: queryArg.fetchOptions,
+        fetchOptions: queryArg?.fetchOptions,
       }),
     }),
     postAuditExportReport: build.mutation<
@@ -206,7 +206,7 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/audit/exportReport`,
         method: "POST",
         body: queryArg.variables.body,
-        fetchOptions: queryArg.fetchOptions,
+        fetchOptions: queryArg?.fetchOptions,
       }),
     }),
     postAuditByIdInvalid: build.mutation<
@@ -217,7 +217,7 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/audit/${queryArg.variables.id}/invalid`,
         method: "POST",
         body: queryArg.variables.body,
-        fetchOptions: queryArg.fetchOptions,
+        fetchOptions: queryArg?.fetchOptions,
       }),
     }),
     postAuditByIdReturns: build.mutation<
@@ -228,7 +228,7 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/audit/${queryArg.variables.id}/returns`,
         method: "POST",
         body: queryArg.variables.body,
-        fetchOptions: queryArg.fetchOptions,
+        fetchOptions: queryArg?.fetchOptions,
       }),
     }),
     postOperatorIdAuditByIdSignature: build.mutation<
@@ -239,7 +239,7 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/operatorId/audit/${queryArg.variables.id}/signature`,
         method: "POST",
         body: queryArg.variables.body,
-        fetchOptions: queryArg.fetchOptions,
+        fetchOptions: queryArg?.fetchOptions,
       }),
     }),
     getOperatorIdAuditById: build.query<
@@ -251,7 +251,7 @@ const injectedRtkApi = api.injectEndpoints({
         params: {
           password: queryArg.variables.password,
         },
-        fetchOptions: queryArg.fetchOptions,
+        fetchOptions: queryArg?.fetchOptions,
       }),
     }),
   }),

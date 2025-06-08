@@ -505,7 +505,11 @@ export async function generateApi(
             createObjectLiteralProperty(pickParams('query'), 'params'),
             factory.createPropertyAssignment(
               factory.createIdentifier('fetchOptions'),
-              factory.createPropertyAccessExpression(rootObject, factory.createIdentifier('fetchOptions'))
+              factory.createPropertyAccessChain(
+                rootObject,
+                factory.createToken(ts.SyntaxKind.QuestionDotToken),
+                factory.createIdentifier('fetchOptions')
+              )
             ),
           ].filter(removeUndefined),
           false
