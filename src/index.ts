@@ -39,7 +39,7 @@ function getGroupNameFromPath(path: string, pattern: RegExp): string {
   console.log('match', path, match);
   
   if (match && match[1]) {
-    return match[1];
+    return toCamelCase(match[1]);
   }
   return 'common';
 }
@@ -161,4 +161,16 @@ function enforceOazapftsTsVersion<T>(cb: () => T): T {
       delete require.cache[ozTsPath];
     }
   }
+}
+
+// 將字串轉換為小駝峰格式
+function toCamelCase(str: string): string {
+  return str
+    .split(/[-_]/)
+    .map((word, index) => {
+      return index === 0 
+        ? word.charAt(0).toLowerCase() + word.slice(1)
+        : word.charAt(0).toUpperCase() + word.slice(1);
+    })
+    .join('');
 }
