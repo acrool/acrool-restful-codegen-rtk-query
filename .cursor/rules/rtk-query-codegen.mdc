@@ -1,7 +1,7 @@
 ---
-description: RTK Query OpenAPI 代碼生成工具，用於從 OpenAPI 文檔自動生成 RTK Query hooks
+description: 
 globs: 
-alwaysApply: false
+alwaysApply: true
 ---
 # RTK Query OpenAPI 代碼生成規則
 

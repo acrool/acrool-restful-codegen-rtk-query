@@ -8,6 +8,14 @@ export type { ConfigFile } from './types';
 
 const require = createRequire(__filename);
 
+// 確保目錄存在的函數
+async function ensureDirectoryExists(filePath: string) {
+  const dirname = path.dirname(filePath);
+  if (!fs.existsSync(dirname)) {
+    await fs.promises.mkdir(dirname, { recursive: true });
+  }
+}
+
 export async function generateEndpoints(options: GenerationOptions): Promise<string | void> {
   const schemaLocation = options.schemaFile;
 
@@ -20,8 +28,10 @@ export async function generateEndpoints(options: GenerationOptions): Promise<str
   });
   const { outputFile, prettierConfigFile } = options;
   if (outputFile) {
+    const outputPath = path.resolve(process.cwd(), outputFile);
+    await ensureDirectoryExists(outputPath);
     fs.writeFileSync(
-      path.resolve(process.cwd(), outputFile),
+      outputPath,
       await prettify(outputFile, sourceCode, prettierConfigFile)
     );
   } else {
