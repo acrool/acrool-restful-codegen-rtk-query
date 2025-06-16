@@ -14,8 +14,8 @@ const getGroupNameFromPath = (path: string): string => {
 const generateOutputFiles = () => {
   return {
     './test_output/$1/query.generated.ts': {
-      // filterEndpoints: [/^\/(.+)\/.+$/],
-      filterEndpoints: [/^\/Manager\/([^\/]+)/],
+      filterEndpoints: [/^\/([^\/]+)/],
+      // filterEndpoints: [/^\/Manager\/([^\/]+)/],
       typeOutputDir: './types',
       exportTypes: true,
     },
@@ -23,7 +23,7 @@ const generateOutputFiles = () => {
 };
 
 const config: ConfigFile = {
-  schemaFile: 'openapi2.json',
+  schemaFile: 'openapi.json',
   apiFile: './baseApi.ts',
   apiImport: 'baseApi',
   outputFiles: generateOutputFiles(),
