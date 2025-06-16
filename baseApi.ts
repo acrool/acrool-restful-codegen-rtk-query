@@ -1,4 +1,3 @@
-// import {dialog} from '@acrool/react-dialog';
 import {
   createRestFulFetcher,
   ERequestContentType,
@@ -80,3 +79,5 @@ export const baseApi = createApi({
   endpoints: () => ({}),
   tagTypes: ['Audit'],
 });
+
+export type {IRestFulEndpointsQueryReturn} from "@acrool/react-fetcher";

@@ -219,8 +219,10 @@ export async function generateApi(
     ts.EmitHint.Unspecified,
     factory.createSourceFile(
       [
-        generateImportNode(apiFile, { [apiImport]: 'api' }),
-        generateImportNode('@acrool/react-fetcher', { IRestFulEndpointsQueryReturn: 'IRestFulEndpointsQueryReturn' }),
+        generateImportNode(apiFile, { 
+          [apiImport]: 'api',
+          IRestFulEndpointsQueryReturn: 'IRestFulEndpointsQueryReturn'
+        }),
         ...(sharedTypesFile ? [
           factory.createImportDeclaration(
             undefined,

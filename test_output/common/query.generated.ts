@@ -1,5 +1,4 @@
-import { baseApi as api } from "../../baseApi";
-import { IRestFulEndpointsQueryReturn } from "@acrool/react-fetcher";
+import { baseApi as api, IRestFulEndpointsQueryReturn } from "../../baseApi";
 import * as SharedTypes from "../shared-types";
 const injectedRtkApi = api.injectEndpoints({
   endpoints: (build) => ({
