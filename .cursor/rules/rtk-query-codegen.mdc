@@ -3,7 +3,6 @@ description: RTK Query OpenAPI 代碼生成工具，用於從 OpenAPI 文檔自�
 globs: 
 alwaysApply: false
 ---
-
 # RTK Query OpenAPI 代碼生成規則
 
 ## Headers 處理規則
@@ -148,3 +147,59 @@ const generateOutputFiles = (keys: string[]) => {
 4. 支持共用類型定義
 5. 自動處理 headers
 6. 支持多種參數類型（query、path、cookie、body） 
+
+## 代碼結構和共用類型處理
+
+### 代碼生成流程
+1. 首次生成：為了提取共用類型
+   - 先執行一次完整的代碼生成
+   - 收集所有生成的類型定義
+   - 分析並識別共用類型
+   - 將共用類型提取到 `shared-types.ts` 文件中
+
+2. 實際生成：
+   - 使用提取出的共用類型
+   - 生成最終的 API 代碼
+   - 確保所有生成的代碼都正確引用共用類型
+
+### 共用類型處理
+1. 類型提取規則：
+   - 識別在多個模塊中重複使用的類型
+   - 將這些類型移動到 `shared-types.ts`
+   - 在生成的代碼中使用導入引用
+
+2. 實現方式：
+   ```typescript
+   // 1. 首次生成時收集所有類型
+   const allTypes = collectAllTypes(generatedCode);
+   
+   // 2. 分析並提取共用類型
+   const sharedTypes = extractSharedTypes(allTypes);
+   
+   // 3. 生成共用類型文件
+   generateSharedTypesFile(sharedTypes);
+   
+   // 4. 生成最終代碼時使用共用類型
+   generateFinalCode(sharedTypes);
+   ```
+
+### 文件結構
+```
+generated/
+├── shared-types.ts     # 共用類型定義
+├── baseApi.ts         # 基礎 API 配置
+├── modules/           # 按模塊分割的 API 文件
+│   ├── auth.ts
+│   ├── audit.ts
+│   └── operatorId.ts
+└── types/            # 模塊特定的類型定義
+    ├── auth.types.ts
+    ├── audit.types.ts
+    └── operatorId.types.ts
+```
+
+### 注意事項
+1. 共用類型提取是一個兩階段過程，需要先執行一次完整的生成
+2. 確保共用類型文件在最終生成之前已經準備好
+3. 所有生成的代碼都應該正確引用共用類型
+4. 避免在共用類型中引入循環依賴 
