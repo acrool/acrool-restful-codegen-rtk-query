@@ -13,31 +13,16 @@ const getGroupNameFromPath = (path: string): string => {
 // 生成輸出文件配置
 const generateOutputFiles = () => {
   return {
-    './test_output/ManagerAdmin/query.generated.ts': {
-      filterEndpoints: [/^\/Manager\/Admin\/.+$/],
+    './test_output/$1/query.generated.ts': {
+      filterEndpoints: [/^\/Manager\/(.+)\/.+$/],
       typeOutputDir: './types',
       exportTypes: true,
     },
-    './test_output/ManagerBetRecord/query.generated.ts': {
-      filterEndpoints: [/^\/Manager\/BetRecord\/.+$/],
-      typeOutputDir: './types',
-      exportTypes: true,
-    },
-    './test_output/ManagerCommon/query.generated.ts': {
-      filterEndpoints: [/^\/Manager\/Common\/.+$/],
-      typeOutputDir: './types',
-      exportTypes: true,
-    },
-    './test_output/common/query.generated.ts': {
-      filterEndpoints: [/^(?!\/Manager\/).+$/],
-      typeOutputDir: './types',
-      exportTypes: true,
-    }
   };
 };
 
 const config: ConfigFile = {
-  schemaFile: 'openapi.json',
+  schemaFile: 'openapi2.json',
   apiFile: './baseApi.ts',
   apiImport: 'baseApi',
   outputFiles: generateOutputFiles(),
