@@ -16,6 +16,50 @@ async function ensureDirectoryExists(filePath: string) {
   }
 }
 
+// 檢查檔案是否存在的函數
+function fileExists(filePath: string): boolean {
+  try {
+    return fs.statSync(filePath).isFile();
+  } catch {
+    return false;
+  }
+}
+
+// 獲取資料夾名稱並轉換為 API 名稱
+function getApiNameFromDir(dirPath: string): string {
+  const dirName = path.basename(dirPath);
+  return `${dirName}Api`;
+}
+
+// 確保基礎文件存在的函數
+async function ensureBaseFilesExist(outputDir: string) {
+  const enhanceEndpointsPath = path.join(outputDir, 'enhanceEndpoints.ts');
+  const indexPath = path.join(outputDir, 'index.ts');
+  const apiName = getApiNameFromDir(outputDir);
+
+  // 如果 enhanceEndpoints.ts 不存在，創建它
+  if (!fileExists(enhanceEndpointsPath)) {
+    const enhanceEndpointsContent = `import api from './query.generated';
+
+const enhancedApi = api.enhanceEndpoints({
+    endpoints: {
+    },
+});
+
+export default enhancedApi;
+`;
+    await fs.promises.writeFile(enhanceEndpointsPath, enhanceEndpointsContent, 'utf-8');
+  }
+
+  // 如果 index.ts 不存在，創建它
+  if (!fileExists(indexPath)) {
+    const indexContent = `export * from './query.generated';
+export {default as ${apiName}} from './enhanceEndpoints';
+`;
+    await fs.promises.writeFile(indexPath, indexContent, 'utf-8');
+  }
+}
+
 export async function generateEndpoints(options: GenerationOptions): Promise<string | void> {
   const schemaLocation = options.schemaFile;
 
@@ -30,6 +74,11 @@ export async function generateEndpoints(options: GenerationOptions): Promise<str
   if (outputFile) {
     const outputPath = path.resolve(process.cwd(), outputFile);
     await ensureDirectoryExists(outputPath);
+    
+    // 確保基礎文件存在
+    const outputDir = path.dirname(outputPath);
+    await ensureBaseFilesExist(outputDir);
+    
     fs.writeFileSync(
       outputPath,
       await prettify(outputFile, sourceCode, prettierConfigFile)
