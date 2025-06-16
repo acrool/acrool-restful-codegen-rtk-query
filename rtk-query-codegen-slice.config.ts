@@ -14,7 +14,8 @@ const getGroupNameFromPath = (path: string): string => {
 const generateOutputFiles = () => {
   return {
     './test_output/$1/query.generated.ts': {
-      filterEndpoints: [/^\/Manager\/(.+)\/.+$/],
+      // filterEndpoints: [/^\/(.+)\/.+$/],
+      filterEndpoints: [/^\/Manager\/([^\/]+)/],
       typeOutputDir: './types',
       exportTypes: true,
     },
