@@ -150,7 +150,7 @@ export async function generateApi(
           const typeNode = apiGen.getTypeFromSchema(def as OpenAPIV3.SchemaObject);
           return factory.createTypeAliasDeclaration(
             [factory.createModifier(ts.SyntaxKind.ExportKeyword)],
-            factory.createIdentifier(name),
+            factory.createIdentifier(camelCase(name)),
             undefined,
             typeNode
           );
@@ -158,7 +158,7 @@ export async function generateApi(
 
         return factory.createModuleDeclaration(
           [factory.createModifier(ts.SyntaxKind.ExportKeyword)],
-          factory.createIdentifier(componentType),
+          factory.createIdentifier(camelCase(componentType)),
           factory.createModuleBlock(typeEntries),
           ts.NodeFlags.Namespace
         );
