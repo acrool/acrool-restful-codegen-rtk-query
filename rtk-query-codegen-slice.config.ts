@@ -15,7 +15,7 @@ const generateOutputFiles = (): OutputFilesConfig => {
 
 const config: ConfigFile = {
   schemaFile: './openapi7.json',
-  apiFile: './src/baseApi.ts',
+  apiFile: './baseApi.ts',
   apiImport: 'baseApi',
   outputFiles: generateOutputFiles(),
   sharedTypesFile: './test_output3/shared-types.ts', // 共用類型文件
