@@ -79,7 +79,7 @@ export function parseConfig(fullConfig: ConfigFile) {
         outFiles.push({
           ...commonConfig,
           outputFile: finalOutputPath,
-          filterEndpoints: paths.map(p => new RegExp(`^${p}$`)),
+          filterEndpoints: [new RegExp(`^(get|post|put|delete)Manager${groupName}`, 'i')],
         });
       });
     }

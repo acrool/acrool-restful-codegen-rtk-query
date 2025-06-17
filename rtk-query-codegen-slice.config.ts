@@ -6,13 +6,15 @@ const generateOutputFiles = () => {
   return {
     './test_output3/$1/query.generated.ts': {
       filterEndpoints: [/^\/Manager\/([^\/]+)/],
+      hooks: true,
+      useEnumType: true
     },
   };
 };
 
 const config: ConfigFile = {
-  schemaFile: 'openapi7.json',
-  apiFile: './baseApi.ts',
+  schemaFile: './openapi7.json',
+  apiFile: './src/baseApi.ts',
   apiImport: 'baseApi',
   outputFiles: generateOutputFiles(),
   sharedTypesFile: './test_output3/shared-types.ts', // 共用類型文件
