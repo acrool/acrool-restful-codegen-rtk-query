@@ -128,7 +128,14 @@ export async function generateApi(
     mergeReadWriteOnly,
   });
 
-  // 如果提供了 sharedTypesFile，則將所有類型定義輸出到該文件
+  const schemeTypeNames = new Set<string>();
+
+  function addSchemeTypeName(name: string) {
+    schemeTypeNames.add(name);
+    schemeTypeNames.add(camelCase(name));
+    schemeTypeNames.add(capitalize(camelCase(name)));
+  }
+
   if (sharedTypesFile) {
     const resultFile = ts.createSourceFile(
       'sharedTypes.ts',
@@ -139,18 +146,19 @@ export async function generateApi(
     );
     const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
 
-    // 收集所有類型定義
     const allTypeDefinitions: ts.Statement[] = [];
 
-    // 添加 components 類型定義
     const components = v3Doc.components;
     if (components) {
       const componentDefinitions = Object.entries(components).map(([componentType, componentDefs]) => {
         const typeEntries = Object.entries(componentDefs as Record<string, unknown>).map(([name, def]) => {
-          const typeNode = apiGen.getTypeFromSchema(def as OpenAPIV3.SchemaObject);
+          addSchemeTypeName(name);
+          
+          const typeName = capitalize(camelCase(name));
+          const typeNode = wrapWithSchemeIfComponent(apiGen.getTypeFromSchema(def as OpenAPIV3.SchemaObject));
           return factory.createTypeAliasDeclaration(
             [factory.createModifier(ts.SyntaxKind.ExportKeyword)],
-            factory.createIdentifier(capitalize(camelCase(name))),
+            factory.createIdentifier(typeName),
             undefined,
             typeNode
           );
@@ -158,7 +166,7 @@ export async function generateApi(
 
         return factory.createModuleDeclaration(
           [factory.createModifier(ts.SyntaxKind.ExportKeyword)],
-          factory.createIdentifier(capitalize(camelCase(componentType))),
+          factory.createIdentifier('Scheme'),
           factory.createModuleBlock(typeEntries),
           ts.NodeFlags.Namespace
         );
@@ -166,15 +174,12 @@ export async function generateApi(
       allTypeDefinitions.push(...componentDefinitions);
     }
 
-    // 添加枚舉類型定義
     if (useEnumType) {
       allTypeDefinitions.push(...apiGen.enumAliases);
     }
 
-    // 添加其他類型別名
     allTypeDefinitions.push(...apiGen.aliases);
 
-    // 生成並寫入文件
     const output = printer.printNode(
       ts.EmitHint.Unspecified,
       factory.createSourceFile(
@@ -185,12 +190,10 @@ export async function generateApi(
       resultFile
     );
 
-    // 寫入文件
     const fs = await import('node:fs/promises');
     await fs.writeFile(sharedTypesFile, output, 'utf-8');
   }
 
-  // temporary workaround for https://github.com/oazapfts/oazapfts/issues/491
   if (apiGen.spec.components?.schemas) {
     apiGen.preprocessComponents(apiGen.spec.components.schemas);
   }
@@ -312,8 +315,10 @@ export async function generateApi(
             [
               code,
               apiGen.resolve(response),
-              apiGen.getTypeFromResponse(response, 'readOnly') ||
-                factory.createKeywordTypeNode(ts.SyntaxKind.UndefinedKeyword),
+              wrapWithSchemeIfComponent(
+                apiGen.getTypeFromResponse(response, 'readOnly') ||
+                  factory.createKeywordTypeNode(ts.SyntaxKind.UndefinedKeyword)
+              ),
             ] as const
         )
         .filter(([status, response]) =>
@@ -321,26 +326,27 @@ export async function generateApi(
         )
         .filter(([_1, _2, type]) => type !== keywordType.void)
         .map(([code, response, type]) => {
-          const typeNode = { ...type };
-          if (sharedTypesFile && ts.isTypeReferenceNode(typeNode) && typeNode.typeName) {
-            const typeName = ts.isIdentifier(typeNode.typeName) ? typeNode.typeName.text : typeNode.typeName.getText();
-            if (typeName in apiGen.aliases || typeName in apiGen.enumAliases) {
-              return ts.addSyntheticLeadingComment(
-                factory.createTypeReferenceNode(
-                  factory.createQualifiedName(
-                    factory.createIdentifier('sharedTypes'),
-                    factory.createIdentifier(camelCase(typeName))
+          if (sharedTypesFile && ts.isTypeReferenceNode(type) && type.typeName) {
+            if (ts.isIdentifier(type.typeName)) {
+              const typeName = type.typeName.text;
+              if (typeName in apiGen.aliases || typeName in apiGen.enumAliases) {
+                return ts.addSyntheticLeadingComment(
+                  factory.createTypeReferenceNode(
+                    factory.createQualifiedName(
+                      factory.createIdentifier('sharedTypes'),
+                      factory.createIdentifier(camelCase(typeName))
+                    ),
+                    type.typeArguments
                   ),
-                  typeNode.typeArguments
-                ),
-                ts.SyntaxKind.MultiLineCommentTrivia,
-                `* status ${code} ${response.description} `,
-                false
-              );
+                  ts.SyntaxKind.MultiLineCommentTrivia,
+                  `* status ${code} ${response.description} `,
+                  false
+                );
+              }
             }
           }
           return ts.addSyntheticLeadingComment(
-            typeNode,
+            type,
             ts.SyntaxKind.MultiLineCommentTrivia,
             `* status ${code} ${response.description} `,
             false
@@ -375,17 +381,14 @@ export async function generateApi(
     const queryArg: QueryArgDefinitions = {};
     function generateName(name: string, potentialPrefix: string) {
       const isPureSnakeCase = /^[a-zA-Z][a-zA-Z0-9_]*$/.test(name);
-      // prefix with `query`, `path` or `body` if there are multiple paramters with the same name
       const hasNamingConflict = allNames.filter((n) => n === name).length > 1;
       if (hasNamingConflict) {
         name = `${potentialPrefix}_${name}`;
       }
-      // convert to camelCase if the name is pure snake_case and there are no naming conflicts
       const camelCaseName = camelCase(name);
       if (isPureSnakeCase && !allNames.includes(camelCaseName)) {
         name = camelCaseName;
       }
-      // if there are still any naming conflicts, prepend with underscore
       while (name in queryArg) {
         name = `_${name}`;
       }
@@ -398,7 +401,7 @@ export async function generateApi(
         origin: 'param',
         name,
         originalName: param.name,
-        type: apiGen.getTypeFromSchema(isReference(param) ? param : param.schema, undefined, 'writeOnly'),
+        type: wrapWithSchemeIfComponent(apiGen.getTypeFromSchema(isReference(param) ? param : param.schema, undefined, 'writeOnly')),
         required: param.required,
         param,
       };
@@ -407,7 +410,7 @@ export async function generateApi(
     if (requestBody) {
       const body = apiGen.resolve(requestBody);
       const schema = apiGen.getSchemaFromContent(body.content);
-      const type = apiGen.getTypeFromSchema(schema);
+      const type = wrapWithSchemeIfComponent(apiGen.getTypeFromSchema(schema));
       const schemaName = camelCase(
         (type as any).name ||
           getReferenceName(schema) ||
@@ -420,7 +423,7 @@ export async function generateApi(
         origin: 'body',
         name,
         originalName: schemaName,
-        type: apiGen.getTypeFromSchema(schema, undefined, 'writeOnly'),
+        type: wrapWithSchemeIfComponent(apiGen.getTypeFromSchema(schema, undefined, 'writeOnly')),
         required: true,
         body,
       };
@@ -596,14 +599,56 @@ export async function generateApi(
     );
   }
 
-  // eslint-disable-next-line no-empty-pattern
   function generateQueryEndpointProps({}: { operationDefinition: OperationDefinition }): ObjectPropertyDefinitions {
-    return {}; /* TODO needs implementation - skip for now */
+    return {};
   }
 
-  // eslint-disable-next-line no-empty-pattern
   function generateMutationEndpointProps({}: { operationDefinition: OperationDefinition }): ObjectPropertyDefinitions {
-    return {}; /* TODO needs implementation - skip for now */
+    return {};
+  }
+
+  function wrapWithSchemeIfComponent(typeNode: ts.TypeNode): ts.TypeNode {
+    if (ts.isTypeReferenceNode(typeNode) && ts.isIdentifier(typeNode.typeName)) {
+      const typeName = typeNode.typeName.text;
+      if (schemeTypeNames.has(typeName)) {
+        return factory.createTypeReferenceNode(
+          factory.createQualifiedName(
+            factory.createIdentifier('Scheme'),
+            typeNode.typeName
+          ),
+          typeNode.typeArguments?.map(wrapWithSchemeIfComponent)
+        );
+      }
+      if (typeNode.typeArguments) {
+        return factory.createTypeReferenceNode(
+          typeNode.typeName,
+          typeNode.typeArguments.map(wrapWithSchemeIfComponent)
+        );
+      }
+    }
+    if (ts.isArrayTypeNode(typeNode)) {
+      return factory.createArrayTypeNode(wrapWithSchemeIfComponent(typeNode.elementType));
+    }
+    if (ts.isUnionTypeNode(typeNode)) {
+      return factory.createUnionTypeNode(typeNode.types.map(wrapWithSchemeIfComponent));
+    }
+    if (ts.isTypeLiteralNode(typeNode)) {
+      return factory.createTypeLiteralNode(
+        typeNode.members.map(member => {
+          if (ts.isPropertySignature(member) && member.type) {
+            return factory.updatePropertySignature(
+              member,
+              member.modifiers,
+              member.name,
+              member.questionToken,
+              wrapWithSchemeIfComponent(member.type)
+            );
+          }
+          return member;
+        })
+      );
+    }
+    return typeNode;
   }
 }
 
