@@ -1,0 +1,74 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# RTK Query Codegen 專案規則
+
+## 專案架構
+```
+.
+├── src/                    # 源代碼目錄
+│   ├── index.ts           # 主要入口文件
+│   ├── generate.ts        # API 生成邏輯
+│   ├── types.ts           # 類型定義
+│   └── utils.ts           # 工具函數
+├── test/                  # 測試目錄
+├── test_output3/          # 生成的代碼輸出目錄
+│   ├── [group]/          # 按分組生成的 API 文件
+│   │   ├── query.generated.ts
+│   │   ├── enhanceEndpoints.ts
+│   │   └── index.ts
+│   └── shared-types.ts    # 共用類型定義
+├── baseApi.ts            # 基礎 API 配置
+├── rtk-query-codegen-slice.config.ts  # 代碼生成配置
+├── openapi7.json         # OpenAPI 規範文件
+├── package.json          # 項目依賴配置
+└── tsconfig.json         # TypeScript 配置
+```
+
+## 專案概述
+這是一個用於生成 RTK Query API 代碼的工具，主要功能是將 OpenAPI 規範轉換為 TypeScript 代碼，並支持按路徑分組生成多個 API 文件。
+
+## 核心功能
+1. 支持從 OpenAPI 規範生成 RTK Query API 代碼
+2. 支持按路徑分組生成多個 API 文件
+3. 自動生成基礎文件（enhanceEndpoints.ts 和 index.ts）
+4. 支持自定義過濾端點
+5. 支持共用類型生成
+
+## 文件結構
+- `baseApi.ts`: 基礎 API 配置，位於根目錄
+- `src/index.ts`: 主要代碼生成邏輯
+- `test_output3/`: 生成的代碼輸出目錄
+  - `$1/`: 按分組生成的 API 文件目錄
+    - `query.generated.ts`: 生成的 API 代碼
+    - `enhanceEndpoints.ts`: API 增強配置
+    - `index.ts`: 導出文件
+  - `shared-types.ts`: 共用類型定義
+
+## 配置說明
+配置文件 `rtk-query-codegen-slice.config.ts` 包含以下主要設置：
+- `schemaFile`: OpenAPI 規範文件路徑
+- `apiFile`: 基礎 API 文件路徑（位於根目錄）
+- `apiImport`: 基礎 API 的導入名稱
+- `outputFiles`: 輸出文件配置
+  - 支持使用 `$1` 作為分組名稱的佔位符
+  - 可以配置 `groupMatch` 正則表達式來匹配路徑
+  - 可以配置 `filterEndpoint` 函數來過濾端點
+- `sharedTypesFile`: 共用類型文件路徑
+- `hooks`: 是否生成 hooks
+- `useEnumType`: 是否使用枚舉類型
+
+## 代碼生成邏輯
+1. 讀取 OpenAPI 規範文件
+2. 根據 `groupMatch` 正則表達式將路徑分組
+3. 為每個分組生成獨立的 API 文件
+4. 自動生成基礎文件（enhanceEndpoints.ts 和 index.ts）
+5. 生成共用類型文件
+
+## 注意事項
+1. baseApi 文件必須位於根目錄，路徑配置為 `./baseApi.ts`
+2. 生成的代碼會自動包含必要的導入和導出
+3. 每個分組的 API 都會生成獨立的文件，便於管理和維護
+4. 支持自定義過濾規則，可以根據需要排除或包含特定端點
