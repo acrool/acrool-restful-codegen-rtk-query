@@ -150,7 +150,7 @@ export async function generateApi(
           const typeNode = apiGen.getTypeFromSchema(def as OpenAPIV3.SchemaObject);
           return factory.createTypeAliasDeclaration(
             [factory.createModifier(ts.SyntaxKind.ExportKeyword)],
-            factory.createIdentifier(camelCase(name)),
+            factory.createIdentifier(capitalize(camelCase(name))),
             undefined,
             typeNode
           );
@@ -158,7 +158,7 @@ export async function generateApi(
 
         return factory.createModuleDeclaration(
           [factory.createModifier(ts.SyntaxKind.ExportKeyword)],
-          factory.createIdentifier(camelCase(componentType)),
+          factory.createIdentifier(capitalize(camelCase(componentType))),
           factory.createModuleBlock(typeEntries),
           ts.NodeFlags.Namespace
         );
@@ -232,6 +232,7 @@ export async function generateApi(
       [
         generateImportNode(apiFile, { [apiImport]: 'api' }),
         generateImportNode('@acrool/react-fetcher', { IRestFulEndpointsQueryReturn: 'IRestFulEndpointsQueryReturn' }),
+        ...(sharedTypesFile ? [generateImportNode(sharedTypesFile.replace(/\.[jt]sx?$/, ''), { 'sharedTypes': 'sharedTypes' })] : []),
         ...(tag ? [generateTagTypes({ addTagTypes: extractAllTagTypes({ operationDefinitions }) })] : []),
         generateCreateApiCall({
           tag,
@@ -240,6 +241,7 @@ export async function generateApi(
               generateEndpoint({
                 operationDefinition,
                 overrides: getOverrides(operationDefinition, endpointOverrides),
+                sharedTypesFile: !!sharedTypesFile,
               })
             ),
             true
@@ -251,8 +253,7 @@ export async function generateApi(
           factory.createIdentifier(generatedApiName)
         ),
         ...Object.values(interfaces),
-        ...apiGen.aliases,
-        ...apiGen.enumAliases,
+        ...(sharedTypesFile ? [] : [...apiGen.aliases, ...apiGen.enumAliases]),
         ...(hooks
           ? [
               generateReactHooks({
@@ -285,9 +286,11 @@ export async function generateApi(
   function generateEndpoint({
     operationDefinition,
     overrides,
+    sharedTypesFile,
   }: {
     operationDefinition: OperationDefinition;
     overrides?: EndpointOverrides;
+    sharedTypesFile: boolean;
   }) {
     const {
       verb,
@@ -317,14 +320,32 @@ export async function generateApi(
           isDataResponse(status, includeDefault, apiGen.resolve(response), responses || {})
         )
         .filter(([_1, _2, type]) => type !== keywordType.void)
-        .map(([code, response, type]) =>
-          ts.addSyntheticLeadingComment(
-            { ...type },
+        .map(([code, response, type]) => {
+          const typeNode = { ...type };
+          if (sharedTypesFile && ts.isTypeReferenceNode(typeNode) && typeNode.typeName) {
+            const typeName = ts.isIdentifier(typeNode.typeName) ? typeNode.typeName.text : typeNode.typeName.getText();
+            if (typeName in apiGen.aliases || typeName in apiGen.enumAliases) {
+              return ts.addSyntheticLeadingComment(
+                factory.createTypeReferenceNode(
+                  factory.createQualifiedName(
+                    factory.createIdentifier('sharedTypes'),
+                    factory.createIdentifier(camelCase(typeName))
+                  ),
+                  typeNode.typeArguments
+                ),
+                ts.SyntaxKind.MultiLineCommentTrivia,
+                `* status ${code} ${response.description} `,
+                false
+              );
+            }
+          }
+          return ts.addSyntheticLeadingComment(
+            typeNode,
             ts.SyntaxKind.MultiLineCommentTrivia,
             `* status ${code} ${response.description} `,
             false
-          )
-        );
+          );
+        });
       if (returnTypes.length > 0) {
         ResponseType = factory.createUnionTypeNode(returnTypes);
       }
