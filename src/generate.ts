@@ -161,10 +161,13 @@ export async function generateApi(
         );
       });
 
+      // 如果有 useEnumType，添加枚舉類型
+      const enumDefinitions = useEnumType ? apiGen.enumAliases : [];
+
       const output = printer.printNode(
         ts.EmitHint.Unspecified,
         factory.createSourceFile(
-          typeDefinitions,
+          [...typeDefinitions, ...enumDefinitions],
           factory.createToken(ts.SyntaxKind.EndOfFileToken),
           ts.NodeFlags.None
         ),

@@ -1,0 +1,5537 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "測試合規",
+    "description": "",
+    "version": "1.0.0"
+  },
+  "tags": [],
+  "paths": {
+    "/manager/admin/login": {
+      "post": {
+        "summary": "管理員登入",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminLoginRequestVO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/AdminLoginResponseVO"
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "errorMessage": "",
+                  "success": true,
+                  "token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGloYW8iLCJhdWQiOiJMb2dpbiIsImV4cCI6MTc0ODMzMTQxNiwiaWF0IjoxNzQ4MzI0MjE2LCJqdGkiOiJNYW5hZ2VyIn0.Cde2dc6FKToxMBrxKbOZ4klxEE7ehs-zAYfKR_ola4k"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Pet": {
+        "required": [
+          "name",
+          "photoUrls",
+          "id",
+          "category",
+          "tags",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "description": "宠物ID编号"
+          },
+          "category": {
+            "$ref": "#/components/schemas/Category",
+            "description": "分组"
+          },
+          "name": {
+            "type": "string",
+            "description": "名称",
+            "examples": [
+              "doggie"
+            ]
+          },
+          "photoUrls": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "照片URL"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Tag"
+            },
+            "description": "标签"
+          },
+          "status": {
+            "type": "string",
+            "description": "宠物销售状态",
+            "enum": [
+              "available",
+              "pending",
+              "sold"
+            ]
+          }
+        }
+      },
+      "Category": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "description": "分组ID编号"
+          },
+          "name": {
+            "type": "string",
+            "description": "分组名称"
+          }
+        },
+        "xml": {
+          "name": "Category"
+        }
+      },
+      "Tag": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "description": "标签ID编号"
+          },
+          "name": {
+            "type": "string",
+            "description": "标签名称"
+          }
+        },
+        "xml": {
+          "name": "Tag"
+        }
+      },
+      "Admin": {
+        "description": "管理員",
+        "properties": {
+          "authStatus": {
+            "enum": [
+              "PASS",
+              "WAIT_TWO_PHASES"
+            ],
+            "type": "string"
+          },
+          "boIpWhiteList": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "createAccount": {
+            "type": "string"
+          },
+          "createDevice": {
+            "type": "string"
+          },
+          "createIP": {
+            "type": "string"
+          },
+          "createTime": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "errorTimes": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "forceAuthSetting": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string"
+          },
+          "lastLoginIP": {
+            "type": "string"
+          },
+          "lastLoginTime": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "mail": {
+            "type": "string"
+          },
+          "mailVerify": {
+            "type": "boolean"
+          },
+          "manualTransfer": {
+            "$ref": "#/components/schemas/ManualTransfer"
+          },
+          "modifyTime": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "mustChangePassword": {
+            "type": "boolean"
+          },
+          "nickname": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "resetCode": {
+            "type": "string"
+          },
+          "roleList": {
+            "items": {
+              "$ref": "#/components/schemas/ObjectId"
+            },
+            "type": "array"
+          },
+          "secretKey": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "verifyToken": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "AdminAccountRequestVO": {
+        "description": "帳號 - 請求物件",
+        "properties": {
+          "account": {
+            "description": "帳號",
+            "type": "string",
+            "examples": [
+              "account"
+            ]
+          }
+        },
+        "required": [
+          "account"
+        ],
+        "type": "object"
+      },
+      "AdminHistoryVO": {
+        "description": "管理員歷史紀錄物件",
+        "properties": {
+          "account": {
+            "description": "帳號",
+            "type": "string",
+            "examples": [
+              "account"
+            ]
+          },
+          "accountIdentity": {
+            "description": "帳號身份",
+            "enum": [
+              "ADMIN",
+              "AGENT",
+              "MEMBER"
+            ],
+            "type": "string",
+            "examples": [
+              "MEMBER"
+            ]
+          },
+          "createTime": {
+            "description": "建立時間",
+            "type": "string",
+            "examples": [
+              "2025-01-01 00:00:00"
+            ]
+          },
+          "detail": {
+            "description": "異動內容",
+            "type": "string",
+            "examples": [
+              "{\"menu\":\"Menu.AdministratorDetail\",\"text\":\"status\",\"before\":\"active\",\"after\":\"inactive\",\"showDetail\":false,\"who\":\"yf828\"}"
+            ]
+          },
+          "id": {
+            "description": "ID",
+            "type": "string",
+            "examples": [
+              "676e4252e0eb93260d1002f9"
+            ]
+          },
+          "ip": {
+            "description": "來源 IP",
+            "type": "string",
+            "examples": [
+              "0.0.0.0"
+            ]
+          },
+          "menu": {
+            "description": "功能",
+            "type": "string",
+            "examples": [
+              "Menu.AdministratorDetail"
+            ]
+          },
+          "operator": {
+            "description": "操作人員",
+            "type": "string",
+            "examples": [
+              "System"
+            ]
+          },
+          "operatorIdentity": {
+            "description": "操作身份",
+            "enum": [
+              "ADMIN",
+              "AGENT"
+            ],
+            "type": "string",
+            "examples": [
+              "ADMIN"
+            ]
+          },
+          "recordIdentify": {
+            "description": "ID",
+            "type": "string",
+            "examples": [
+              "676e4252e0eb93260d1002f9"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "AdminLoginRequestVO": {
+        "description": "登入 - 請求",
+        "properties": {
+          "account": {
+            "description": "帳號",
+            "type": "string",
+            "examples": [
+              "account"
+            ]
+          },
+          "password": {
+            "description": "密碼",
+            "type": "string",
+            "examples": [
+              "passw0rd"
+            ]
+          }
+        },
+        "required": [
+          "account",
+          "password"
+        ],
+        "type": "object"
+      },
+      "AdminLoginResponseVO": {
+        "description": "登入 - 回應",
+        "properties": {
+          "authStatus": {
+            "description": "null or PASS : 不需進入二階段驗證, WAIT_TWO_PHASES : 需二階段驗證",
+            "enum": [
+              "null",
+              "PASS",
+              "WAIT_TWO_PHASES"
+            ],
+            "type": "string",
+            "examples": [
+              "null"
+            ]
+          },
+          "code": {
+            "description": "錯誤代碼",
+            "format": "int32",
+            "type": "integer",
+            "examples": [
+              0
+            ]
+          },
+          "errorMessage": {
+            "description": "錯誤訊息",
+            "type": "string",
+            "examples": [
+              ""
+            ]
+          },
+          "forceAuth": {
+            "description": "綁定二次驗證",
+            "type": "boolean",
+            "examples": [
+              false
+            ]
+          },
+          "mustChangePassword": {
+            "description": "是否必須修改密碼",
+            "type": "boolean",
+            "examples": [
+              false
+            ]
+          },
+          "success": {
+            "description": "是否成功",
+            "type": "boolean",
+            "examples": [
+              true
+            ]
+          },
+          "token": {
+            "description": "Token",
+            "type": "string",
+            "examples": [
+              "eyJhbGciOiJIUzI1NiJ9"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "AdminVO": {
+        "description": "管理員帳號列表 - 回應物件",
+        "properties": {
+          "account": {
+            "description": "帳號",
+            "type": "string",
+            "examples": [
+              "account"
+            ]
+          },
+          "authStatus": {
+            "description": "是否已綁定登入驗證",
+            "type": "boolean",
+            "examples": [
+              false
+            ]
+          },
+          "createTime": {
+            "description": "加入時間",
+            "type": "string",
+            "examples": [
+              "2023-01-01 00:00:00"
+            ]
+          },
+          "forceAuth": {
+            "description": "綁定二次驗證",
+            "type": "boolean",
+            "examples": [
+              false
+            ]
+          },
+          "lastLoginIP": {
+            "description": "最後登入 IP",
+            "type": "string",
+            "examples": [
+              "0.0.0.0"
+            ]
+          },
+          "lastLoginTime": {
+            "description": "最後登入時間",
+            "type": "string",
+            "examples": [
+              "2023-03-23 00:00:00"
+            ]
+          },
+          "mail": {
+            "description": "信箱",
+            "type": "string",
+            "examples": [
+              "123@abc.cc"
+            ]
+          },
+          "mailVerify": {
+            "description": "信箱驗證",
+            "type": "boolean",
+            "examples": [
+              false
+            ]
+          },
+          "nickname": {
+            "description": "暱稱",
+            "type": "string",
+            "examples": [
+              "nickname"
+            ]
+          },
+          "roles": {
+            "description": "角色",
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "examples": [
+              [
+                "ADMIN",
+                "AGENT"
+              ]
+            ]
+          },
+          "status": {
+            "description": "狀態",
+            "enum": [
+              "active",
+              "inactive",
+              "delete"
+            ],
+            "type": "string",
+            "examples": [
+              "active"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "AdminVerifyMailLinkRequestVO": {
+        "description": "信箱驗證 - 請求物件",
+        "properties": {
+          "token": {
+            "description": "令牌",
+            "type": "string",
+            "examples": [
+              "token"
+            ]
+          }
+        },
+        "required": [
+          "token"
+        ],
+        "type": "object"
+      },
+      "BaseResponseVO": {
+        "properties": {
+          "code": {
+            "description": "錯誤代碼",
+            "format": "int32",
+            "type": "integer",
+            "examples": [
+              0
+            ]
+          },
+          "errorMessage": {
+            "description": "錯誤訊息",
+            "type": "string",
+            "examples": [
+              ""
+            ]
+          },
+          "success": {
+            "description": "是否成功",
+            "type": "boolean",
+            "examples": [
+              true
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "BetLimit": {
+        "properties": {
+          "betMax": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "betMin": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "gameId": {
+            "type": "string"
+          },
+          "gameType": {
+            "type": "string"
+          },
+          "id": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "memberLevelSettingIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "BlobVO": {
+        "description": "Storage",
+        "properties": {
+          "bucket": {
+            "description": "Storage",
+            "type": "string",
+            "examples": [
+              "rr-portal-common"
+            ]
+          },
+          "content": {
+            "description": "內容",
+            "type": "string",
+            "examples": [
+              "window.lineInfoConfig"
+            ]
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/map"
+          },
+          "name": {
+            "description": "檔名",
+            "type": "string",
+            "examples": [
+              "common/lab-rr-portal_hnymmy_com.js"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "CallbackStatus": {
+        "description": "回調狀態",
+        "enum": [
+          "PENDING",
+          "SUCCESS",
+          "WAITING",
+          "FAILURE"
+        ],
+        "type": "string",
+        "examples": [
+          "SUCCESS"
+        ]
+      },
+      "CountInfo": {
+        "description": "數量資訊物件",
+        "properties": {
+          "count": {
+            "description": "數量",
+            "format": "int64",
+            "type": "integer",
+            "examples": [
+              100
+            ]
+          },
+          "diff": {
+            "description": "差額",
+            "format": "double",
+            "type": "number",
+            "examples": [
+              10
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "CreateAdminRequestVO": {
+        "description": "創建管理員帳號 - 請求物件",
+        "properties": {
+          "account": {
+            "description": "帳號",
+            "type": "string",
+            "examples": [
+              "account"
+            ]
+          },
+          "forceAuth": {
+            "description": "是否設定強制綁定驗證",
+            "type": "boolean",
+            "examples": [
+              false
+            ]
+          },
+          "mail": {
+            "description": "信箱",
+            "type": "string",
+            "examples": [
+              "123@abc.cc"
+            ]
+          },
+          "nickname": {
+            "description": "暱稱",
+            "type": "string",
+            "examples": [
+              "nickname"
+            ]
+          },
+          "roleList": {
+            "description": "角色 ID",
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "examples": [
+              [
+                "6111ede1b9e44156132a2d8c"
+              ]
+            ]
+          }
+        },
+        "required": [
+          "account",
+          "nickname",
+          "roleList"
+        ],
+        "type": "object"
+      },
+      "CreateAdminResponseVO": {
+        "description": "創建管理員帳號 - 回應物件",
+        "properties": {
+          "code": {
+            "description": "錯誤代碼",
+            "format": "int32",
+            "type": "integer",
+            "examples": [
+              0
+            ]
+          },
+          "errorMessage": {
+            "description": "錯誤訊息",
+            "type": "string",
+            "examples": [
+              ""
+            ]
+          },
+          "password": {
+            "description": "密碼",
+            "type": "string",
+            "examples": [
+              "password"
+            ]
+          },
+          "success": {
+            "description": "是否成功",
+            "type": "boolean",
+            "examples": [
+              true
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "CreateManualTransactionMemberDepositRequestVO": {
+        "description": "會員人工存提款 - 請求物件",
+        "properties": {
+          "account": {
+            "description": "帳號",
+            "type": "string"
+          },
+          "action": {
+            "description": "動作",
+            "enum": [
+              "all",
+              "deposit_manual",
+              "withdrawal_manual"
+            ],
+            "type": "string",
+            "examples": [
+              "deposit_manual"
+            ]
+          },
+          "auditPoint": {
+            "description": "稽核金額",
+            "format": "double",
+            "type": "number",
+            "examples": [
+              1
+            ]
+          },
+          "auditType": {
+            "description": "稽核類型",
+            "enum": [
+              "none",
+              "deposit",
+              "bonus"
+            ],
+            "type": "string",
+            "examples": [
+              "deposit"
+            ]
+          },
+          "memo": {
+            "description": "備註",
+            "maxLength": 250,
+            "type": "string",
+            "examples": [
+              "memo"
+            ]
+          },
+          "point": {
+            "description": "金額",
+            "format": "double",
+            "minimum": 1,
+            "type": "number",
+            "examples": [
+              10
+            ]
+          },
+          "userMemo": {
+            "description": "使用者備註",
+            "type": "string",
+            "examples": [
+              "userMemo"
+            ]
+          }
+        },
+        "required": [
+          "account",
+          "action",
+          "point"
+        ],
+        "type": "object"
+      },
+      "CreateManualTransactionMemberDepositResponseVO": {
+        "description": "會員人工存提款 - 回應物件",
+        "properties": {
+          "code": {
+            "description": "錯誤代碼",
+            "format": "int32",
+            "type": "integer",
+            "examples": [
+              0
+            ]
+          },
+          "disableOrFreezeAccountList": {
+            "description": "停用或凍結帳號清單",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "errorMessage": {
+            "description": "錯誤訊息",
+            "type": "string",
+            "examples": [
+              ""
+            ]
+          },
+          "success": {
+            "description": "是否成功",
+            "type": "boolean",
+            "examples": [
+              true
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "CreateMemberRequestVO": {
+        "description": "創建會員 - 請求物件",
+        "properties": {
+          "birthday": {
+            "description": "生日",
+            "type": "string",
+            "examples": [
+              "1970-01-01"
+            ]
+          },
+          "countryCode": {
+            "description": "國碼",
+            "type": "string",
+            "examples": [
+              "+886"
+            ]
+          },
+          "firstName": {
+            "description": "名",
+            "type": "string",
+            "examples": [
+              "John"
+            ]
+          },
+          "lastName": {
+            "description": "姓",
+            "type": "string",
+            "examples": [
+              "Smith"
+            ]
+          },
+          "mail": {
+            "description": "信箱",
+            "type": "string",
+            "examples": [
+              "123@abc.cc"
+            ]
+          },
+          "memberAccount": {
+            "description": "帳號",
+            "type": "string",
+            "examples": [
+              "account"
+            ]
+          },
+          "memo": {
+            "description": "備註",
+            "type": "string",
+            "examples": [
+              "memo"
+            ]
+          },
+          "nickName": {
+            "description": "暱稱",
+            "type": "string",
+            "examples": [
+              "John, Smith"
+            ]
+          },
+          "phone": {
+            "description": "手機",
+            "type": "string",
+            "examples": [
+              "0912123456"
+            ]
+          },
+          "sex": {
+            "description": "性別",
+            "type": "string"
+          }
+        },
+        "required": [
+          "memberAccount",
+          "nickName"
+        ],
+        "type": "object"
+      },
+      "CreatePaymentTypeSettingRequestVO": {
+        "description": "新增收付類型 - 請求",
+        "properties": {
+          "imageList": {
+            "description": "圖片",
+            "items": {
+              "$ref": "#/components/schemas/ImageObj"
+            },
+            "type": "array"
+          },
+          "memo": {
+            "description": "備註",
+            "maxLength": 250,
+            "type": "string",
+            "examples": [
+              "memo"
+            ]
+          },
+          "nameMap": {
+            "$ref": "#/components/schemas/nameMap"
+          },
+          "sort": {
+            "description": "排序",
+            "format": "int32",
+            "type": "integer",
+            "examples": [
+              1
+            ]
+          },
+          "status": {
+            "description": "狀態",
+            "enum": [
+              "active",
+              "inactive",
+              "maintain"
+            ],
+            "type": "string",
+            "examples": [
+              "active"
+            ]
+          },
+          "type": {
+            "description": "類型",
+            "type": "string",
+            "examples": [
+              "BANK"
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "type"
+        ],
+        "type": "object"
+      },
+      "DateColumn": {
+        "description": "清單",
+        "properties": {
+          "bet": {
+            "$ref": "#/components/schemas/KanbanDetailVO"
+          },
+          "date": {
+            "type": "string"
+          },
+          "validBet": {
+            "$ref": "#/components/schemas/KanbanDetailVO"
+          },
+          "winLose": {
+            "$ref": "#/components/schemas/KanbanDetailVO"
+          }
+        },
+        "type": "object"
+      },
+      "DeleteMemberLevelSettingRequestVO": {
+        "description": "會員等級設定 - 請求物件",
+        "properties": {
+          "betLimits": {
+            "description": "押注限額設定",
+            "items": {
+              "description": "押注限額設定",
+              "type": "string",
+              "examples": [
+                "[]"
+              ]
+            },
+            "type": "array",
+            "examples": [
+              []
+            ]
+          },
+          "betsConversion": {
+            "description": "累計押注門檻",
+            "format": "int64",
+            "type": "integer",
+            "examples": [
+              100
+            ]
+          },
+          "betsExp": {
+            "description": "累計押注達標經驗值",
+            "format": "int64",
+            "type": "integer",
+            "examples": [
+              10
+            ]
+          },
+          "id": {
+            "description": "ID",
+            "type": "string",
+            "examples": [
+              "676e4252e0eb93260d1002f9"
+            ]
+          },
+          "index": {
+            "description": "排序",
+            "format": "int32",
+            "type": "integer",
+            "examples": [
+              1
+            ]
+          },
+          "levelMax": {
+            "description": "等級迄",
+            "format": "int32",
+            "type": "integer",
+            "examples": [
+              20
+            ]
+          },
+          "levelMin": {
+            "description": "等級起",
+            "format": "int32",
+            "type": "integer",
+            "examples": [
+              1
+            ]
+          },
+          "levelUpExp": {
+            "description": "累計經驗值門檻",
+            "format": "int64",
+            "type": "integer",
+            "examples": [
+              200
+            ]
+          },
+          "loginExp": {
+            "description": "每日登入經驗值",
+            "format": "int64",
+            "type": "integer",
+            "examples": [
+              2
+            ]
+          },
+          "topUpConversion": {
+            "description": "累計儲值門檻",
+            "format": "int64",
+            "type": "integer",
+            "examples": [
+              30
+            ]
+          },
+          "topUpExp": {
+            "description": "累計儲值達標經驗值",
+            "format": "int64",
+            "type": "integer",
+            "examples": [
+              3
+            ]
+          },
+          "topUpLimit": {
+            "description": "單次儲值限制",
+            "format": "int64",
+            "type": "integer",
+            "examples": [
+              100
+            ]
+          },
+          "upgradeRewards": {
+            "$ref": "#/components/schemas/UpgradeRewards"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "type": "object"
+      },
+      "GameNameDetail": {
+        "description": "遊戲類型詳細物件",
+        "properties": {
+          "gameId": {
+            "description": "遊戲代號",
+            "type": "string",
+            "examples": [
+              "22017"
+            ]
+          },
+          "gameNameMap": {
+            "$ref": "#/components/schemas/nameMap"
+          },
+          "gameType": {
+            "description": "遊戲類型",
+            "type": "string",
+            "examples": [
+              "slot"
+            ]
+          },
+          "imageList": {
+            "description": "圖片清單",
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "examples": [
+              [
+                "/common/upload-images/PG-SLOT-111.webp",
+                "/common/upload-images/PG-SLOT-111.jpg"
+              ]
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "GameTypeVO": {
+        "description": "遊戲類型物件",
+        "properties": {
+          "gameTypeList": {
+            "description": "遊戲類型",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "platform": {
+            "description": "遊戲平台",
+            "type": "string",
+            "examples": [
+              "FC"
+            ]
+          }
+        },
+        "type": "object",
+        "examples": [
+          true
+        ]
+      },
+      "HotInfoResponseVO": {
+        "description": "資訊看板 - 今日資訊 - 回應物件",
+        "properties": {
+          "code": {
+            "description": "錯誤代碼",
+            "format": "int32",
+            "type": "integer",
+            "examples": [
+              0
+            ]
+          },
+          "deposit": {
+            "$ref": "#/components/schemas/PointInfo"
+          },
+          "errorMessage": {
+            "description": "錯誤訊息",
+            "type": "string",
+            "examples": [
+              ""
+            ]
+          },
+          "online": {
+            "$ref": "#/components/schemas/CountInfo"
+          },
+          "payoff": {
+            "$ref": "#/components/schemas/PointInfo"
+          },
+          "register": {
+            "$ref": "#/components/schemas/CountInfo"
+          },
+          "success": {
+            "description": "是否成功",
+            "type": "boolean",
+            "examples": [
+              true
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "ImageObj": {
+        "description": "圖片物件",
+        "properties": {
+          "theme": {
+            "description": "主題",
+            "type": "string",
+            "examples": [
+              "A"
+            ]
+          },
+          "urlList": {
+            "description": "圖片 URL",
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "examples": [
+              [
+                "/common/upload-images"
+              ]
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "KanbanDetailVO": {
+        "description": "損益物件",
+        "properties": {
+          "amount": {
+            "description": "金額",
+            "format": "double",
+            "type": "number",
+            "examples": [
+              100
+            ]
+          },
+          "count": {
+            "description": "筆數",
+            "format": "int64",
+            "type": "integer",
+            "examples": [
+              100
+            ]
+          },
+          "people": {
+            "description": "人數",
+            "format": "int64",
+            "type": "integer",
+            "examples": [
+              100
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "LoginLogVO": {
+        "description": "登入記錄物件",
+        "properties": {
+          "account": {
+            "description": "帳號",
+            "type": "string",
+            "examples": [
+              "account"
+            ]
+          },
+          "browser": {
+            "description": "瀏覽器名稱",
+            "type": "string",
+            "examples": [
+              "Chrome 13"
+            ]
+          },
+          "browserVersion": {
+            "description": "瀏覽器版本",
+            "type": "string",
+            "examples": [
+              "131.0.0.0"
+            ]
+          },
+          "city": {
+            "description": "城市",
+            "type": "string",
+            "examples": [
+              "Tokyo"
+            ]
+          },
+          "country": {
+            "description": "國家",
+            "type": "string",
+            "examples": [
+              "JP"
+            ]
+          },
+          "createTime": {
+            "description": "登入時間",
+            "type": "string",
+            "examples": [
+              "2025-01-01 00:00:00"
+            ]
+          },
+          "device": {
+            "description": "裝置",
+            "type": "string",
+            "examples": [
+              "Computer"
+            ]
+          },
+          "domain": {
+            "description": "來源網址",
+            "type": "string",
+            "examples": [
+              "https://"
+            ]
+          },
+          "id": {
+            "description": "ID",
+            "type": "string",
+            "examples": [
+              "676e4252e0eb93260d1002f9"
+            ]
+          },
+          "identity": {
+            "description": "身份",
+            "enum": [
+              "ADMIN",
+              "AGENT",
+              "MEMBER"
+            ],
+            "type": "string",
+            "examples": [
+              "ADMIN"
+            ]
+          },
+          "loginIp": {
+            "description": "來源 IP",
+            "type": "string",
+            "examples": [
+              "0.0.0.0"
+            ]
+          },
+          "nickName": {
+            "description": "暱稱",
+            "type": "string",
+            "examples": [
+              "nickName"
+            ]
+          },
+          "region": {
+            "description": "區域",
+            "type": "string",
+            "examples": [
+              "Tokyo"
+            ]
+          },
+          "systemName": {
+            "description": "系統平台",
+            "type": "string",
+            "examples": [
+              "Mac OS X"
+            ]
+          },
+          "telecom": {
+            "description": "ISP",
+            "type": "string",
+            "examples": [
+              "Google LLC"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "ManualTransfer": {
+        "description": "人工存款限額 - 請求物件",
+        "properties": {
+          "limitEveryMonth": {
+            "description": "單月",
+            "format": "double",
+            "type": "number",
+            "examples": [
+              0
+            ],
+            "nullable": true
+          },
+          "limitEveryTime": {
+            "description": "單次",
+            "format": "double",
+            "type": "number",
+            "examples": [
+              0
+            ],
+            "nullable": true
+          },
+          "limitEveryWeek": {
+            "description": "單週",
+            "format": "double",
+            "type": "number",
+            "examples": [
+              0
+            ],
+            "nullable": true
+          },
+          "totalLimit": {
+            "description": "總額",
+            "format": "double",
+            "type": "number",
+            "examples": [
+              0
+            ],
+            "nullable": true
+          }
+        },
+        "type": "object"
+      },
+      "MemberAccountRequestVO": {
+        "description": "帳號 - 請求",
+        "properties": {
+          "memberAccount": {
+            "description": "帳號",
+            "type": "string",
+            "examples": [
+              "memberAccount"
+            ]
+          }
+        },
+        "required": [
+          "memberAccount"
+        ],
+        "type": "object"
+      },
+      "MemberInfoCheckExistVO": {
+        "description": "回應物件 - 異常原因",
+        "properties": {
+          "mailExist": {
+            "description": "信箱是否存在",
+            "type": "boolean",
+            "examples": [
+              false
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "MemberInfoCheckSendVO": {
+        "description": "回應物件 - 通知參數",
+        "properties": {
+          "sendMail": {
+            "description": "是否有發送驗證信件",
+            "type": "boolean",
+            "examples": [
+              false
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "MemberInfoExistListVO": {
+        "description": "回應物件 - 異常帳號清單",
+        "properties": {
+          "mailExistAccounts": {
+            "description": "信箱 相同的帳號列表",
+            "items": {
+              "description": "信箱 相同的帳號列表",
+              "type": "string",
+              "examples": [
+                "[]"
+              ]
+            },
+            "type": "array",
+            "examples": [
+              []
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "MemberInfoVO": {
+        "description": "基本資料 - 回應物件",
+        "properties": {
+          "checkExist": {
+            "$ref": "#/components/schemas/MemberInfoCheckExistVO"
+          },
+          "checkSend": {
+            "$ref": "#/components/schemas/MemberInfoCheckSendVO"
+          },
+          "code": {
+            "description": "錯誤代碼",
+            "format": "int32",
+            "type": "integer",
+            "examples": [
+              0
+            ]
+          },
+          "errorMessage": {
+            "description": "錯誤訊息",
+            "type": "string",
+            "examples": [
+              ""
+            ]
+          },
+          "existList": {
+            "$ref": "#/components/schemas/MemberInfoExistListVO"
+          },
+          "success": {
+            "description": "是否成功",
+            "type": "boolean",
+            "examples": [
+              true
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "MemberItem": {
+        "description": "會員詳細",
+        "properties": {
+          "account": {
+            "description": "帳號",
+            "type": "string",
+            "examples": [
+              "Google_asd123"
+            ]
+          },
+          "birthday": {
+            "description": "生日",
+            "type": "string",
+            "examples": [
+              "1970-01-01"
+            ]
+          },
+          "cash": {
+            "description": "點數",
+            "format": "double",
+            "type": "number",
+            "examples": [
+              10
+            ]
+          },
+          "countryCode": {
+            "description": "國碼",
+            "type": "string",
+            "examples": [
+              "+886"
+            ]
+          },
+          "createDevice": {
+            "description": "註冊裝置",
+            "type": "string",
+            "examples": [
+              "Computer"
+            ]
+          },
+          "createDomain": {
+            "description": "註冊網址",
+            "type": "string",
+            "examples": [
+              "http://localhost"
+            ]
+          },
+          "createIP": {
+            "description": "註冊IP",
+            "type": "string",
+            "examples": [
+              "127.0.0.2"
+            ]
+          },
+          "createMethod": {
+            "description": "方式",
+            "type": "string",
+            "examples": [
+              "Google"
+            ]
+          },
+          "createTime": {
+            "description": "註冊時間",
+            "type": "string",
+            "examples": [
+              "2025-01-01 00:00:00"
+            ]
+          },
+          "firstDepositCash": {
+            "description": "首存點數",
+            "format": "double",
+            "type": "number",
+            "examples": [
+              10
+            ]
+          },
+          "firstDepositTime": {
+            "description": "首存時間",
+            "type": "string",
+            "examples": [
+              "2025-01-01 00:00:00"
+            ]
+          },
+          "gameAccounts": {
+            "description": "錢包帳號",
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "examples": [
+              [
+                "FCT-demo001",
+                "FCT-demo002"
+              ]
+            ]
+          },
+          "lastBetTime": {
+            "description": "最後投注時間",
+            "type": "string",
+            "examples": [
+              "2025-01-01 00:00:00"
+            ]
+          },
+          "lastDepositTime": {
+            "description": "最後儲值時間",
+            "type": "string",
+            "examples": [
+              "2025-01-01 00:00:00"
+            ]
+          },
+          "lastLoginIp": {
+            "description": "最後登入 IP",
+            "type": "string",
+            "examples": [
+              "0.0.0.0"
+            ]
+          },
+          "lastLoginRegion": {
+            "description": "最後登入地區",
+            "type": "string",
+            "examples": [
+              "TaiChung"
+            ]
+          },
+          "lastLoginTime": {
+            "description": "最後登入時間",
+            "type": "string",
+            "examples": [
+              "2025-01-01 00:00:00"
+            ]
+          },
+          "level": {
+            "description": "會員層級",
+            "format": "int32",
+            "type": "integer",
+            "examples": [
+              1
+            ]
+          },
+          "mail": {
+            "description": "信箱",
+            "type": "string",
+            "examples": [
+              "123@abc.cc"
+            ]
+          },
+          "mailVerify": {
+            "description": "信箱驗證",
+            "type": "boolean",
+            "examples": [
+              false
+            ]
+          },
+          "mobilePhone": {
+            "description": "手機號",
+            "type": "string",
+            "examples": [
+              "(+886) 0912123456"
+            ]
+          },
+          "nickName": {
+            "description": "暱稱",
+            "type": "string",
+            "examples": [
+              "暱稱"
+            ]
+          },
+          "phone": {
+            "description": "手機",
+            "type": "string",
+            "examples": [
+              "0912123456"
+            ]
+          },
+          "point": {
+            "description": "遊戲幣",
+            "format": "double",
+            "type": "number",
+            "examples": [
+              10
+            ]
+          },
+          "sex": {
+            "description": "性別",
+            "type": "string",
+            "examples": [
+              "Male"
+            ]
+          },
+          "smsVerify": {
+            "description": "手機驗證",
+            "type": "boolean",
+            "examples": [
+              false
+            ]
+          },
+          "status": {
+            "description": "狀態",
+            "enum": [
+              "active",
+              "inactive",
+              "delete"
+            ],
+            "type": "string",
+            "examples": [
+              "active"
+            ]
+          },
+          "totalBonus": {
+            "description": "總獎金",
+            "format": "double",
+            "type": "number",
+            "examples": [
+              10
+            ]
+          },
+          "totalDepositCash": {
+            "description": "總儲值點數",
+            "format": "double",
+            "type": "number",
+            "examples": [
+              20
+            ]
+          },
+          "totalDepositCount": {
+            "description": "總儲值次數",
+            "format": "int64",
+            "type": "integer",
+            "examples": [
+              20
+            ]
+          },
+          "totalSendCount": {
+            "description": "總贈點次數",
+            "format": "int64",
+            "type": "integer",
+            "examples": [
+              20
+            ]
+          },
+          "totalSendPoint": {
+            "description": "總贈點點數",
+            "format": "double",
+            "type": "number",
+            "examples": [
+              20
+            ]
+          },
+          "vipGradeSetting": {
+            "description": "VIP等級設定",
+            "type": "string",
+            "examples": [
+              "V0"
+            ]
+          },
+          "vipGradeSettingId": {
+            "description": "VIP等級設定ID",
+            "type": "string",
+            "examples": [
+              "676e4252e0eb93260d1002f9"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "MemberLevelSettingRequestVO": {
+        "description": "會員等級設定 - 請求物件",
+        "properties": {
+          "betLimits": {
+            "description": "押注限額設定",
+            "items": {
+              "description": "押注限額設定",
+              "type": "string",
+              "examples": [
+                "[]"
+              ]
+            },
+            "type": "array",
+            "examples": [
+              []
+            ]
+          },
+          "betsConversion": {
+            "description": "累計押注門檻",
+            "format": "int64",
+            "type": "integer",
+            "examples": [
+              100
+            ]
+          },
+          "betsExp": {
+            "description": "累計押注達標經驗值",
+            "format": "int64",
+            "type": "integer",
+            "examples": [
+              10
+            ]
+          },
+          "id": {
+            "description": "ID",
+            "type": "string",
+            "examples": [
+              "676e4252e0eb93260d1002f9"
+            ]
+          },
+          "index": {
+            "description": "排序",
+            "format": "int32",
+            "type": "integer",
+            "examples": [
+              1
+            ]
+          },
+          "levelMax": {
+            "description": "等級迄",
+            "format": "int32",
+            "type": "integer",
+            "examples": [
+              20
+            ]
+          },
+          "levelMin": {
+            "description": "等級起",
+            "format": "int32",
+            "type": "integer",
+            "examples": [
+              1
+            ]
+          },
+          "levelUpExp": {
+            "description": "累計經驗值門檻",
+            "format": "int64",
+            "type": "integer",
+            "examples": [
+              200
+            ]
+          },
+          "loginExp": {
+            "description": "每日登入經驗值",
+            "format": "int64",
+            "type": "integer",
+            "examples": [
+              2
+            ]
+          },
+          "topUpConversion": {
+            "description": "累計儲值門檻",
+            "format": "int64",
+            "type": "integer",
+            "examples": [
+              30
+            ]
+          },
+          "topUpExp": {
+            "description": "累計儲值達標經驗值",
+            "format": "int64",
+            "type": "integer",
+            "examples": [
+              3
+            ]
+          },
+          "topUpLimit": {
+            "description": "單次儲值限制",
+            "format": "int64",
+            "type": "integer",
+            "examples": [
+              100
+            ]
+          },
+          "upgradeRewards": {
+            "$ref": "#/components/schemas/UpgradeRewards"
+          }
+        },
+        "required": [
+          "levelMin"
+        ],
+        "type": "object"
+      },
+      "MemberLevelSettingResponseVO": {
+        "description": "會員等級設定 - 回應物件",
+        "properties": {
+          "betLimits": {
+            "description": "押注限額設定",
+            "items": {
+              "$ref": "#/components/schemas/BetLimit"
+            },
+            "type": "array",
+            "examples": [
+              []
+            ]
+          },
+          "betsConversion": {
+            "description": "累計押注門檻",
+            "format": "int64",
+            "type": "integer",
+            "examples": [
+              100
+            ]
+          },
+          "betsExp": {
+            "description": "累計押注達標經驗值",
+            "format": "int64",
+            "type": "integer",
+            "examples": [
+              10
+            ]
+          },
+          "id": {
+            "description": "ID",
+            "type": "string",
+            "examples": [
+              "676e4252e0eb93260d1002f9"
+            ]
+          },
+          "levelMax": {
+            "description": "等級迄",
+            "format": "int32",
+            "type": "integer",
+            "examples": [
+              20
+            ]
+          },
+          "levelMin": {
+            "description": "等級起",
+            "format": "int32",
+            "type": "integer",
+            "examples": [
+              1
+            ]
+          },
+          "levelUpExp": {
+            "description": "累計經驗值門檻",
+            "format": "int64",
+            "type": "integer",
+            "examples": [
+              200
+            ]
+          },
+          "loginExp": {
+            "description": "每日登入經驗值",
+            "format": "int64",
+            "type": "integer",
+            "examples": [
+              2
+            ]
+          },
+          "memberCount": {
+            "description": "會員數",
+            "format": "int64",
+            "type": "integer",
+            "examples": [
+              123
+            ]
+          },
+          "topUpConversion": {
+            "description": "累計儲值門檻",
+            "format": "int64",
+            "type": "integer",
+            "examples": [
+              30
+            ]
+          },
+          "topUpExp": {
+            "description": "累計儲值達標經驗值",
+            "format": "int64",
+            "type": "integer",
+            "examples": [
+              3
+            ]
+          },
+          "topUpLimit": {
+            "description": "單次儲值限制",
+            "format": "int64",
+            "type": "integer",
+            "examples": [
+              100
+            ]
+          },
+          "upgradeRewards": {
+            "$ref": "#/components/schemas/UpgradeRewards"
+          },
+          "vipGrade": {
+            "description": "VIP層級",
+            "type": "string",
+            "examples": [
+              "676e4252e0eb93260d1002f9"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "MemberPasswordResponseVO": {
+        "description": "密碼 - 回應物件",
+        "properties": {
+          "code": {
+            "description": "錯誤代碼",
+            "format": "int32",
+            "type": "integer",
+            "examples": [
+              0
+            ]
+          },
+          "errorMessage": {
+            "description": "錯誤訊息",
+            "type": "string",
+            "examples": [
+              ""
+            ]
+          },
+          "password": {
+            "description": "密碼",
+            "type": "string",
+            "examples": [
+              "passw0rd"
+            ]
+          },
+          "success": {
+            "description": "是否成功",
+            "type": "boolean",
+            "examples": [
+              true
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "Method": {
+        "description": "儲值類型",
+        "enum": [
+          "CREDIT_CARD",
+          "SERIAL_NUMBER"
+        ],
+        "type": "string",
+        "examples": [
+          "CREDIT_CARD"
+        ]
+      },
+      "ObjectId": {
+        "properties": {
+          "date": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "timestamp": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PaymentRecordVO": {
+        "description": "儲值紀錄",
+        "properties": {
+          "account": {
+            "description": "帳號",
+            "type": "string",
+            "examples": [
+              "account"
+            ]
+          },
+          "accountIdentity": {
+            "description": "帳號身份",
+            "enum": [
+              "MEMBER",
+              "ADMIN"
+            ],
+            "type": "string",
+            "examples": [
+              "MEMBER"
+            ]
+          },
+          "cash": {
+            "description": "金額",
+            "format": "double",
+            "type": "number",
+            "examples": [
+              100
+            ]
+          },
+          "cashSetting": {
+            "description": "儲值商戶",
+            "type": "string",
+            "examples": [
+              "Gash"
+            ]
+          },
+          "cashSettingId": {
+            "description": "儲值商戶 ID",
+            "type": "string",
+            "examples": [
+              "676e4252e0eb93260d1002f9"
+            ]
+          },
+          "createTime": {
+            "description": "申請時間",
+            "type": "string",
+            "examples": [
+              "2025-01-01 00:00:00"
+            ]
+          },
+          "firstDeposit": {
+            "description": "首儲",
+            "type": "boolean",
+            "examples": [
+              true
+            ]
+          },
+          "id": {
+            "description": "單號",
+            "type": "string",
+            "examples": [
+              "676e4252e0eb93260d1002f9"
+            ]
+          },
+          "manualEnable": {
+            "type": "boolean"
+          },
+          "memberLevel": {
+            "description": "會員等級",
+            "format": "int32",
+            "type": "integer",
+            "examples": [
+              1
+            ]
+          },
+          "method": {
+            "$ref": "#/components/schemas/Method"
+          },
+          "modifyTime": {
+            "description": "處理時間",
+            "type": "string",
+            "examples": [
+              "2025-01-01 00:00:00"
+            ]
+          },
+          "nickname": {
+            "description": "暱稱",
+            "type": "string",
+            "examples": [
+              "nickname"
+            ]
+          },
+          "operatorAccount": {
+            "description": "操作人員帳號",
+            "type": "string",
+            "examples": [
+              "System"
+            ]
+          },
+          "operatorIdentity": {
+            "description": "操作身份",
+            "enum": [
+              "MEMBER",
+              "ADMIN"
+            ],
+            "type": "string",
+            "examples": [
+              "ADMIN"
+            ]
+          },
+          "orderStatus": {
+            "$ref": "#/components/schemas/CallbackStatus"
+          },
+          "paymentId": {
+            "description": "商戶單號",
+            "type": "string",
+            "examples": [
+              "f461b7c2763c46c1b02597d7f5b6ee60"
+            ]
+          },
+          "paymentType": {
+            "description": "儲值商戶",
+            "type": "string",
+            "examples": [
+              "Gash"
+            ]
+          },
+          "point": {
+            "description": "點數",
+            "format": "double",
+            "type": "number",
+            "examples": [
+              100
+            ]
+          },
+          "recordStatus": {
+            "$ref": "#/components/schemas/RecordStatus"
+          },
+          "serialNumber": {
+            "description": "點數卡序號",
+            "type": "string",
+            "examples": [
+              "678088c342ebe708a40b"
+            ]
+          },
+          "transferRecordId": {
+            "description": "交易單號",
+            "type": "string",
+            "examples": [
+              "678088c342ebe708a40b"
+            ]
+          },
+          "transferType": {
+            "$ref": "#/components/schemas/Type"
+          },
+          "vipGradeSetting": {
+            "description": "VIP 層級",
+            "type": "string",
+            "examples": [
+              "Gash"
+            ]
+          },
+          "vipGradeSettingId": {
+            "description": "VIP 層級 ID",
+            "type": "string",
+            "examples": [
+              "676e4252e0eb93260d1002f9"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "PaymentTypeVO": {
+        "description": "存款訂單",
+        "properties": {
+          "count": {
+            "description": "筆數",
+            "format": "int32",
+            "type": "integer",
+            "examples": [
+              10
+            ]
+          },
+          "customId": {
+            "description": "單號",
+            "type": "string",
+            "examples": [
+              "678088c342ebe708a40b"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "PointInfo": {
+        "description": "點數資訊物件",
+        "properties": {
+          "count": {
+            "description": "數量",
+            "format": "double",
+            "type": "number",
+            "examples": [
+              100
+            ]
+          },
+          "diff": {
+            "description": "差額",
+            "format": "double",
+            "type": "number",
+            "examples": [
+              10
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "ReadAdminHistoryListResponseVO": {
+        "description": "管理員歷史紀錄列表 - 回應物件",
+        "properties": {
+          "code": {
+            "description": "錯誤代碼",
+            "format": "int32",
+            "type": "integer",
+            "examples": [
+              0
+            ]
+          },
+          "data": {
+            "description": "管理員歷史紀錄",
+            "items": {
+              "$ref": "#/components/schemas/AdminHistoryVO"
+            },
+            "type": "array"
+          },
+          "errorMessage": {
+            "description": "錯誤訊息",
+            "type": "string",
+            "examples": [
+              ""
+            ]
+          },
+          "success": {
+            "description": "是否成功",
+            "type": "boolean",
+            "examples": [
+              true
+            ]
+          },
+          "total": {
+            "description": "總筆數",
+            "format": "int64",
+            "type": "integer",
+            "examples": [
+              10
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "ReadAdminListRequestVO": {
+        "description": "查詢管理員 - 請求物件",
+        "properties": {
+          "accountList": {
+            "description": "帳號",
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "examples": [
+              [
+                "paul",
+                "paul1"
+              ]
+            ]
+          },
+          "lastLoginTime": {
+            "description": "最後登入時間起迄",
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "examples": [
+              [
+                "2025-05-27 00:00:00",
+                "2025-05-27 23:00:00"
+              ]
+            ]
+          },
+          "mail": {
+            "description": "信箱",
+            "type": "string",
+            "examples": [
+              "123@abc.cc"
+            ]
+          },
+          "mailVerify": {
+            "description": "信箱驗證",
+            "type": "boolean",
+            "examples": [
+              false
+            ]
+          },
+          "nickname": {
+            "description": "暱稱",
+            "type": "string",
+            "examples": [
+              "paul"
+            ]
+          },
+          "pageIndex": {
+            "description": "頁碼",
+            "format": "int32",
+            "type": "integer",
+            "examples": [
+              1
+            ]
+          },
+          "pageSize": {
+            "description": "筆數",
+            "format": "int32",
+            "type": "integer",
+            "examples": [
+              10
+            ]
+          },
+          "status": {
+            "description": "狀態",
+            "enum": [
+              "active",
+              "inactive",
+              "delete"
+            ],
+            "type": "string",
+            "examples": [
+              "active"
+            ]
+          }
+        },
+        "required": [
+          "pageIndex",
+          "pageSize"
+        ],
+        "type": "object"
+      },
+      "ReadAdminListResponseVO": {
+        "properties": {
+          "code": {
+            "description": "錯誤代碼",
+            "format": "int32",
+            "type": "integer",
+            "examples": [
+              0
+            ]
+          },
+          "count": {
+            "description": "總筆數",
+            "format": "int64",
+            "type": "integer",
+            "examples": [
+              10
+            ]
+          },
+          "errorMessage": {
+            "description": "錯誤訊息",
+            "type": "string",
+            "examples": [
+              ""
+            ]
+          },
+          "list": {
+            "description": "管理員列表",
+            "items": {
+              "$ref": "#/components/schemas/AdminVO"
+            },
+            "type": "array"
+          },
+          "success": {
+            "description": "是否成功",
+            "type": "boolean",
+            "examples": [
+              true
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "ReadAdminResponseVO": {
+        "description": "管理員詳細資訊 - 回應物件",
+        "properties": {
+          "account": {
+            "description": "帳號",
+            "type": "string",
+            "examples": [
+              "account"
+            ]
+          },
+          "authStatus": {
+            "description": "null or PASS : 不需進入二階段驗證, WAIT_TWO_PHASES : 需二階段驗證",
+            "enum": [
+              false,
+              false,
+              false
+            ],
+            "type": "boolean",
+            "examples": [
+              false
+            ]
+          },
+          "code": {
+            "description": "錯誤代碼",
+            "format": "int32",
+            "type": "integer",
+            "examples": [
+              0
+            ]
+          },
+          "createAccount": {
+            "description": "建立帳號",
+            "type": "string",
+            "examples": [
+              "createAccount"
+            ]
+          },
+          "createDevice": {
+            "description": "加入裝置",
+            "type": "string",
+            "examples": [
+              "Computer"
+            ]
+          },
+          "createIp": {
+            "description": "建立 IP",
+            "type": "string",
+            "examples": [
+              "0.0.0.0"
+            ]
+          },
+          "createTime": {
+            "description": "建立時間",
+            "type": "string",
+            "examples": [
+              "2025-01-01 00:00:00"
+            ]
+          },
+          "email": {
+            "description": "信箱",
+            "type": "string",
+            "examples": [
+              "123@abc.cc"
+            ]
+          },
+          "errorMessage": {
+            "description": "錯誤訊息",
+            "type": "string",
+            "examples": [
+              ""
+            ]
+          },
+          "forceAuth": {
+            "description": "綁定二次驗證",
+            "type": "boolean",
+            "examples": [
+              false
+            ]
+          },
+          "lastLoginDevice": {
+            "description": "最後登入裝置",
+            "type": "string",
+            "examples": [
+              "Computer"
+            ]
+          },
+          "lastLoginIp": {
+            "description": "最後登入 IP",
+            "type": "string",
+            "examples": [
+              "0.0.0.0"
+            ]
+          },
+          "lastLoginTime": {
+            "description": "最後登入時間",
+            "type": "string",
+            "examples": [
+              "2025-01-01 00:00:00"
+            ]
+          },
+          "mailVerify": {
+            "description": "信箱驗證",
+            "type": "boolean",
+            "examples": [
+              true
+            ]
+          },
+          "modifyTime": {
+            "description": "異動時間",
+            "type": "string",
+            "examples": [
+              "2025-01-01 00:00:00"
+            ]
+          },
+          "nickname": {
+            "description": "暱稱",
+            "type": "string",
+            "examples": [
+              "nickname"
+            ]
+          },
+          "roles": {
+            "description": "角色",
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "examples": [
+              [
+                "ADMIN"
+              ]
+            ]
+          },
+          "status": {
+            "description": "狀態",
+            "enum": [
+              "active",
+              "inactive",
+              "delete"
+            ],
+            "type": "string",
+            "examples": [
+              "active"
+            ]
+          },
+          "success": {
+            "description": "是否成功",
+            "type": "boolean",
+            "examples": [
+              true
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "ReadBetRecordKanbanRequestVO": {
+        "description": "資訊看板 投注紀錄 - 請求物件",
+        "properties": {
+          "endDate": {
+            "description": "結束",
+            "type": "string",
+            "examples": [
+              "2025-05-25"
+            ]
+          },
+          "extraEarlyDate": {
+            "description": "前期比較",
+            "type": "boolean",
+            "examples": [
+              true
+            ]
+          },
+          "findAllGameType": {
+            "type": "boolean"
+          },
+          "platformGameType": {
+            "description": "商戶遊戲類型",
+            "items": {
+              "$ref": "#/components/schemas/GameTypeVO"
+            },
+            "type": "array",
+            "examples": [
+              true
+            ]
+          },
+          "queryDate": {
+            "items": {
+              "format": "date",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "queryGameType": {
+            "additionalProperties": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "type": "object",
+            "properties": {}
+          },
+          "startDate": {
+            "description": "開始時間",
+            "type": "string",
+            "examples": [
+              "2025-05-25"
+            ]
+          }
+        },
+        "required": [
+          "endDate",
+          "startDate"
+        ],
+        "type": "object"
+      },
+      "ReadBetRecordKanbanResponseVO": {
+        "description": "資訊看板 投注紀錄 - 回傳物件",
+        "properties": {
+          "code": {
+            "description": "錯誤代碼",
+            "format": "int32",
+            "type": "integer",
+            "examples": [
+              0
+            ]
+          },
+          "dateList": {
+            "description": "清單",
+            "items": {
+              "$ref": "#/components/schemas/DateColumn"
+            },
+            "type": "array"
+          },
+          "errorMessage": {
+            "description": "錯誤訊息",
+            "type": "string",
+            "examples": [
+              ""
+            ]
+          },
+          "success": {
+            "description": "是否成功",
+            "type": "boolean",
+            "examples": [
+              true
+            ]
+          },
+          "total": {
+            "$ref": "#/components/schemas/DateColumn"
+          }
+        },
+        "type": "object"
+      },
+      "ReadBetRecordListResponseVO": {
+        "description": "投注紀錄列表 - 回應",
+        "properties": {
+          "betRecordList": {
+            "description": "投注紀錄",
+            "items": {
+              "type": "object",
+              "properties": {}
+            },
+            "type": "array"
+          },
+          "code": {
+            "description": "錯誤代碼",
+            "format": "int32",
+            "type": "integer",
+            "examples": [
+              0
+            ]
+          },
+          "errorMessage": {
+            "description": "錯誤訊息",
+            "type": "string",
+            "examples": [
+              ""
+            ]
+          },
+          "success": {
+            "description": "是否成功",
+            "type": "boolean",
+            "examples": [
+              true
+            ]
+          },
+          "totalCount": {
+            "description": "總筆數",
+            "format": "int64",
+            "type": "integer",
+            "examples": [
+              10
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "ReadBetRecordSumResponseVO": {
+        "description": "交易紀錄統計資料 - 回應",
+        "properties": {
+          "code": {
+            "description": "錯誤代碼",
+            "format": "int32",
+            "type": "integer",
+            "examples": [
+              0
+            ]
+          },
+          "errorMessage": {
+            "description": "錯誤訊息",
+            "type": "string",
+            "examples": [
+              ""
+            ]
+          },
+          "success": {
+            "description": "是否成功",
+            "type": "boolean",
+            "examples": [
+              true
+            ]
+          },
+          "totalBet": {
+            "description": "總投注",
+            "format": "double",
+            "type": "number",
+            "examples": [
+              100
+            ]
+          },
+          "totalCount": {
+            "description": "總筆數",
+            "format": "int64",
+            "type": "integer",
+            "examples": [
+              10
+            ]
+          },
+          "totalJpWin": {
+            "description": "總 JP 贏分",
+            "format": "double",
+            "type": "number",
+            "examples": [
+              100
+            ]
+          },
+          "totalRefund": {
+            "description": "總退款",
+            "format": "double",
+            "type": "number",
+            "examples": [
+              100
+            ]
+          },
+          "totalValidBet": {
+            "description": "總有效投注",
+            "format": "double",
+            "type": "number",
+            "examples": [
+              100
+            ]
+          },
+          "totalWin": {
+            "description": "總贏分",
+            "format": "double",
+            "type": "number",
+            "examples": [
+              100
+            ]
+          },
+          "totalWinLose": {
+            "description": "總輸贏",
+            "format": "double",
+            "type": "number",
+            "examples": [
+              100
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "ReadDeviceListResponseVO": {
+        "description": "裝置清單 - 回應",
+        "properties": {
+          "code": {
+            "description": "錯誤代碼",
+            "format": "int32",
+            "type": "integer",
+            "examples": [
+              0
+            ]
+          },
+          "deviceList": {
+            "$ref": "#/components/schemas/deviceType"
+          },
+          "errorMessage": {
+            "description": "錯誤訊息",
+            "type": "string",
+            "examples": [
+              ""
+            ]
+          },
+          "success": {
+            "description": "是否成功",
+            "type": "boolean",
+            "examples": [
+              true
+            ]
+          }
+        },
+        "required": [
+          "deviceList"
+        ],
+        "type": "object"
+      },
+      "ReadDomainSettingResponseVO": {
+        "description": "域名設定",
+        "properties": {
+          "code": {
+            "description": "錯誤代碼",
+            "format": "int32",
+            "type": "integer",
+            "examples": [
+              0
+            ]
+          },
+          "createTime": {
+            "description": "建立時間",
+            "type": "string",
+            "examples": [
+              "2025-01-01 00:00:00"
+            ]
+          },
+          "errorMessage": {
+            "description": "錯誤訊息",
+            "type": "string",
+            "examples": [
+              ""
+            ]
+          },
+          "id": {
+            "description": "ID",
+            "type": "string",
+            "examples": [
+              "676e4252e0eb93260d1002f9"
+            ]
+          },
+          "modifyTime": {
+            "description": "修改時間",
+            "type": "string",
+            "examples": [
+              "2025-01-01 00:00:00"
+            ]
+          },
+          "siteList": {
+            "description": "域名",
+            "items": {
+              "$ref": "#/components/schemas/SiteDetail"
+            },
+            "type": "array",
+            "uniqueItems": true
+          },
+          "success": {
+            "description": "是否成功",
+            "type": "boolean",
+            "examples": [
+              true
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "ReadLoginLogListResponseVO": {
+        "description": "登入記錄 - 回應物件",
+        "properties": {
+          "code": {
+            "description": "錯誤代碼",
+            "format": "int32",
+            "type": "integer",
+            "examples": [
+              0
+            ]
+          },
+          "errorMessage": {
+            "description": "錯誤訊息",
+            "type": "string",
+            "examples": [
+              ""
+            ]
+          },
+          "logInLogList": {
+            "description": "登入記錄",
+            "items": {
+              "$ref": "#/components/schemas/LoginLogVO"
+            },
+            "type": "array"
+          },
+          "success": {
+            "description": "是否成功",
+            "type": "boolean",
+            "examples": [
+              true
+            ]
+          },
+          "total": {
+            "description": "總筆數",
+            "format": "int64",
+            "type": "integer",
+            "examples": [
+              10
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "ReadManualTransactionCodeListResponseVO": {
+        "description": "人工存款類型清單 - 回應",
+        "properties": {
+          "code": {
+            "description": "錯誤代碼",
+            "format": "int32",
+            "type": "integer",
+            "examples": [
+              0
+            ]
+          },
+          "errorMessage": {
+            "description": "錯誤訊息",
+            "type": "string",
+            "examples": [
+              ""
+            ]
+          },
+          "manualDeposit": {
+            "description": "人工存款類型清單",
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "examples": [
+              [
+                "deposit_manual",
+                "monthLy_bonus"
+              ]
+            ]
+          },
+          "success": {
+            "description": "是否成功",
+            "type": "boolean",
+            "examples": [
+              true
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "ReadMemberLevelSettingListResponseVO": {
+        "properties": {
+          "list": {
+            "description": "會員等級設定列表",
+            "items": {
+              "$ref": "#/components/schemas/MemberLevelSettingResponseVO"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "ReadMemberListRequestVO": {
+        "description": "查詢會員 - 請求物件",
+        "properties": {
+          "account": {
+            "description": "帳號",
+            "type": "string",
+            "examples": [
+              "Google_asd123"
+            ]
+          },
+          "birthday": {
+            "description": "生日",
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "examples": [
+              [
+                "1970-01-01",
+                "1970-01-01"
+              ]
+            ]
+          },
+          "countryCode": {
+            "description": "國碼",
+            "type": "string",
+            "examples": [
+              "+886"
+            ]
+          },
+          "createDate": {
+            "description": "建立日期",
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "examples": [
+              [
+                "2025-01-01",
+                "2025-01-31"
+              ]
+            ]
+          },
+          "createDevice": {
+            "description": "註冊裝置",
+            "type": "string",
+            "examples": [
+              "Computer"
+            ]
+          },
+          "createDomain": {
+            "description": "註冊網址",
+            "type": "string",
+            "examples": [
+              "http://localhost"
+            ]
+          },
+          "createIp": {
+            "description": "註冊IP",
+            "type": "string",
+            "examples": [
+              "127.0.0.1"
+            ]
+          },
+          "createMethod": {
+            "description": "註冊方式",
+            "type": "string",
+            "examples": [
+              "Google"
+            ]
+          },
+          "facebookMail": {
+            "description": "FacebookMail",
+            "type": "string",
+            "examples": [
+              "123@abc.cc"
+            ]
+          },
+          "gameAccount": {
+            "description": "遊戲錢包帳號",
+            "type": "string",
+            "examples": [
+              "paul"
+            ]
+          },
+          "gameProvider": {
+            "description": "遊戲供應商",
+            "type": "string",
+            "examples": [
+              "CR"
+            ]
+          },
+          "googleMail": {
+            "description": "GoogleMail",
+            "type": "string",
+            "examples": [
+              "123@abc.cc"
+            ]
+          },
+          "level": {
+            "description": "會員等級",
+            "format": "int32",
+            "type": "integer",
+            "examples": [
+              1
+            ]
+          },
+          "mail": {
+            "description": "信箱",
+            "type": "string",
+            "examples": [
+              "123@abc.cc"
+            ]
+          },
+          "mailVerify": {
+            "description": "信箱驗證",
+            "type": "boolean",
+            "examples": [
+              false
+            ]
+          },
+          "maxCash": {
+            "description": "最大點數",
+            "format": "double",
+            "type": "number",
+            "examples": [
+              123
+            ]
+          },
+          "maxPoint": {
+            "description": "最大遊戲幣",
+            "format": "double",
+            "type": "number",
+            "examples": [
+              123
+            ]
+          },
+          "minCash": {
+            "description": "最小點數",
+            "format": "double",
+            "type": "number",
+            "examples": [
+              123
+            ]
+          },
+          "minPoint": {
+            "description": "最小遊戲幣",
+            "format": "double",
+            "type": "number",
+            "examples": [
+              123
+            ]
+          },
+          "nickName": {
+            "description": "暱稱",
+            "type": "string",
+            "examples": [
+              "暱稱"
+            ]
+          },
+          "pageIndex": {
+            "description": "頁碼",
+            "format": "int32",
+            "minimum": 1,
+            "type": "integer",
+            "examples": [
+              1
+            ]
+          },
+          "pageSize": {
+            "description": "筆數",
+            "format": "int32",
+            "minimum": 1,
+            "type": "integer",
+            "examples": [
+              10
+            ]
+          },
+          "phone": {
+            "description": "手機",
+            "type": "string",
+            "examples": [
+              "0912123456"
+            ]
+          },
+          "searchType": {
+            "description": "查詢類型",
+            "type": "string",
+            "examples": [
+              "Account"
+            ]
+          },
+          "sex": {
+            "description": "性別",
+            "type": "string",
+            "examples": [
+              "male"
+            ]
+          },
+          "smsVerify": {
+            "description": "手機驗證",
+            "type": "boolean",
+            "examples": [
+              false
+            ]
+          },
+          "status": {
+            "description": "狀態",
+            "enum": [
+              "active",
+              "inactive",
+              "delete"
+            ],
+            "type": "string",
+            "examples": [
+              "active"
+            ]
+          },
+          "vipGradeSettingId": {
+            "description": "VIP層級",
+            "type": "string",
+            "examples": [
+              "VIP1"
+            ]
+          }
+        },
+        "required": [
+          "pageIndex",
+          "pageSize"
+        ],
+        "type": "object"
+      },
+      "ReadMemberListResponseVO": {
+        "description": "查詢會員 - 回應物件",
+        "properties": {
+          "accountList": {
+            "description": "會員列表",
+            "items": {
+              "$ref": "#/components/schemas/MemberItem"
+            },
+            "type": "array"
+          },
+          "code": {
+            "description": "錯誤代碼",
+            "format": "int32",
+            "type": "integer",
+            "examples": [
+              0
+            ]
+          },
+          "errorMessage": {
+            "description": "錯誤訊息",
+            "type": "string",
+            "examples": [
+              ""
+            ]
+          },
+          "success": {
+            "description": "是否成功",
+            "type": "boolean",
+            "examples": [
+              true
+            ]
+          },
+          "totalCash": {
+            "description": "總點數",
+            "format": "double",
+            "type": "number",
+            "examples": [
+              10
+            ]
+          },
+          "totalCount": {
+            "description": "總筆數",
+            "format": "int64",
+            "type": "integer",
+            "examples": [
+              10
+            ]
+          },
+          "totalPoint": {
+            "description": "總遊戲幣",
+            "format": "double",
+            "type": "number",
+            "examples": [
+              10
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "ReadMemberResponseVO": {
+        "description": "會員資訊",
+        "properties": {
+          "account": {
+            "description": "帳號",
+            "type": "string",
+            "examples": [
+              "account"
+            ]
+          },
+          "authStatus": {
+            "description": "null or PASS : 不需進入二階段驗證, WAIT_TWO_PHASES : 需二階段驗證",
+            "enum": [
+              false,
+              false,
+              false
+            ],
+            "type": "boolean",
+            "examples": [
+              false
+            ]
+          },
+          "betLimits": {
+            "description": "限紅",
+            "items": {
+              "$ref": "#/components/schemas/BetLimit"
+            },
+            "type": "array"
+          },
+          "betRecordCount": {
+            "description": "總注單筆數",
+            "format": "int64",
+            "type": "integer",
+            "examples": [
+              10
+            ]
+          },
+          "birthday": {
+            "description": "生日",
+            "type": "string",
+            "examples": [
+              "1970-01-01"
+            ]
+          },
+          "code": {
+            "description": "錯誤代碼",
+            "format": "int32",
+            "type": "integer",
+            "examples": [
+              0
+            ]
+          },
+          "country": {
+            "description": "國家",
+            "type": "string",
+            "examples": [
+              "JP"
+            ]
+          },
+          "countryCode": {
+            "description": "國碼",
+            "type": "string",
+            "examples": [
+              "+886"
+            ]
+          },
+          "createAccount": {
+            "description": "建立者",
+            "type": "string",
+            "examples": [
+              "System"
+            ]
+          },
+          "createCountry": {
+            "description": "建立者國家",
+            "type": "string",
+            "examples": [
+              "JP"
+            ]
+          },
+          "createDevice": {
+            "description": "建立裝置",
+            "type": "string",
+            "examples": [
+              "Computer"
+            ]
+          },
+          "createIdentity": {
+            "description": "建立者身份",
+            "enum": [
+              "ADMIN"
+            ],
+            "type": "string",
+            "examples": [
+              "ADMIN"
+            ]
+          },
+          "createIp": {
+            "description": "建立者 IP",
+            "type": "string",
+            "examples": [
+              "0.0.0.0"
+            ]
+          },
+          "createRegion": {
+            "description": "建立者區域",
+            "type": "string",
+            "examples": [
+              "Tokyo"
+            ]
+          },
+          "createTime": {
+            "description": "建立時間",
+            "type": "string",
+            "examples": [
+              "2025-01-01 00:00:00"
+            ]
+          },
+          "errorMessage": {
+            "description": "錯誤訊息",
+            "type": "string",
+            "examples": [
+              ""
+            ]
+          },
+          "firstName": {
+            "description": "名",
+            "type": "string",
+            "examples": [
+              "John"
+            ]
+          },
+          "forceAuth": {
+            "description": "綁定二次驗證",
+            "type": "boolean",
+            "examples": [
+              false
+            ]
+          },
+          "fullName": {
+            "description": "姓名",
+            "type": "string",
+            "examples": [
+              "John, Smith"
+            ]
+          },
+          "gameAccounts": {
+            "description": "遊戲帳號",
+            "items": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object",
+              "properties": {}
+            },
+            "type": "array"
+          },
+          "gameID": {
+            "description": "遊戲 ID",
+            "type": "string",
+            "examples": [
+              "22041"
+            ]
+          },
+          "gameType": {
+            "description": "遊戲類型",
+            "type": "string",
+            "examples": [
+              "slot"
+            ]
+          },
+          "lastBetRecordID": {
+            "description": "最後注單單號",
+            "type": "string",
+            "examples": [
+              "676e4252e0eb93260d1002f9"
+            ]
+          },
+          "lastBetTime": {
+            "description": "最後投注時間",
+            "type": "string",
+            "examples": [
+              "2025-01-01 00:00:00"
+            ]
+          },
+          "lastLoginDevice": {
+            "description": "最後登入裝置",
+            "type": "string",
+            "examples": [
+              "Computer"
+            ]
+          },
+          "lastLoginIp": {
+            "description": "最後登入 IP",
+            "type": "string",
+            "examples": [
+              "0.0.0.0"
+            ]
+          },
+          "lastLoginTime": {
+            "description": "最後登入時間",
+            "type": "string",
+            "examples": [
+              "2025-01-01 00:00:00"
+            ]
+          },
+          "lastName": {
+            "description": "姓",
+            "type": "string",
+            "examples": [
+              "Smith"
+            ]
+          },
+          "level": {
+            "description": "會員層級",
+            "type": "string",
+            "examples": [
+              "0"
+            ]
+          },
+          "mail": {
+            "description": "信箱",
+            "type": "string",
+            "examples": [
+              "123@abc.cc"
+            ]
+          },
+          "memberLevelSettingId": {
+            "description": "會員層級 ID",
+            "type": "string",
+            "examples": [
+              "676e4252e0eb93260d1002f9"
+            ]
+          },
+          "memo": {
+            "description": "備註",
+            "maxLength": 250,
+            "type": "string",
+            "examples": [
+              "memo"
+            ]
+          },
+          "modifyTime": {
+            "description": "異動時間",
+            "type": "string",
+            "examples": [
+              "2025-01-01 00:00:00"
+            ]
+          },
+          "nickName": {
+            "description": "暱稱",
+            "type": "string",
+            "examples": [
+              "John, Smith"
+            ]
+          },
+          "phone": {
+            "description": "手機",
+            "type": "string",
+            "examples": [
+              "0912123456"
+            ]
+          },
+          "platform": {
+            "description": "遊戲平台",
+            "type": "string",
+            "examples": [
+              "FC"
+            ]
+          },
+          "point": {
+            "description": "帳戶餘額",
+            "format": "double",
+            "type": "number",
+            "examples": [
+              100
+            ]
+          },
+          "region": {
+            "description": "區域",
+            "type": "string",
+            "examples": [
+              "Tokyo"
+            ]
+          },
+          "sex": {
+            "description": "性別",
+            "type": "string"
+          },
+          "smsVerify": {
+            "description": "手機驗證",
+            "type": "boolean",
+            "examples": [
+              false
+            ]
+          },
+          "status": {
+            "description": "狀態",
+            "enum": [
+              "active",
+              "inactive",
+              "delete"
+            ],
+            "type": "string",
+            "examples": [
+              "active"
+            ]
+          },
+          "success": {
+            "description": "是否成功",
+            "type": "boolean",
+            "examples": [
+              true
+            ]
+          },
+          "thirdAccounts": {
+            "description": "第三方登入帳號",
+            "items": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object",
+              "properties": {}
+            },
+            "type": "array"
+          },
+          "totalBet": {
+            "description": "總投注金額",
+            "format": "double",
+            "type": "number",
+            "examples": [
+              100
+            ]
+          },
+          "totalValidBet": {
+            "description": "總有效投注",
+            "format": "double",
+            "type": "number",
+            "examples": [
+              100
+            ]
+          },
+          "verify": {
+            "type": "boolean"
+          },
+          "vipGradeSetting": {
+            "description": "VIP層級",
+            "type": "string",
+            "examples": [
+              "青銅"
+            ]
+          },
+          "vipGradeSettingId": {
+            "description": "VIP層級Id",
+            "type": "string",
+            "examples": [
+              "676e4252e0eb93260d1002f9"
+            ]
+          },
+          "winLose": {
+            "description": "總輸贏",
+            "format": "double",
+            "type": "number",
+            "examples": [
+              100
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "ReadPaymentCodeResponseVO": {
+        "description": "儲值代碼 - 回應",
+        "properties": {
+          "code": {
+            "description": "錯誤代碼",
+            "format": "int32",
+            "type": "integer",
+            "examples": [
+              0
+            ]
+          },
+          "errorMessage": {
+            "description": "錯誤訊息",
+            "type": "string",
+            "examples": [
+              ""
+            ]
+          },
+          "map": {
+            "additionalProperties": {
+              "description": "儲值代碼",
+              "items": {
+                "description": "儲值代碼",
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "description": "儲值代碼",
+            "type": "object",
+            "properties": {}
+          },
+          "success": {
+            "description": "是否成功",
+            "type": "boolean",
+            "examples": [
+              true
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "ReadPaymentRecordListRequestVO": {
+        "description": "查詢儲值紀錄 - 請求",
+        "properties": {
+          "accounts": {
+            "description": "帳號",
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "examples": [
+              [
+                "account"
+              ]
+            ]
+          },
+          "cashSettingIds": {
+            "description": "儲值商戶",
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "examples": [
+              [
+                "676e4252e0eb93260d1002f9",
+                "6537622bfa46cc3d988d8375"
+              ]
+            ]
+          },
+          "createTime": {
+            "description": "申請時間",
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "examples": [
+              [
+                "2025-01-01 00:00:00",
+                "2025-01-31 23:59:59"
+              ]
+            ]
+          },
+          "firstDeposit": {
+            "description": "首儲",
+            "enum": [
+              false,
+              true,
+              false
+            ],
+            "type": "boolean",
+            "examples": [
+              true
+            ]
+          },
+          "gameAccount": {
+            "description": "遊戲錢包帳號",
+            "type": "string",
+            "examples": [
+              "gameAccount"
+            ]
+          },
+          "gameProvider": {
+            "description": "娛樂城",
+            "type": "string",
+            "examples": [
+              "FC"
+            ]
+          },
+          "ids": {
+            "description": "單號",
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "examples": [
+              [
+                "676e4252e0eb93260d1002f9",
+                "6537622bfa46cc3d988d8375"
+              ]
+            ]
+          },
+          "maxCash": {
+            "description": "最大金額",
+            "format": "double",
+            "type": "number",
+            "examples": [
+              100
+            ]
+          },
+          "maxMemberLevel": {
+            "description": "最大會員等級",
+            "format": "int32",
+            "type": "integer",
+            "examples": [
+              10
+            ]
+          },
+          "maxPoint": {
+            "description": "最大點數",
+            "format": "double",
+            "type": "number",
+            "examples": [
+              100
+            ]
+          },
+          "methods": {
+            "description": "儲值類型",
+            "items": {
+              "$ref": "#/components/schemas/Method"
+            },
+            "type": "array",
+            "examples": [
+              [
+                "CREDIT_CARD",
+                "SERIAL_NUMBER"
+              ]
+            ]
+          },
+          "minCash": {
+            "description": "最小金額",
+            "format": "double",
+            "type": "number",
+            "examples": [
+              100
+            ]
+          },
+          "minMemberLevel": {
+            "description": "最小會員等級",
+            "format": "int32",
+            "type": "integer",
+            "examples": [
+              1
+            ]
+          },
+          "minPoint": {
+            "description": "最小點數",
+            "format": "double",
+            "type": "number",
+            "examples": [
+              100
+            ]
+          },
+          "modifyTime": {
+            "description": "處理時間",
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "examples": [
+              [
+                "2025-01-01 00:00:00",
+                "2025-01-31 23:59:59"
+              ]
+            ]
+          },
+          "nickname": {
+            "description": "暱稱",
+            "type": "string",
+            "examples": [
+              "nickname"
+            ]
+          },
+          "operatorAccount": {
+            "description": "操作人員帳號",
+            "type": "string",
+            "examples": [
+              "System"
+            ]
+          },
+          "operatorIdentity": {
+            "description": "操作人員身份",
+            "enum": [
+              "MEMBER",
+              "ADMIN"
+            ],
+            "type": "string",
+            "examples": [
+              "ADMIN"
+            ]
+          },
+          "orderStatus": {
+            "$ref": "#/components/schemas/CallbackStatus"
+          },
+          "pageIndex": {
+            "description": "頁碼",
+            "format": "int32",
+            "minimum": 1,
+            "type": "integer",
+            "examples": [
+              1
+            ]
+          },
+          "pageSize": {
+            "description": "筆數",
+            "format": "int32",
+            "minimum": 1,
+            "type": "integer",
+            "examples": [
+              10
+            ]
+          },
+          "paymentId": {
+            "description": "商戶單號",
+            "type": "string",
+            "examples": [
+              "f461b7c2763c46c1b02597d7f5b6ee60"
+            ]
+          },
+          "recordStatuses": {
+            "description": "訂單狀態",
+            "items": {
+              "$ref": "#/components/schemas/RecordStatus"
+            },
+            "type": "array",
+            "examples": [
+              [
+                "PENDING",
+                "SUCCESS",
+                "FAILURE",
+                "CANCELED"
+              ]
+            ]
+          },
+          "searchType": {
+            "description": "查詢類型",
+            "enum": [
+              "ACCOUNT",
+              "NICKNAME",
+              "GAME_ACCOUNT"
+            ],
+            "type": "string",
+            "examples": [
+              "ACCOUNT"
+            ]
+          },
+          "serialNumber": {
+            "description": "儲值卡序號",
+            "type": "string",
+            "examples": [
+              "678088c342ebe708a40b"
+            ]
+          },
+          "vipGradeSettingIds": {
+            "description": "VIP 層級",
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "examples": [
+              [
+                "676e4252e0eb93260d1002f9",
+                "676e4252e0eb93260d1002f9"
+              ]
+            ]
+          }
+        },
+        "required": [
+          "pageIndex",
+          "pageSize",
+          "searchType"
+        ],
+        "type": "object"
+      },
+      "ReadPaymentRecordListResponseVO": {
+        "description": "儲值紀錄 - 回應",
+        "properties": {
+          "code": {
+            "description": "錯誤代碼",
+            "format": "int32",
+            "type": "integer",
+            "examples": [
+              0
+            ]
+          },
+          "errorMessage": {
+            "description": "錯誤訊息",
+            "type": "string",
+            "examples": [
+              ""
+            ]
+          },
+          "list": {
+            "description": "收付紀錄",
+            "items": {
+              "$ref": "#/components/schemas/PaymentRecordVO"
+            },
+            "type": "array"
+          },
+          "success": {
+            "description": "是否成功",
+            "type": "boolean",
+            "examples": [
+              true
+            ]
+          },
+          "totalCash": {
+            "description": "總金額",
+            "format": "double",
+            "type": "number",
+            "examples": [
+              100
+            ]
+          },
+          "totalCount": {
+            "description": "總筆數",
+            "format": "int64",
+            "type": "integer",
+            "examples": [
+              10
+            ]
+          },
+          "totalMember": {
+            "description": "總人數",
+            "format": "double",
+            "type": "number",
+            "examples": [
+              10
+            ]
+          },
+          "totalPoint": {
+            "description": "總點數",
+            "format": "double",
+            "type": "number",
+            "examples": [
+              100
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "ReadPaymentRecordPendingResponseVO": {
+        "description": "待處理存款訂單 - 回應",
+        "properties": {
+          "code": {
+            "description": "錯誤代碼",
+            "format": "int32",
+            "type": "integer",
+            "examples": [
+              0
+            ]
+          },
+          "deposit": {
+            "$ref": "#/components/schemas/PaymentTypeVO"
+          },
+          "errorMessage": {
+            "description": "錯誤訊息",
+            "type": "string",
+            "examples": [
+              ""
+            ]
+          },
+          "success": {
+            "description": "是否成功",
+            "type": "boolean",
+            "examples": [
+              true
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "ReadPersonalResponseVO": {
+        "description": "取得使用者資訊 - 回應物件",
+        "properties": {
+          "account": {
+            "description": "帳號",
+            "type": "string",
+            "examples": [
+              "account"
+            ]
+          },
+          "code": {
+            "description": "錯誤代碼",
+            "format": "int32",
+            "type": "integer",
+            "examples": [
+              0
+            ]
+          },
+          "customerService": {
+            "description": "客服資訊",
+            "type": "string"
+          },
+          "errorMessage": {
+            "description": "錯誤訊息",
+            "type": "string",
+            "examples": [
+              ""
+            ]
+          },
+          "locationList": {
+            "description": "店鋪資訊",
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "examples": [
+              [
+                "ALASKA",
+                "ALABAMA"
+              ]
+            ]
+          },
+          "mail": {
+            "description": "信箱",
+            "type": "string",
+            "examples": [
+              "123@abc.cc"
+            ]
+          },
+          "mailVerify": {
+            "description": "信箱驗證",
+            "type": "boolean",
+            "examples": [
+              false
+            ]
+          },
+          "mustChangePassword": {
+            "type": "boolean"
+          },
+          "nickname": {
+            "description": "暱稱",
+            "type": "string",
+            "examples": [
+              "nickname"
+            ]
+          },
+          "success": {
+            "description": "是否成功",
+            "type": "boolean",
+            "examples": [
+              true
+            ]
+          },
+          "systemTime": {
+            "description": "系統時間",
+            "type": "string",
+            "examples": [
+              "2025-01-01 00:00:00"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "ReadPlatformGameTypeResponseVO": {
+        "description": "平台遊戲類型 - 回應物件",
+        "properties": {
+          "code": {
+            "description": "錯誤代碼",
+            "format": "int32",
+            "type": "integer",
+            "examples": [
+              0
+            ]
+          },
+          "errorMessage": {
+            "description": "錯誤訊息",
+            "type": "string",
+            "examples": [
+              ""
+            ]
+          },
+          "list": {
+            "description": "遊戲類型詳細清單",
+            "items": {
+              "$ref": "#/components/schemas/plarformGameTypeDetail"
+            },
+            "type": "array"
+          },
+          "success": {
+            "description": "是否成功",
+            "type": "boolean",
+            "examples": [
+              true
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "ReadSettingListResponseVO": {
+        "description": "清單 - 回應",
+        "properties": {
+          "code": {
+            "description": "錯誤代碼",
+            "format": "int32",
+            "type": "integer",
+            "examples": [
+              0
+            ]
+          },
+          "errorMessage": {
+            "description": "錯誤訊息",
+            "type": "string",
+            "examples": [
+              ""
+            ]
+          },
+          "list": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "success": {
+            "description": "是否成功",
+            "type": "boolean",
+            "examples": [
+              true
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "ReadSupplierListResponseVO": {
+        "properties": {
+          "code": {
+            "description": "錯誤代碼",
+            "format": "int32",
+            "type": "integer",
+            "examples": [
+              0
+            ]
+          },
+          "errorMessage": {
+            "description": "錯誤訊息",
+            "type": "string",
+            "examples": [
+              ""
+            ]
+          },
+          "list": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "success": {
+            "description": "是否成功",
+            "type": "boolean",
+            "examples": [
+              true
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "ReadTenAccountResponseVO": {
+        "description": "10 筆列表 - 回應物件",
+        "properties": {
+          "accountList": {
+            "description": "帳號",
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "examples": [
+              [
+                "admin",
+                "agent"
+              ]
+            ]
+          },
+          "code": {
+            "description": "錯誤代碼",
+            "format": "int32",
+            "type": "integer",
+            "examples": [
+              0
+            ]
+          },
+          "errorMessage": {
+            "description": "錯誤訊息",
+            "type": "string",
+            "examples": [
+              ""
+            ]
+          },
+          "success": {
+            "description": "是否成功",
+            "type": "boolean",
+            "examples": [
+              true
+            ]
+          }
+        },
+        "required": [
+          "accountList"
+        ],
+        "type": "object"
+      },
+      "ReadTransferActionListResponseVO": {
+        "properties": {
+          "actions": {
+            "description": "交易類型",
+            "items": {
+              "$ref": "#/components/schemas/TransferActionVO"
+            },
+            "type": "array"
+          },
+          "code": {
+            "description": "錯誤代碼",
+            "format": "int32",
+            "type": "integer",
+            "examples": [
+              0
+            ]
+          },
+          "errorMessage": {
+            "description": "錯誤訊息",
+            "type": "string",
+            "examples": [
+              ""
+            ]
+          },
+          "success": {
+            "description": "是否成功",
+            "type": "boolean",
+            "examples": [
+              true
+            ]
+          }
+        },
+        "required": [
+          "actions"
+        ],
+        "type": "object"
+      },
+      "ReadTransferKanbanResponseVO": {
+        "description": "資訊看板 交易紀錄 - 回傳物件",
+        "properties": {
+          "dateList": {
+            "description": "清單",
+            "items": {
+              "$ref": "#/components/schemas/DateColumn"
+            },
+            "type": "array"
+          },
+          "total": {
+            "$ref": "#/components/schemas/DateColumn"
+          }
+        },
+        "type": "object"
+      },
+      "ReadTransferRecordListResponseVO": {
+        "description": "查詢交易記錄 - 回應",
+        "properties": {
+          "code": {
+            "description": "錯誤代碼",
+            "format": "int32",
+            "type": "integer",
+            "examples": [
+              0
+            ]
+          },
+          "errorMessage": {
+            "description": "錯誤訊息",
+            "type": "string",
+            "examples": [
+              ""
+            ]
+          },
+          "memberCount": {
+            "description": "總人數",
+            "format": "int64",
+            "type": "integer",
+            "examples": [
+              10
+            ]
+          },
+          "success": {
+            "description": "是否成功",
+            "type": "boolean",
+            "examples": [
+              true
+            ]
+          },
+          "totalCount": {
+            "description": "總筆數",
+            "format": "int64",
+            "type": "integer",
+            "examples": [
+              10
+            ]
+          },
+          "totalPoint": {
+            "description": "總點數",
+            "format": "double",
+            "type": "number",
+            "examples": [
+              100
+            ]
+          },
+          "transferRecordList": {
+            "description": "交易紀錄",
+            "items": {
+              "$ref": "#/components/schemas/TransferRecordVO"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "ReadTwoMonthsGameNameResponseVO": {
+        "description": "平台遊戲類型 - 回應物件",
+        "properties": {
+          "code": {
+            "description": "錯誤代碼",
+            "format": "int32",
+            "type": "integer",
+            "examples": [
+              0
+            ]
+          },
+          "errorMessage": {
+            "description": "錯誤訊息",
+            "type": "string",
+            "examples": [
+              ""
+            ]
+          },
+          "list": {
+            "description": "遊戲類型詳細清單",
+            "items": {
+              "$ref": "#/components/schemas/GameNameDetail"
+            },
+            "type": "array"
+          },
+          "success": {
+            "description": "是否成功",
+            "type": "boolean",
+            "examples": [
+              true
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "RecordStatus": {
+        "description": "訂單狀態",
+        "enum": [
+          "PENDING",
+          "SUCCESS",
+          "FAILURE",
+          "CANCELED"
+        ],
+        "type": "string",
+        "examples": [
+          "SUCCESS"
+        ]
+      },
+      "ReportColumnVO": {
+        "description": "報表欄位名稱物件",
+        "properties": {
+          "column": {
+            "description": "欄位",
+            "type": "string",
+            "examples": [
+              "account"
+            ]
+          },
+          "name": {
+            "description": "名稱",
+            "type": "string",
+            "examples": [
+              "帳號"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "SiteDetail": {
+        "description": "域名",
+        "properties": {
+          "apiUrls": {
+            "$ref": "#/components/schemas/map"
+          },
+          "url": {
+            "description": "前後台網址",
+            "type": "string",
+            "examples": [
+              "https://hnymmy.com"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "SiteResponseVO": {
+        "description": "站台 - 回應",
+        "properties": {
+          "city": {
+            "description": "城市",
+            "type": "string",
+            "examples": [
+              "Tokyo"
+            ]
+          },
+          "clientIP": {
+            "description": "客戶端 IP",
+            "type": "string",
+            "examples": [
+              "127.0.0.1"
+            ]
+          },
+          "country": {
+            "description": "國家",
+            "type": "string",
+            "examples": [
+              "JP"
+            ]
+          },
+          "directLink": {
+            "description": "直接連結",
+            "type": "string",
+            "examples": [
+              "data-openwidget-action=maximize"
+            ]
+          },
+          "faviconUrl": {
+            "description": "網站圖示 URL",
+            "type": "string",
+            "examples": [
+              "/common/upload-images/20230913_0tdkh1jxptbh.ico"
+            ]
+          },
+          "hlogoUrl": {
+            "description": "水平 Logo URL",
+            "type": "string",
+            "examples": [
+              "/common/upload-images/20240124_31h8mn3stvs.png"
+            ]
+          },
+          "isp": {
+            "description": "ISP",
+            "type": "string",
+            "examples": [
+              "Google LLC"
+            ]
+          },
+          "name": {
+            "description": "名稱",
+            "type": "string",
+            "examples": [
+              "BRL01"
+            ]
+          },
+          "region": {
+            "description": "區域",
+            "type": "string",
+            "examples": [
+              "Tokyo"
+            ]
+          },
+          "vlogoUrl": {
+            "description": "垂直 Logo URL",
+            "type": "string",
+            "examples": [
+              "/common/upload-images/20240730_3w4h8l1ivnp.svg"
+            ]
+          },
+          "widgetCode": {
+            "description": "Widget",
+            "type": "string",
+            "examples": [
+              "window.__ow = window.__ow || {};\\n"
+            ]
+          }
+        },
+        "required": [
+          "city",
+          "clientIP",
+          "country",
+          "directLink",
+          "faviconUrl",
+          "hlogoUrl",
+          "isp",
+          "name",
+          "region",
+          "vlogoUrl",
+          "widgetCode"
+        ],
+        "type": "object"
+      },
+      "TransferActionVO": {
+        "description": "類型",
+        "properties": {
+          "list": {
+            "description": "類型明細",
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "examples": [
+              [
+                "deposit",
+                "first_deposit"
+              ]
+            ]
+          },
+          "type": {
+            "description": "類型",
+            "type": "string",
+            "examples": [
+              "deposit"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "TransferRecordVO": {
+        "description": "交易記錄",
+        "properties": {
+          "account": {
+            "description": "帳號",
+            "type": "string",
+            "examples": [
+              "account"
+            ]
+          },
+          "accountIdentity": {
+            "description": "帳號身份",
+            "enum": [
+              "MEMBER"
+            ],
+            "type": "string",
+            "examples": [
+              "MEMBER"
+            ]
+          },
+          "action": {
+            "description": "交易類型",
+            "type": "string",
+            "examples": [
+              "deposit"
+            ]
+          },
+          "after": {
+            "description": "小計",
+            "format": "double",
+            "type": "number",
+            "examples": [
+              200
+            ]
+          },
+          "bankId": {
+            "description": "注單號碼",
+            "type": "string",
+            "examples": [
+              "498542050287861912"
+            ]
+          },
+          "createTime": {
+            "description": "建立時間",
+            "type": "string",
+            "examples": [
+              "2025-01-01 00:00:00"
+            ]
+          },
+          "firstDeposit": {
+            "description": "是否首儲",
+            "type": "boolean",
+            "examples": [
+              true
+            ]
+          },
+          "id": {
+            "description": "ID",
+            "type": "string",
+            "examples": [
+              "676e4252e0eb93260d1002f9"
+            ]
+          },
+          "memberLevel": {
+            "description": "會員等級",
+            "format": "int32",
+            "type": "integer",
+            "examples": [
+              1
+            ]
+          },
+          "memo": {
+            "description": "後台備註",
+            "maxLength": 250,
+            "type": "string",
+            "examples": [
+              "memo"
+            ]
+          },
+          "nickname": {
+            "description": "暱稱",
+            "type": "string",
+            "examples": [
+              "nickname"
+            ]
+          },
+          "noPrize": {
+            "description": "是否未派彩",
+            "type": "boolean",
+            "examples": [
+              true
+            ]
+          },
+          "operatorAccount": {
+            "description": "操作人員帳號",
+            "type": "string",
+            "examples": [
+              "System"
+            ]
+          },
+          "operatorIdentity": {
+            "description": "操作身份",
+            "enum": [
+              "MEMBER",
+              "ADMIN"
+            ],
+            "type": "string",
+            "examples": [
+              "ADMIN"
+            ]
+          },
+          "platform": {
+            "description": "遊戲平台",
+            "type": "string",
+            "examples": [
+              "FC"
+            ]
+          },
+          "point": {
+            "description": "點數",
+            "format": "double",
+            "type": "number",
+            "examples": [
+              100
+            ]
+          },
+          "rate": {
+            "description": "匯率",
+            "format": "double",
+            "type": "number",
+            "examples": [
+              10
+            ]
+          },
+          "recordAction": {
+            "description": "類型",
+            "type": "string"
+          },
+          "recordId": {
+            "description": "局號",
+            "type": "string",
+            "examples": [
+              "14918411"
+            ]
+          },
+          "referenceId": {
+            "description": "參考單號",
+            "type": "string",
+            "examples": [
+              "676e4252e0eb93260d1002f9"
+            ]
+          },
+          "status": {
+            "description": "狀態",
+            "type": "string",
+            "examples": [
+              "true"
+            ]
+          },
+          "supplier": {
+            "description": "娛樂城",
+            "type": "string",
+            "examples": [
+              "FC"
+            ]
+          },
+          "systemMemo": {
+            "description": "系統備註",
+            "maxLength": 250,
+            "type": "string",
+            "examples": [
+              "memo"
+            ]
+          },
+          "userMemo": {
+            "description": "用戶備註",
+            "maxLength": 250,
+            "type": "string",
+            "examples": [
+              "memo"
+            ]
+          },
+          "vipGradeSettingId": {
+            "description": "VIP層級",
+            "type": "string",
+            "examples": [
+              "676e4252e0eb93260d1002f9"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "Type": {
+        "description": "儲值類型",
+        "enum": [
+          "DEPOSIT",
+          "FIRST_DEPOSIT"
+        ],
+        "type": "string",
+        "examples": [
+          "DEPOSIT"
+        ]
+      },
+      "UpdateAdminForceAuthRequestVO": {
+        "properties": {
+          "account": {
+            "description": "帳號",
+            "type": "string",
+            "examples": [
+              "account"
+            ]
+          },
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "account"
+        ],
+        "type": "object"
+      },
+      "UpdateAdminInfoRequestVO": {
+        "description": "修改管理員帳號 - 基本資料 - 請求物件",
+        "properties": {
+          "account": {
+            "description": "帳號",
+            "type": "string",
+            "examples": [
+              "account"
+            ]
+          },
+          "mail": {
+            "description": "信箱",
+            "type": "string",
+            "examples": [
+              "123@abc.cc"
+            ]
+          },
+          "nickname": {
+            "description": "暱稱",
+            "type": "string",
+            "examples": [
+              "nickname"
+            ]
+          }
+        },
+        "required": [
+          "account",
+          "nickname"
+        ],
+        "type": "object"
+      },
+      "UpdateAdminManualTransferRequestVO": {
+        "description": "修改管理員帳號 - 人工存款限額 - 請求物件",
+        "properties": {
+          "account": {
+            "description": "帳號",
+            "type": "string",
+            "examples": [
+              "account"
+            ]
+          },
+          "manualTransfer": {
+            "$ref": "#/components/schemas/ManualTransfer"
+          }
+        },
+        "required": [
+          "account"
+        ],
+        "type": "object"
+      },
+      "UpdateAdminRoleRequestVO": {
+        "description": "修改管理員角色 - 請求物件",
+        "properties": {
+          "account": {
+            "description": "帳號",
+            "type": "string",
+            "examples": [
+              "account"
+            ]
+          },
+          "roleList": {
+            "description": "角色 ID",
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "examples": [
+              [
+                "6111ede1b9e44156132a2d8c"
+              ]
+            ]
+          }
+        },
+        "required": [
+          "account",
+          "roleList"
+        ],
+        "type": "object"
+      },
+      "UpdateAdminStatusRequestVO": {
+        "description": "狀態 - 請求",
+        "properties": {
+          "account": {
+            "description": "帳號",
+            "type": "string",
+            "examples": [
+              "account"
+            ]
+          },
+          "status": {
+            "description": "狀態",
+            "enum": [
+              "active",
+              "inactive",
+              "delete"
+            ],
+            "type": "string",
+            "examples": [
+              "active"
+            ]
+          }
+        },
+        "required": [
+          "account",
+          "status"
+        ],
+        "type": "object"
+      },
+      "UpdateDomainSettingRequestVO": {
+        "description": "修改域名設定 - 請求",
+        "properties": {
+          "siteList": {
+            "description": "域名",
+            "items": {
+              "$ref": "#/components/schemas/SiteDetail"
+            },
+            "type": "array",
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "siteList"
+        ],
+        "type": "object"
+      },
+      "UpdateDomainSettingResponseVO": {
+        "description": "域名列表 - 回應",
+        "properties": {
+          "code": {
+            "description": "錯誤代碼",
+            "format": "int32",
+            "type": "integer",
+            "examples": [
+              0
+            ]
+          },
+          "errorMessage": {
+            "description": "錯誤訊息",
+            "type": "string",
+            "examples": [
+              ""
+            ]
+          },
+          "list": {
+            "description": "Storage",
+            "items": {
+              "$ref": "#/components/schemas/BlobVO"
+            },
+            "type": "array"
+          },
+          "success": {
+            "description": "是否成功",
+            "type": "boolean",
+            "examples": [
+              true
+            ]
+          }
+        },
+        "required": [
+          "list"
+        ],
+        "type": "object"
+      },
+      "UpdateMemberInfoRequestVO": {
+        "description": "基本資訊 - 請求",
+        "properties": {
+          "birthday": {
+            "description": "生日",
+            "type": "string",
+            "examples": [
+              "1970-01-01"
+            ]
+          },
+          "countryCode": {
+            "description": "國碼",
+            "type": "string",
+            "examples": [
+              "+886"
+            ]
+          },
+          "firstName": {
+            "description": "名",
+            "type": "string",
+            "examples": [
+              "John"
+            ]
+          },
+          "lastName": {
+            "description": "姓",
+            "type": "string",
+            "examples": [
+              "Smith"
+            ]
+          },
+          "mail": {
+            "description": "信箱",
+            "type": "string",
+            "examples": [
+              "123@abc.cc"
+            ]
+          },
+          "memberAccount": {
+            "description": "帳號",
+            "type": "string",
+            "examples": [
+              "memberAccount"
+            ]
+          },
+          "nickName": {
+            "description": "暱稱",
+            "type": "string",
+            "examples": [
+              "John, Smith"
+            ]
+          },
+          "phone": {
+            "description": "手機",
+            "type": "string",
+            "examples": [
+              "0912123456"
+            ]
+          },
+          "sex": {
+            "description": "性別",
+            "type": "string"
+          }
+        },
+        "required": [
+          "memberAccount",
+          "nickName"
+        ],
+        "type": "object"
+      },
+      "UpdateMemberLevelSettingRequestVO": {
+        "properties": {
+          "list": {
+            "description": "等級資料列表",
+            "items": {
+              "$ref": "#/components/schemas/MemberLevelSettingRequestVO"
+            },
+            "type": "array",
+            "examples": [
+              []
+            ]
+          }
+        },
+        "required": [
+          "list"
+        ],
+        "type": "object"
+      },
+      "UpdateMemberMemoRequestVO": {
+        "description": "備註 - 請求",
+        "properties": {
+          "memberAccount": {
+            "description": "帳號",
+            "type": "string",
+            "examples": [
+              "memberAccount"
+            ]
+          },
+          "memo": {
+            "description": "備註",
+            "type": "string",
+            "examples": [
+              "memo"
+            ]
+          }
+        },
+        "required": [
+          "memberAccount",
+          "memo"
+        ],
+        "type": "object"
+      },
+      "UpdateMemberStatusRequestVO": {
+        "description": "狀態 - 請求",
+        "properties": {
+          "memberAccount": {
+            "description": "帳號",
+            "type": "string",
+            "examples": [
+              "memberAccount"
+            ]
+          },
+          "status": {
+            "description": "狀態",
+            "enum": [
+              "active",
+              "inactive",
+              "freeze"
+            ],
+            "type": "string",
+            "examples": [
+              "active"
+            ]
+          }
+        },
+        "required": [
+          "memberAccount",
+          "status"
+        ],
+        "type": "object"
+      },
+      "UpdatePaymentRecordStatusRequestVO": {
+        "description": "修改儲值紀錄狀態 - 請求",
+        "properties": {
+          "action": {
+            "description": "動作",
+            "enum": [
+              "CONFIRM",
+              "CANCEL"
+            ],
+            "type": "string",
+            "examples": [
+              "CONFIRM"
+            ]
+          },
+          "id": {
+            "description": "ID",
+            "type": "string",
+            "examples": [
+              "676e4252e0eb93260d1002f9"
+            ]
+          }
+        },
+        "required": [
+          "action",
+          "id"
+        ],
+        "type": "object"
+      },
+      "UpdatePaymentRecordStatusResponseVO": {
+        "description": "修改儲值紀錄狀態 - 回應",
+        "properties": {
+          "code": {
+            "description": "錯誤代碼",
+            "format": "int32",
+            "type": "integer",
+            "examples": [
+              0
+            ]
+          },
+          "errorMessage": {
+            "description": "錯誤訊息",
+            "type": "string",
+            "examples": [
+              ""
+            ]
+          },
+          "recordStatus": {
+            "$ref": "#/components/schemas/RecordStatus"
+          },
+          "success": {
+            "description": "是否成功",
+            "type": "boolean",
+            "examples": [
+              true
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "UpdatePersonalForcePasswordRequestVO": {
+        "description": "強制修改密碼 - 請求物件",
+        "properties": {
+          "newPassword": {
+            "description": "新密碼",
+            "type": "string",
+            "examples": [
+              "newPassword"
+            ]
+          }
+        },
+        "required": [
+          "newPassword"
+        ],
+        "type": "object"
+      },
+      "UpdatePersonalInfoRequestVO": {
+        "description": "基本資料 - 請求物件",
+        "properties": {
+          "locationList": {
+            "description": "店鋪資訊",
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "examples": [
+              [
+                "ALASKA",
+                "ALABAMA"
+              ]
+            ]
+          },
+          "mail": {
+            "description": "信箱",
+            "type": "string",
+            "examples": [
+              "123@abc.cc"
+            ]
+          },
+          "nickname": {
+            "description": "暱稱",
+            "type": "string",
+            "examples": [
+              "nickname"
+            ]
+          }
+        },
+        "required": [
+          "mail"
+        ],
+        "type": "object"
+      },
+      "UpdatePersonalPasswordRequestVO": {
+        "description": "帳號修改密碼 - 請求",
+        "properties": {
+          "newPassword": {
+            "description": "新密碼",
+            "type": "string",
+            "examples": [
+              "newPassw0rd"
+            ]
+          },
+          "oldPassword": {
+            "description": "舊密碼",
+            "type": "string",
+            "examples": [
+              "oldPassw0rd"
+            ]
+          }
+        },
+        "required": [
+          "newPassword",
+          "oldPassword"
+        ],
+        "type": "object"
+      },
+      "UpdatePersonalPasswordResponseVO": {
+        "description": "管理員 帳號密碼修改 (自己改自己) - 回應",
+        "properties": {
+          "code": {
+            "description": "錯誤代碼",
+            "format": "int32",
+            "type": "integer",
+            "examples": [
+              0
+            ]
+          },
+          "errorMessage": {
+            "description": "錯誤訊息",
+            "type": "string",
+            "examples": [
+              ""
+            ]
+          },
+          "success": {
+            "description": "是否成功",
+            "type": "boolean",
+            "examples": [
+              true
+            ]
+          },
+          "token": {
+            "description": "Token",
+            "type": "string",
+            "examples": [
+              "eyJhbGciOiJIUzI1NiJ9"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "UpgradeRewards": {
+        "description": "升等獎勵",
+        "properties": {
+          "balance": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "exp": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "honer": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "integral": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "authorities": {
+        "description": "帳號權限",
+        "properties": {
+          "BaseAuthority": {
+            "type": "boolean",
+            "examples": [
+              true
+            ]
+          },
+          "EditMemberDetailAuthority": {
+            "type": "boolean",
+            "examples": [
+              false
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "betLimitSetting": {
+        "description": "限紅設定 (json)",
+        "properties": {
+          "betLimitGroup": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "description": {
+        "description": "描述",
+        "properties": {
+          "cn": {
+            "type": "string",
+            "examples": [
+              "国际化"
+            ]
+          },
+          "en": {
+            "type": "string",
+            "examples": [
+              "Internationalization"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "deviceType": {
+        "description": "裝置代碼",
+        "properties": {
+          "COMPUTER": {
+            "type": "string",
+            "examples": [
+              "Computer"
+            ]
+          },
+          "DMR": {
+            "type": "string",
+            "examples": [
+              "Digital media receiver"
+            ]
+          },
+          "GAME_CONSOLE": {
+            "type": "string",
+            "examples": [
+              "Game console"
+            ]
+          },
+          "MOBILE": {
+            "type": "string",
+            "examples": [
+              "Mobile"
+            ]
+          },
+          "TABLET": {
+            "type": "string",
+            "examples": [
+              "Tablet"
+            ]
+          },
+          "UNKNOWN": {
+            "type": "string",
+            "examples": [
+              "Unknown"
+            ]
+          },
+          "WEARABLE": {
+            "type": "string",
+            "examples": [
+              "Wearable computer"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "json": {
+        "description": "JavaScript Object Notation (JSON) ",
+        "properties": {
+          "list": {
+            "type": "string"
+          },
+          "map": {
+            "type": "string"
+          },
+          "prop1": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "map": {
+        "description": "Map",
+        "properties": {
+          "key1": {
+            "type": "string",
+            "examples": [
+              "value1"
+            ]
+          },
+          "key2": {
+            "type": "string",
+            "examples": [
+              null
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "nameMap": {
+        "description": "名稱",
+        "properties": {
+          "cn": {
+            "type": "string",
+            "examples": [
+              "国际化"
+            ]
+          },
+          "en": {
+            "type": "string",
+            "examples": [
+              "Internationalization"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "plarformGameTypeDetail": {
+        "description": "遊戲類型詳細物件",
+        "properties": {
+          "gameTypeList": {
+            "description": "遊戲類型",
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "examples": [
+              [
+                "fishing",
+                "slot"
+              ]
+            ]
+          },
+          "platform": {
+            "description": "平台",
+            "type": "string",
+            "examples": [
+              "default"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "roleList": {
+        "description": "角色列表",
+        "properties": {
+          "6111ede1b9e44156132a2d8c": {
+            "type": "string",
+            "examples": [
+              "ADMIN"
+            ]
+          },
+          "66d188321b8e72442d44d0de": {
+            "type": "string",
+            "examples": [
+              "AGENT"
+            ]
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {}
+  },
+  "servers": [],
+  "security": []
+}

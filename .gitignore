@@ -139,3 +139,5 @@ yarn.lock
 test/tmp/example.ts
 test/tmp/emptyApi.ts
 test/tmp/out.ts
+
+test_output2
