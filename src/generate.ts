@@ -229,13 +229,23 @@ export async function generateApi(
   }
   apiFile = apiFile.replace(/\.[jt]sx?$/, '');
 
+  const sharedTypesImportPath = sharedTypesFile && outputFile
+    ? (() => {
+        let rel = path.relative(path.dirname(outputFile), sharedTypesFile)
+          .replace(/\\/g, '/')
+          .replace(/\.[jt]sx?$/, '');
+        if (!rel.startsWith('.')) rel = './' + rel;
+        return rel;
+      })()
+    : './shared-types';
+
   return printer.printNode(
     ts.EmitHint.Unspecified,
     factory.createSourceFile(
       [
         generateImportNode(apiFile, { [apiImport]: 'api' }),
         generateImportNode('@acrool/react-fetcher', { IRestFulEndpointsQueryReturn: 'IRestFulEndpointsQueryReturn' }),
-        ...(sharedTypesFile ? [generateImportNode(sharedTypesFile.replace(/\.[jt]sx?$/, ''), { 'sharedTypes': 'sharedTypes' })] : []),
+        ...(sharedTypesFile ? [generateImportNode(sharedTypesImportPath, { Scheme: 'Scheme' })] : []),
         ...(tag ? [generateTagTypes({ addTagTypes: extractAllTagTypes({ operationDefinitions }) })] : []),
         generateCreateApiCall({
           tag,
