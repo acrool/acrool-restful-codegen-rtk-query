@@ -142,10 +142,18 @@ export type EndpointOverrides = {
   parameterFilter: ParameterMatcher;
 }>;
 
+export type OutputFilesConfig = {
+  [outputFile: string]: {
+      groupMatch: RegExp,
+      filterEndpoint: (groupName: string) => RegExp
+    }
+};
+
 export type ConfigFile =
   | Id<Require<CommonOptions & OutputFileOptions, 'outputFile'>>
   | Id<
       Omit<CommonOptions, 'outputFile'> & {
-        outputFiles: { [outputFile: string]: Omit<OutputFileOptions, 'outputFile'> };
+        // outputFiles: { [outputFile: string]: Omit<OutputFileOptions, 'outputFile'> };
+        outputFiles: OutputFilesConfig
       }
     >;

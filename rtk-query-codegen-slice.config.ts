@@ -1,13 +1,14 @@
-import type { ConfigFile } from '@acrool/rtk-query-codegen-openapi';
+import type { ConfigFile, OutputFilesConfig } from '@acrool/rtk-query-codegen-openapi';
 
 
 // 生成輸出文件配置
-const generateOutputFiles = () => {
+const generateOutputFiles = (): OutputFilesConfig => {
   return {
     './test_output3/$1/query.generated.ts': {
-      filterEndpoints: [/^\/Manager\/([^\/]+)/],
-      hooks: true,
-      useEnumType: true
+      groupMatch: /^\/Manager\/([^\/]+)/,
+      filterEndpoint: groupName => {
+        return new RegExp(`^(get|post|put|delete)Manager${groupName}`, 'i');
+      },
     },
   };
 };

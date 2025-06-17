@@ -5,7 +5,7 @@ import { generateApi } from './generate';
 import type { CommonOptions, ConfigFile, GenerationOptions, OutputFileOptions } from './types';
 import { isValidUrl, prettify } from './utils';
 import camelCase from 'lodash.camelcase';
-export type { ConfigFile } from './types';
+export type { OutputFilesConfig, ConfigFile } from './types';
 
 const require = createRequire(__filename);
 
@@ -57,14 +57,18 @@ export function parseConfig(fullConfig: ConfigFile) {
     const openApiDoc = JSON.parse(fs.readFileSync(fullConfig.schemaFile, 'utf-8'));
     const paths = Object.keys(openApiDoc.paths);
 
+
     // 從配置中獲取分類規則
     const [outputPath, config] = Object.entries(outputFiles)[0];
-    const patterns = config.filterEndpoints;
+    const patterns = config.groupMatch;
 
-    if (Array.isArray(patterns) && patterns.length > 0 && patterns[0] instanceof RegExp) {
-      const pattern = patterns[0];
+    const filterEndpoint = config.filterEndpoint;
+    
+
+      const pattern = patterns;
       // 根據路徑自動分類
       const groupedPaths = paths.reduce((acc, path) => {
+
         const groupName = getGroupNameFromPath(path, pattern);
         if (!acc[groupName]) {
           acc[groupName] = [];
@@ -76,13 +80,15 @@ export function parseConfig(fullConfig: ConfigFile) {
       // 為每個分類生成配置
       Object.entries(groupedPaths).forEach(([groupName, paths]) => {
         const finalOutputPath = outputPath.replace('$1', groupName);
+
+        const filterEndpoints = filterEndpoint(groupName);
         outFiles.push({
           ...commonConfig,
           outputFile: finalOutputPath,
-          filterEndpoints: [new RegExp(`^(get|post|put|delete)Manager${groupName}`, 'i')],
+          filterEndpoints: [filterEndpoints],
         });
       });
-    }
+
   } else {
     outFiles.push(fullConfig);
   }
