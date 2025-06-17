@@ -128,21 +128,24 @@ export async function generateApi(
     mergeReadWriteOnly,
   });
 
-  // 如果提供了 sharedTypesFile，則將 components 輸出到該文件
+  // 如果提供了 sharedTypesFile，則將所有類型定義輸出到該文件
   if (sharedTypesFile) {
+    const resultFile = ts.createSourceFile(
+      'sharedTypes.ts',
+      '',
+      ts.ScriptTarget.Latest,
+      /*setParentNodes*/ false,
+      ts.ScriptKind.TS
+    );
+    const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
+
+    // 收集所有類型定義
+    const allTypeDefinitions: ts.Statement[] = [];
+
+    // 添加 components 類型定義
     const components = v3Doc.components;
     if (components) {
-      const resultFile = ts.createSourceFile(
-        'sharedTypes.ts',
-        '',
-        ts.ScriptTarget.Latest,
-        /*setParentNodes*/ false,
-        ts.ScriptKind.TS
-      );
-      const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
-
-      // 將 components 轉換為 TypeScript 類型定義
-      const typeDefinitions = Object.entries(components).map(([componentType, componentDefs]) => {
+      const componentDefinitions = Object.entries(components).map(([componentType, componentDefs]) => {
         const typeEntries = Object.entries(componentDefs as Record<string, unknown>).map(([name, def]) => {
           const typeNode = apiGen.getTypeFromSchema(def as OpenAPIV3.SchemaObject);
           return factory.createTypeAliasDeclaration(
@@ -160,24 +163,31 @@ export async function generateApi(
           ts.NodeFlags.Namespace
         );
       });
-
-      // 如果有 useEnumType，添加枚舉類型
-      const enumDefinitions = useEnumType ? apiGen.enumAliases : [];
-
-      const output = printer.printNode(
-        ts.EmitHint.Unspecified,
-        factory.createSourceFile(
-          [...typeDefinitions, ...enumDefinitions],
-          factory.createToken(ts.SyntaxKind.EndOfFileToken),
-          ts.NodeFlags.None
-        ),
-        resultFile
-      );
-
-      // 寫入文件
-      const fs = await import('node:fs/promises');
-      await fs.writeFile(sharedTypesFile, output, 'utf-8');
+      allTypeDefinitions.push(...componentDefinitions);
     }
+
+    // 添加枚舉類型定義
+    if (useEnumType) {
+      allTypeDefinitions.push(...apiGen.enumAliases);
+    }
+
+    // 添加其他類型別名
+    allTypeDefinitions.push(...apiGen.aliases);
+
+    // 生成並寫入文件
+    const output = printer.printNode(
+      ts.EmitHint.Unspecified,
+      factory.createSourceFile(
+        allTypeDefinitions,
+        factory.createToken(ts.SyntaxKind.EndOfFileToken),
+        ts.NodeFlags.None
+      ),
+      resultFile
+    );
+
+    // 寫入文件
+    const fs = await import('node:fs/promises');
+    await fs.writeFile(sharedTypesFile, output, 'utf-8');
   }
 
   // temporary workaround for https://github.com/oazapfts/oazapfts/issues/491
