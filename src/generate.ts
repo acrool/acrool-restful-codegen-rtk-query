@@ -38,8 +38,8 @@ function defaultIsDataResponse(code: string, includeDefault: boolean) {
   return !Number.isNaN(parsedCode) && parsedCode >= 200 && parsedCode < 300;
 }
 
-function getOperationName({ verb, path, operation }: Pick<OperationDefinition, 'verb' | 'path' | 'operation'>) {
-  return _getOperationName(verb, path, operation.operationId);
+function getOperationName({ verb, path }: Pick<OperationDefinition, 'verb' | 'path' >) {
+  return _getOperationName(verb, path, undefined);
 }
 
 function getTags({ verb, pathItem }: Pick<OperationDefinition, 'verb' | 'pathItem'>): string[] {
@@ -296,7 +296,7 @@ export async function generateApi(
       operation,
       operation: { responses, requestBody },
     } = operationDefinition;
-    const operationName = getOperationName({ verb, path, operation });
+    const operationName = getOperationName({ verb, path });
     const tags = tag ? getTags({ verb, pathItem }) : [];
     const isQuery = testIsQuery(verb, overrides);
 

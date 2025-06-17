@@ -20,7 +20,7 @@ type CreateBindingParams = {
 };
 
 const createBinding = ({
-  operationDefinition: { verb, path, operation },
+  operationDefinition: { verb, path },
   overrides,
   isLazy = false,
 }: CreateBindingParams) =>
@@ -28,7 +28,7 @@ const createBinding = ({
     undefined,
     undefined,
     factory.createIdentifier(
-      `use${isLazy ? 'Lazy' : ''}${capitalize(getOperationName(verb, path, operation.operationId))}${
+      `use${isLazy ? 'Lazy' : ''}${capitalize(getOperationName(verb, path, undefined))}${
         isQuery(verb, overrides) ? 'Query' : 'Mutation'
       }`
     ),
