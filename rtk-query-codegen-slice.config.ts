@@ -6,9 +6,6 @@ const generateOutputFiles = (): OutputFilesConfig => {
   return {
     './test_output3/$1/query.generated.ts': {
       groupMatch: /^\/Manager\/([^\/]+)/,
-      filterEndpoint: groupName => {
-        return new RegExp(`^(get|post|put|delete)Manager${groupName}`, 'i');
-      },
     },
   };
 };

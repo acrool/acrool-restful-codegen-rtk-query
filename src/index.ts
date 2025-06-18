@@ -121,37 +121,68 @@ export function parseConfig(fullConfig: ConfigFile) {
     const openApiDoc = JSON.parse(fs.readFileSync(fullConfig.schemaFile, 'utf-8'));
     const paths = Object.keys(openApiDoc.paths);
 
-
     // 從配置中獲取分類規則
     const [outputPath, config] = Object.entries(outputFiles)[0];
     const patterns = config.groupMatch;
-
     const filterEndpoint = config.filterEndpoint;
-    
 
-      const pattern = patterns;
-      // 根據路徑自動分類
-      const groupedPaths = paths.reduce((acc, path) => {
+    const pattern = patterns;
+    // 根據路徑自動分類
+    const groupedPaths = paths.reduce((acc, path) => {
+      const groupName = getGroupNameFromPath(path, pattern);
+      if (!acc[groupName]) {
+        acc[groupName] = [];
+      }
+      acc[groupName].push(path);
+      return acc;
+    }, {} as Record<string, string[]>);
 
-        const groupName = getGroupNameFromPath(path, pattern);
-        if (!acc[groupName]) {
-          acc[groupName] = [];
-        }
-        acc[groupName].push(path);
-        return acc;
-      }, {} as Record<string, string[]>);
+    // 為每個分類生成配置
+    Object.entries(groupedPaths).forEach(([groupName, paths]) => {
+      const finalOutputPath = outputPath.replace('$1', groupName);
 
-      // 為每個分類生成配置
-      Object.entries(groupedPaths).forEach(([groupName, paths]) => {
-        const finalOutputPath = outputPath.replace('$1', groupName);
+      if (filterEndpoint) {
+        // 如果有 filterEndpoint，使用基於路徑的篩選函數
+        const pathBasedFilter = (operationName: string, operationDefinition: any) => {
+          const path = operationDefinition.path;
+          
+          // 檢查路徑是否匹配當前分組
+          const pathGroupName = getGroupNameFromPath(path, pattern);
+          if (pathGroupName !== groupName) {
+            return false;
+          }
 
-        const filterEndpoints = filterEndpoint(groupName);
+          // 使用 filterEndpoint 進行額外篩選
+          const endpointFilter = filterEndpoint(groupName);
+          if (endpointFilter instanceof RegExp) {
+            return endpointFilter.test(operationName);
+          }
+
+          return true;
+        };
+
         outFiles.push({
           ...commonConfig,
           outputFile: finalOutputPath,
-          filterEndpoints: [filterEndpoints],
+          filterEndpoints: pathBasedFilter,
         });
-      });
+      } else {
+        // 如果沒有 filterEndpoint，只使用路徑分組
+        const pathBasedFilter = (operationName: string, operationDefinition: any) => {
+          const path = operationDefinition.path;
+          
+          // 檢查路徑是否匹配當前分組
+          const pathGroupName = getGroupNameFromPath(path, pattern);
+          return pathGroupName === groupName;
+        };
+
+        outFiles.push({
+          ...commonConfig,
+          outputFile: finalOutputPath,
+          filterEndpoints: pathBasedFilter,
+        });
+      }
+    });
 
   } else {
     outFiles.push(fullConfig);

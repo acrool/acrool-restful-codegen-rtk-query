@@ -145,7 +145,7 @@ export type EndpointOverrides = {
 export type OutputFilesConfig = {
   [outputFile: string]: {
       groupMatch: RegExp,
-      filterEndpoint: (groupName: string) => RegExp
+      filterEndpoint?: (groupName: string) => RegExp
     }
 };
 
