@@ -39,7 +39,12 @@
     "test:update:enum": "lib/bin/cli.mjs test/config.example.enum.ts",
     "test": "vitest --run --typecheck",
     "test:watch": "vitest --watch",
-    "cli": "esr src/bin/cli.ts"
+    "cli": "esr src/bin/cli.ts",
+    "release": "standard-version --release-as",
+    "release:major": "standard-version -r major",
+    "release:minor": "standard-version -r minor",
+    "release:patch": "standard-version -r patch",
+    "release:alpha": "standard-version --prerelease alpha"
   },
   "files": [
     "lib",
@@ -65,6 +70,10 @@
     "husky": "^4.3.6",
     "msw": "^2.1.5",
     "node-fetch": "^3.3.2",
+    "cz-conventional-changelog": "3.3.0",
+    "cz-customizable": "6.6.0",
+    "cz-git": "^1.11.1",
+    "standard-version": "^9.5.0",
     "openapi-types": "^9.1.0",
     "pretty-quick": "^4.0.0",
     "rimraf": "^5.0.5",

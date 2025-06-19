@@ -5,14 +5,14 @@ import type { ConfigFile, OutputFilesConfig } from '@acrool/rtk-query-codegen-op
 const generateOutputFiles = (): OutputFilesConfig => {
   return {
     './test_output3/$1/query.generated.ts': {
-      groupMatch: /^\/Manager\/([^\/]+)/,
+      groupMatch: /^\/([^\/]+)/,
     },
   };
 };
 
 const config: ConfigFile = {
-  // schemaFile: './openapi8.json',
-  schemaFile: 'http://127.0.0.1:4523/export/openapi/2?version=3.0',
+  schemaFile: './openapi.json',
+  // schemaFile: 'http://127.0.0.1:4523/export/openapi/2?version=3.0',
   apiFile: './baseApi.ts',
   apiImport: 'baseApi',
   outputFiles: generateOutputFiles(),
