@@ -11,7 +11,7 @@ const generateOutputFiles = (): OutputFilesConfig => {
 };
 
 const config: ConfigFile = {
-  schemaFile: './openapi7.json',
+  schemaFile: './openapi8.json',
   apiFile: './baseApi.ts',
   apiImport: 'baseApi',
   outputFiles: generateOutputFiles(),

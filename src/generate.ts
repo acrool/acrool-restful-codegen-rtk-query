@@ -151,19 +151,18 @@ export async function generateApi(
     const components = v3Doc.components;
     if (components) {
       const componentDefinitions = Object.entries(components).map(([componentType, componentDefs]) => {
-        const typeEntries = Object.entries(componentDefs as Record<string, unknown>).map(([name, def]) => {
-          addSchemeTypeName(name);
-          
-          const typeName = capitalize(camelCase(name));
-          const typeNode = wrapWithSchemeIfComponent(apiGen.getTypeFromSchema(def as OpenAPIV3.SchemaObject));
-          return factory.createTypeAliasDeclaration(
-            [factory.createModifier(ts.SyntaxKind.ExportKeyword)],
-            factory.createIdentifier(typeName),
-            undefined,
-            typeNode
-          );
-        });
-
+        const typeEntries = Object.entries(componentDefs as Record<string, unknown>)
+          .map(([name, def]) => {
+            addSchemeTypeName(name);
+            const typeName = capitalize(camelCase(name));
+            const typeNode = wrapWithSchemeIfComponent(apiGen.getTypeFromSchema(def as OpenAPIV3.SchemaObject));
+            return factory.createTypeAliasDeclaration(
+              [factory.createModifier(ts.SyntaxKind.ExportKeyword)],
+              factory.createIdentifier(typeName),
+              undefined,
+              typeNode
+            );
+          });
         return factory.createModuleDeclaration(
           [factory.createModifier(ts.SyntaxKind.ExportKeyword)],
           factory.createIdentifier('Scheme'),
@@ -174,12 +173,85 @@ export async function generateApi(
       allTypeDefinitions.push(...componentDefinitions);
     }
 
-    if (useEnumType) {
-      allTypeDefinitions.push(...apiGen.enumAliases);
+    const enumEntries = [
+      ...apiGen.enumAliases.filter(e => ts.isEnumDeclaration(e)),
+      ...apiGen.enumAliases.filter(e => ts.isTypeAliasDeclaration(e)),
+    ].map(enumDecl => {
+      if (ts.isEnumDeclaration(enumDecl)) {
+        return factory.createEnumDeclaration(
+          [factory.createModifier(ts.SyntaxKind.ExportKeyword)],
+          enumDecl.name,
+          enumDecl.members
+        );
+      } else if (ts.isTypeAliasDeclaration(enumDecl)) {
+        return factory.createTypeAliasDeclaration(
+          [factory.createModifier(ts.SyntaxKind.ExportKeyword)],
+          enumDecl.name,
+          enumDecl.typeParameters,
+          enumDecl.type
+        );
+      }
+      return enumDecl;
+    });
+    if (enumEntries.length > 0) {
+      allTypeDefinitions.push(
+        factory.createModuleDeclaration(
+          [factory.createModifier(ts.SyntaxKind.ExportKeyword)],
+          factory.createIdentifier('Enum'),
+          factory.createModuleBlock(enumEntries),
+          ts.NodeFlags.Namespace
+        )
+      );
     }
 
-    allTypeDefinitions.push(...apiGen.aliases);
+    if (apiGen.aliases.length > 0) {
+      const aliasEntries = apiGen.aliases
+        .filter(alias => ts.isTypeAliasDeclaration(alias) && alias.modifiers?.some(m => m.kind === ts.SyntaxKind.ExportKeyword))
+        .map(alias => {
+          if (ts.isTypeAliasDeclaration(alias)) {
+            return factory.createTypeAliasDeclaration(
+              [factory.createModifier(ts.SyntaxKind.ExportKeyword)],
+              alias.name,
+              alias.typeParameters,
+              alias.type
+            );
+          }
+          return alias;
+        });
 
+      const existingSchemeIndex = allTypeDefinitions.findIndex(def => 
+        ts.isModuleDeclaration(def) && 
+        ts.isIdentifier(def.name) && 
+        def.name.text === 'Scheme'
+      );
+
+      if (existingSchemeIndex >= 0) {
+        const existingScheme = allTypeDefinitions[existingSchemeIndex] as ts.ModuleDeclaration;
+        const mergedMembers = [...(existingScheme.body as ts.ModuleBlock).statements, ...aliasEntries];
+        allTypeDefinitions[existingSchemeIndex] = factory.createModuleDeclaration(
+          [factory.createModifier(ts.SyntaxKind.ExportKeyword)],
+          factory.createIdentifier('Scheme'),
+          factory.createModuleBlock(mergedMembers),
+          ts.NodeFlags.Namespace
+        );
+      } else if (aliasEntries.length > 0) {
+        allTypeDefinitions.push(
+          factory.createModuleDeclaration(
+            [factory.createModifier(ts.SyntaxKind.ExportKeyword)],
+            factory.createIdentifier('Scheme'),
+            factory.createModuleBlock(aliasEntries),
+            ts.NodeFlags.Namespace
+          )
+        );
+      }
+    }
+
+    const fs = await import('node:fs/promises');
+    const path = await import('node:path');
+    
+    const sharedTypesDir = path.dirname(sharedTypesFile);
+    await fs.mkdir(sharedTypesDir, { recursive: true });
+    
     const output = printer.printNode(
       ts.EmitHint.Unspecified,
       factory.createSourceFile(
@@ -190,7 +262,6 @@ export async function generateApi(
       resultFile
     );
 
-    const fs = await import('node:fs/promises');
     await fs.writeFile(sharedTypesFile, output, 'utf-8');
   }
 
@@ -245,7 +316,12 @@ export async function generateApi(
       [
         generateImportNode(apiFile, { [apiImport]: 'api' }),
         generateImportNode('@acrool/react-fetcher', { IRestFulEndpointsQueryReturn: 'IRestFulEndpointsQueryReturn' }),
-        ...(sharedTypesFile ? [generateImportNode(sharedTypesImportPath, { Scheme: 'Scheme' })] : []),
+        ...(sharedTypesFile ? [
+          generateImportNode(sharedTypesImportPath, { 
+            Scheme: 'Scheme',
+            ...(useEnumType ? { Enum: 'Enum' } : {})
+          })
+        ] : []),
         ...(tag ? [generateTagTypes({ addTagTypes: extractAllTagTypes({ operationDefinitions }) })] : []),
         generateCreateApiCall({
           tag,
@@ -336,25 +412,6 @@ export async function generateApi(
         )
         .filter(([_1, _2, type]) => type !== keywordType.void)
         .map(([code, response, type]) => {
-          if (sharedTypesFile && ts.isTypeReferenceNode(type) && type.typeName) {
-            if (ts.isIdentifier(type.typeName)) {
-              const typeName = type.typeName.text;
-              if (typeName in apiGen.aliases || typeName in apiGen.enumAliases) {
-                return ts.addSyntheticLeadingComment(
-                  factory.createTypeReferenceNode(
-                    factory.createQualifiedName(
-                      factory.createIdentifier('sharedTypes'),
-                      factory.createIdentifier(camelCase(typeName))
-                    ),
-                    type.typeArguments
-                  ),
-                  ts.SyntaxKind.MultiLineCommentTrivia,
-                  `* status ${code} ${response.description} `,
-                  false
-                );
-              }
-            }
-          }
           return ts.addSyntheticLeadingComment(
             type,
             ts.SyntaxKind.MultiLineCommentTrivia,
@@ -620,6 +677,20 @@ export async function generateApi(
   function wrapWithSchemeIfComponent(typeNode: ts.TypeNode): ts.TypeNode {
     if (ts.isTypeReferenceNode(typeNode) && ts.isIdentifier(typeNode.typeName)) {
       const typeName = typeNode.typeName.text;
+      if (useEnumType && apiGen.enumAliases.some(enumDecl => {
+        if (ts.isEnumDeclaration(enumDecl) || ts.isTypeAliasDeclaration(enumDecl)) {
+          return enumDecl.name.text === typeName;
+        }
+        return false;
+      })) {
+        return factory.createTypeReferenceNode(
+          factory.createQualifiedName(
+            factory.createIdentifier('Enum'),
+            typeNode.typeName
+          ),
+          typeNode.typeArguments?.map(wrapWithSchemeIfComponent)
+        );
+      }
       if (schemeTypeNames.has(typeName)) {
         return factory.createTypeReferenceNode(
           factory.createQualifiedName(
