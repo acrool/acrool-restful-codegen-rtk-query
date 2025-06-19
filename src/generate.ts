@@ -147,6 +147,7 @@ export async function generateApi(
     const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
 
     const allTypeDefinitions: ts.Statement[] = [];
+    const definedTypeNames = new Set<string>();
 
     const components = v3Doc.components;
     if (components) {
@@ -155,6 +156,7 @@ export async function generateApi(
           .map(([name, def]) => {
             addSchemeTypeName(name);
             const typeName = capitalize(camelCase(name));
+            definedTypeNames.add(typeName);
             const typeNode = wrapWithSchemeIfComponent(apiGen.getTypeFromSchema(def as OpenAPIV3.SchemaObject));
             return factory.createTypeAliasDeclaration(
               [factory.createModifier(ts.SyntaxKind.ExportKeyword)],
@@ -206,7 +208,12 @@ export async function generateApi(
 
     if (apiGen.aliases.length > 0) {
       const aliasEntries = apiGen.aliases
-        .filter(alias => ts.isTypeAliasDeclaration(alias) && alias.modifiers?.some(m => m.kind === ts.SyntaxKind.ExportKeyword))
+        .filter(alias => {
+          if (ts.isTypeAliasDeclaration(alias)) {
+            return !definedTypeNames.has(alias.name.text);
+          }
+          return false;
+        })
         .map(alias => {
           if (ts.isTypeAliasDeclaration(alias)) {
             return factory.createTypeAliasDeclaration(
@@ -219,30 +226,32 @@ export async function generateApi(
           return alias;
         });
 
-      const existingSchemeIndex = allTypeDefinitions.findIndex(def => 
-        ts.isModuleDeclaration(def) && 
-        ts.isIdentifier(def.name) && 
-        def.name.text === 'Scheme'
-      );
-
-      if (existingSchemeIndex >= 0) {
-        const existingScheme = allTypeDefinitions[existingSchemeIndex] as ts.ModuleDeclaration;
-        const mergedMembers = [...(existingScheme.body as ts.ModuleBlock).statements, ...aliasEntries];
-        allTypeDefinitions[existingSchemeIndex] = factory.createModuleDeclaration(
-          [factory.createModifier(ts.SyntaxKind.ExportKeyword)],
-          factory.createIdentifier('Scheme'),
-          factory.createModuleBlock(mergedMembers),
-          ts.NodeFlags.Namespace
+      if (aliasEntries.length > 0) {
+        const existingSchemeIndex = allTypeDefinitions.findIndex(def => 
+          ts.isModuleDeclaration(def) && 
+          ts.isIdentifier(def.name) && 
+          def.name.text === 'Scheme'
         );
-      } else if (aliasEntries.length > 0) {
-        allTypeDefinitions.push(
-          factory.createModuleDeclaration(
+
+        if (existingSchemeIndex >= 0) {
+          const existingScheme = allTypeDefinitions[existingSchemeIndex] as ts.ModuleDeclaration;
+          const mergedMembers = [...(existingScheme.body as ts.ModuleBlock).statements, ...aliasEntries];
+          allTypeDefinitions[existingSchemeIndex] = factory.createModuleDeclaration(
             [factory.createModifier(ts.SyntaxKind.ExportKeyword)],
             factory.createIdentifier('Scheme'),
-            factory.createModuleBlock(aliasEntries),
+            factory.createModuleBlock(mergedMembers),
             ts.NodeFlags.Namespace
-          )
-        );
+          );
+        } else {
+          allTypeDefinitions.push(
+            factory.createModuleDeclaration(
+              [factory.createModifier(ts.SyntaxKind.ExportKeyword)],
+              factory.createIdentifier('Scheme'),
+              factory.createModuleBlock(aliasEntries),
+              ts.NodeFlags.Namespace
+            )
+          );
+        }
       }
     }
 
