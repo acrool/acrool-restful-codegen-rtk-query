@@ -38,7 +38,7 @@ function defaultIsDataResponse(code: string, includeDefault: boolean) {
   return !Number.isNaN(parsedCode) && parsedCode >= 200 && parsedCode < 300;
 }
 
-function getOperationName({ verb, path }: Pick<OperationDefinition, 'verb' | 'path' >) {
+function getOperationName({ verb, path }: Pick<OperationDefinition, 'verb' | 'path'>) {
   return _getOperationName(verb, path, undefined);
 }
 
@@ -165,7 +165,7 @@ export async function generateApi(
             typeNode
           );
         });
-        
+
         allTypeDefinitions.push(
           factory.createModuleDeclaration(
             [factory.createModifier(ts.SyntaxKind.ExportKeyword)],
@@ -178,9 +178,9 @@ export async function generateApi(
     }
 
     const enumEntries = [
-      ...apiGen.enumAliases.filter(e => ts.isEnumDeclaration(e)),
-      ...apiGen.enumAliases.filter(e => ts.isTypeAliasDeclaration(e)),
-    ].map(enumDecl => {
+      ...apiGen.enumAliases.filter((e) => ts.isEnumDeclaration(e)),
+      ...apiGen.enumAliases.filter((e) => ts.isTypeAliasDeclaration(e)),
+    ].map((enumDecl) => {
       if (ts.isEnumDeclaration(enumDecl)) {
         return factory.createEnumDeclaration(
           [factory.createModifier(ts.SyntaxKind.ExportKeyword)],
@@ -197,15 +197,15 @@ export async function generateApi(
       }
       return enumDecl;
     });
-    
+
     const unionTypeEnums = apiGen.aliases
-      .filter(alias => {
+      .filter((alias) => {
         if (ts.isTypeAliasDeclaration(alias) && alias.type) {
           return ts.isUnionTypeNode(alias.type);
         }
         return false;
       })
-      .map(alias => {
+      .map((alias) => {
         if (ts.isTypeAliasDeclaration(alias)) {
           return factory.createTypeAliasDeclaration(
             [factory.createModifier(ts.SyntaxKind.ExportKeyword)],
@@ -216,9 +216,9 @@ export async function generateApi(
         }
         return alias;
       });
-    
+
     const allEnumEntries = [...enumEntries, ...unionTypeEnums];
-    
+
     if (allEnumEntries.length > 0) {
       allTypeDefinitions.push(
         factory.createModuleDeclaration(
@@ -232,7 +232,7 @@ export async function generateApi(
 
     if (apiGen.aliases.length > 0) {
       const aliasEntries = apiGen.aliases
-        .filter(alias => {
+        .filter((alias) => {
           if (ts.isTypeAliasDeclaration(alias)) {
             const isDefinedInComponents = definedTypeNames.has(alias.name.text);
             const isUnionTypeEnum = ts.isUnionTypeNode(alias.type);
@@ -240,7 +240,7 @@ export async function generateApi(
           }
           return false;
         })
-        .map(alias => {
+        .map((alias) => {
           if (ts.isTypeAliasDeclaration(alias)) {
             return factory.createTypeAliasDeclaration(
               [factory.createModifier(ts.SyntaxKind.ExportKeyword)],
@@ -253,10 +253,8 @@ export async function generateApi(
         });
 
       if (aliasEntries.length > 0) {
-        const existingSchemeIndex = allTypeDefinitions.findIndex(def => 
-          ts.isModuleDeclaration(def) && 
-          ts.isIdentifier(def.name) && 
-          def.name.text === 'Scheme'
+        const existingSchemeIndex = allTypeDefinitions.findIndex(
+          (def) => ts.isModuleDeclaration(def) && ts.isIdentifier(def.name) && def.name.text === 'Scheme'
         );
 
         if (existingSchemeIndex >= 0) {
@@ -283,10 +281,10 @@ export async function generateApi(
 
     const fs = await import('node:fs/promises');
     const path = await import('node:path');
-    
+
     const sharedTypesDir = path.dirname(sharedTypesFile);
     await fs.mkdir(sharedTypesDir, { recursive: true });
-    
+
     const output = printer.printNode(
       ts.EmitHint.Unspecified,
       factory.createSourceFile(
@@ -316,6 +314,7 @@ export async function generateApi(
   const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
 
   const interfaces: Record<string, ts.InterfaceDeclaration | ts.TypeAliasDeclaration> = {};
+
   function registerInterface(declaration: ts.InterfaceDeclaration | ts.TypeAliasDeclaration) {
     const name = declaration.name.escapedText.toString();
     if (name in interfaces) {
@@ -335,15 +334,17 @@ export async function generateApi(
   }
   apiFile = apiFile.replace(/\.[jt]sx?$/, '');
 
-  const sharedTypesImportPath = sharedTypesFile && outputFile
-    ? (() => {
-        let rel = path.relative(path.dirname(outputFile), sharedTypesFile)
-          .replace(/\\/g, '/')
-          .replace(/\.[jt]sx?$/, '');
-        if (!rel.startsWith('.')) rel = './' + rel;
-        return rel;
-      })()
-    : './shared-types';
+  const sharedTypesImportPath =
+    sharedTypesFile && outputFile
+      ? (() => {
+          let rel = path
+            .relative(path.dirname(outputFile), sharedTypesFile)
+            .replace(/\\/g, '/')
+            .replace(/\.[jt]sx?$/, '');
+          if (!rel.startsWith('.')) rel = './' + rel;
+          return rel;
+        })()
+      : './shared-types';
 
   return printer.printNode(
     ts.EmitHint.Unspecified,
@@ -351,12 +352,14 @@ export async function generateApi(
       [
         generateImportNode(apiFile, { [apiImport]: 'api' }),
         generateImportNode('@acrool/react-fetcher', { IRestFulEndpointsQueryReturn: 'IRestFulEndpointsQueryReturn' }),
-        ...(sharedTypesFile ? [
-          generateImportNode(sharedTypesImportPath, { 
-            Scheme: 'Scheme',
-            ...(useEnumType ? { Enum: 'Enum' } : {})
-          })
-        ] : []),
+        ...(sharedTypesFile
+          ? [
+              generateImportNode(sharedTypesImportPath, {
+                Scheme: 'Scheme',
+                ...(useEnumType ? { Enum: 'Enum' } : {}),
+              }),
+            ]
+          : []),
         ...(tag ? [generateTagTypes({ addTagTypes: extractAllTagTypes({ operationDefinitions }) })] : []),
         generateCreateApiCall({
           tag,
@@ -371,11 +374,7 @@ export async function generateApi(
             true
           ),
         }),
-        factory.createExportAssignment(
-          undefined,
-          undefined,
-          factory.createIdentifier(generatedApiName)
-        ),
+        factory.createExportAssignment(undefined, undefined, factory.createIdentifier(generatedApiName)),
         ...Object.values(interfaces),
         ...(sharedTypesFile ? [] : [...apiGen.aliases, ...apiGen.enumAliases]),
         ...(hooks
@@ -477,10 +476,11 @@ export async function generateApi(
 
     const parameters = supportDeepObjects([...pathItemParameters, ...operationParameters])
       .filter(argumentMatches(overrides?.parameterFilter))
-      .filter(param => param.in !== 'header');
+      .filter((param) => param.in !== 'header');
 
     const allNames = parameters.map((p) => p.name);
     const queryArg: QueryArgDefinitions = {};
+
     function generateName(name: string, potentialPrefix: string) {
       const isPureSnakeCase = /^[a-zA-Z][a-zA-Z0-9_]*$/.test(name);
       const hasNamingConflict = allNames.filter((n) => n === name).length > 1;
@@ -503,7 +503,9 @@ export async function generateApi(
         origin: 'param',
         name,
         originalName: param.name,
-        type: wrapWithSchemeIfComponent(apiGen.getTypeFromSchema(isReference(param) ? param : param.schema, undefined, 'writeOnly')),
+        type: wrapWithSchemeIfComponent(
+          apiGen.getTypeFromSchema(isReference(param) ? param : param.schema, undefined, 'writeOnly')
+        ),
         required: param.required,
         param,
       };
@@ -582,10 +584,7 @@ export async function generateApi(
       operationName: operationNameSuffix ? capitalize(operationName + operationNameSuffix) : operationName,
       type: isQuery ? 'query' : 'mutation',
       Response: ResponseTypeName,
-      QueryArg: factory.createTypeReferenceNode(
-        factory.createIdentifier('IRestFulEndpointsQueryReturn'),
-        [QueryArg]
-      ),
+      QueryArg: factory.createTypeReferenceNode(factory.createIdentifier('IRestFulEndpointsQueryReturn'), [QueryArg]),
       queryFn: generateQueryFn({
         operationDefinition,
         queryArg,
@@ -631,8 +630,8 @@ export async function generateApi(
       if (parameters.length === 0) return undefined;
 
       const properties = parameters.map((param) => {
-        const value = isFlatArg 
-          ? variablesObject 
+        const value = isFlatArg
+          ? variablesObject
           : factory.createPropertyAccessExpression(variablesObject, factory.createIdentifier(param.name));
 
         const encodedValue =
@@ -682,7 +681,10 @@ export async function generateApi(
                   factory.createIdentifier('body'),
                   isFlatArg
                     ? variablesObject
-                    : factory.createPropertyAccessExpression(variablesObject, factory.createIdentifier(bodyParameter.name))
+                    : factory.createPropertyAccessExpression(
+                        variablesObject,
+                        factory.createIdentifier(bodyParameter.name)
+                      )
                 ),
             createObjectLiteralProperty(pickParams('cookie'), 'cookies'),
             createObjectLiteralProperty(pickParams('query'), 'params'),
@@ -712,42 +714,36 @@ export async function generateApi(
   function wrapWithSchemeIfComponent(typeNode: ts.TypeNode): ts.TypeNode {
     if (ts.isTypeReferenceNode(typeNode) && ts.isIdentifier(typeNode.typeName)) {
       const typeName = typeNode.typeName.text;
-      
+
       // 檢查是否為 enum 類型（包括在 enumAliases 和 aliases 中的）
-      const isEnumType = useEnumType && (
-        apiGen.enumAliases.some(enumDecl => {
+      const isEnumType =
+        useEnumType &&
+        (apiGen.enumAliases.some((enumDecl) => {
           if (ts.isEnumDeclaration(enumDecl) || ts.isTypeAliasDeclaration(enumDecl)) {
             return enumDecl.name.text === typeName;
           }
           return false;
         }) ||
-        apiGen.aliases.some(alias => {
-          if (ts.isTypeAliasDeclaration(alias) && alias.type) {
-            // 檢查是否為 union type 的 enum
-            if (ts.isUnionTypeNode(alias.type)) {
-              return alias.name.text === typeName;
+          apiGen.aliases.some((alias) => {
+            if (ts.isTypeAliasDeclaration(alias) && alias.type) {
+              // 檢查是否為 union type 的 enum
+              if (ts.isUnionTypeNode(alias.type)) {
+                return alias.name.text === typeName;
+              }
             }
-          }
-          return false;
-        })
-      );
-      
+            return false;
+          }));
+
       if (isEnumType) {
         return factory.createTypeReferenceNode(
-          factory.createQualifiedName(
-            factory.createIdentifier('Enum'),
-            typeNode.typeName
-          ),
+          factory.createQualifiedName(factory.createIdentifier('Enum'), typeNode.typeName),
           typeNode.typeArguments?.map(wrapWithSchemeIfComponent)
         );
       }
-      
+
       if (schemeTypeNames.has(typeName)) {
         return factory.createTypeReferenceNode(
-          factory.createQualifiedName(
-            factory.createIdentifier('Scheme'),
-            typeNode.typeName
-          ),
+          factory.createQualifiedName(factory.createIdentifier('Scheme'), typeNode.typeName),
           typeNode.typeArguments?.map(wrapWithSchemeIfComponent)
         );
       }
@@ -764,42 +760,48 @@ export async function generateApi(
     if (ts.isUnionTypeNode(typeNode)) {
       // 檢查是否為 enum 的 union type
       const unionTypes = typeNode.types;
-      if (unionTypes.length > 0 && unionTypes.every(type => 
-        ts.isLiteralTypeNode(type) && 
-        (ts.isStringLiteral(type.literal) || ts.isNumericLiteral(type.literal))
-      )) {
+      if (
+        unionTypes.length > 0 &&
+        unionTypes.every(
+          (type) =>
+            ts.isLiteralTypeNode(type) && (ts.isStringLiteral(type.literal) || ts.isNumericLiteral(type.literal))
+        )
+      ) {
         // 這是一個 enum 的 union type，我們需要找到對應的 enum 類型
-        const enumValues = unionTypes.map(type => {
-          if (ts.isLiteralTypeNode(type)) {
-            if (ts.isStringLiteral(type.literal)) {
-              return type.literal.text;
-            } else if (ts.isNumericLiteral(type.literal)) {
-              return type.literal.text;
-            }
-          }
-          return null;
-        }).filter(Boolean);
-        
-        // 查找對應的 enum 類型
-        const matchingEnum = apiGen.aliases.find(alias => {
-          if (ts.isTypeAliasDeclaration(alias) && ts.isUnionTypeNode(alias.type)) {
-            const aliasValues = alias.type.types.map(type => {
-              if (ts.isLiteralTypeNode(type)) {
-                if (ts.isStringLiteral(type.literal)) {
-                  return type.literal.text;
-                } else if (ts.isNumericLiteral(type.literal)) {
-                  return type.literal.text;
-                }
+        const enumValues = unionTypes
+          .map((type) => {
+            if (ts.isLiteralTypeNode(type)) {
+              if (ts.isStringLiteral(type.literal)) {
+                return type.literal.text;
+              } else if (ts.isNumericLiteral(type.literal)) {
+                return type.literal.text;
               }
-              return null;
-            }).filter(Boolean);
-            
-            return aliasValues.length === enumValues.length && 
-                   aliasValues.every(val => enumValues.includes(val));
+            }
+            return null;
+          })
+          .filter(Boolean);
+
+        // 查找對應的 enum 類型
+        const matchingEnum = apiGen.aliases.find((alias) => {
+          if (ts.isTypeAliasDeclaration(alias) && ts.isUnionTypeNode(alias.type)) {
+            const aliasValues = alias.type.types
+              .map((type) => {
+                if (ts.isLiteralTypeNode(type)) {
+                  if (ts.isStringLiteral(type.literal)) {
+                    return type.literal.text;
+                  } else if (ts.isNumericLiteral(type.literal)) {
+                    return type.literal.text;
+                  }
+                }
+                return null;
+              })
+              .filter(Boolean);
+
+            return aliasValues.length === enumValues.length && aliasValues.every((val) => enumValues.includes(val));
           }
           return false;
         });
-        
+
         // 對於所有的 enum 類型，直接使用字串型別，不轉換為 Enum
         // 這樣可以避免自動命名造成的變更問題
         if (matchingEnum && ts.isTypeAliasDeclaration(matchingEnum)) {
@@ -807,12 +809,12 @@ export async function generateApi(
           return typeNode;
         }
       }
-      
+
       return factory.createUnionTypeNode(typeNode.types.map(wrapWithSchemeIfComponent));
     }
     if (ts.isTypeLiteralNode(typeNode)) {
       return factory.createTypeLiteralNode(
-        typeNode.members.map(member => {
+        typeNode.members.map((member) => {
           if (ts.isPropertySignature(member) && member.type) {
             return factory.updatePropertySignature(
               member,
@@ -858,8 +860,8 @@ function generatePathExpression(
     ? factory.createTemplateExpression(
         factory.createTemplateHead(head),
         expressions.map(([prop, literal], index) => {
-          const value = isFlatArg 
-            ? rootObject 
+          const value = isFlatArg
+            ? rootObject
             : factory.createPropertyAccessExpression(rootObject, factory.createIdentifier(prop));
           const encodedValue = encodePathParams
             ? factory.createCallExpression(factory.createIdentifier('encodeURIComponent'), undefined, [
