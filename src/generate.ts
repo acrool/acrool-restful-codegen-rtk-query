@@ -151,28 +151,30 @@ export async function generateApi(
 
     const components = v3Doc.components;
     if (components) {
-      const componentDefinitions = Object.entries(components).map(([componentType, componentDefs]) => {
-        const typeEntries = Object.entries(componentDefs as Record<string, unknown>)
-          .map(([name, def]) => {
-            addSchemeTypeName(name);
-            const typeName = capitalize(camelCase(name));
-            definedTypeNames.add(typeName);
-            const typeNode = wrapWithSchemeIfComponent(apiGen.getTypeFromSchema(def as OpenAPIV3.SchemaObject));
-            return factory.createTypeAliasDeclaration(
-              [factory.createModifier(ts.SyntaxKind.ExportKeyword)],
-              factory.createIdentifier(typeName),
-              undefined,
-              typeNode
-            );
-          });
-        return factory.createModuleDeclaration(
-          [factory.createModifier(ts.SyntaxKind.ExportKeyword)],
-          factory.createIdentifier('Scheme'),
-          factory.createModuleBlock(typeEntries),
-          ts.NodeFlags.Namespace
+      // 只處理 schemas，其他 component 類型暫時不處理
+      if (components.schemas) {
+        const typeEntries = Object.entries(components.schemas).map(([name, def]) => {
+          addSchemeTypeName(name);
+          const typeName = capitalize(camelCase(name));
+          definedTypeNames.add(typeName);
+          const typeNode = wrapWithSchemeIfComponent(apiGen.getTypeFromSchema(def as OpenAPIV3.SchemaObject));
+          return factory.createTypeAliasDeclaration(
+            [factory.createModifier(ts.SyntaxKind.ExportKeyword)],
+            factory.createIdentifier(typeName),
+            undefined,
+            typeNode
+          );
+        });
+        
+        allTypeDefinitions.push(
+          factory.createModuleDeclaration(
+            [factory.createModifier(ts.SyntaxKind.ExportKeyword)],
+            factory.createIdentifier('Scheme'),
+            factory.createModuleBlock(typeEntries),
+            ts.NodeFlags.Namespace
+          )
         );
-      });
-      allTypeDefinitions.push(...componentDefinitions);
+      }
     }
 
     const enumEntries = [
