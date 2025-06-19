@@ -17,7 +17,7 @@ const config: ConfigFile = {
   outputFiles: generateOutputFiles(),
   sharedTypesFile: './test_output3/shared-types.ts', // 共用類型文件
   hooks: true,
-  useEnumType: true,
+  useEnumType: false,
 };
 
 export default config;

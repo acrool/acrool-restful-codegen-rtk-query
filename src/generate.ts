@@ -195,12 +195,34 @@ export async function generateApi(
       }
       return enumDecl;
     });
-    if (enumEntries.length > 0) {
+    
+    const unionTypeEnums = apiGen.aliases
+      .filter(alias => {
+        if (ts.isTypeAliasDeclaration(alias) && alias.type) {
+          return ts.isUnionTypeNode(alias.type);
+        }
+        return false;
+      })
+      .map(alias => {
+        if (ts.isTypeAliasDeclaration(alias)) {
+          return factory.createTypeAliasDeclaration(
+            [factory.createModifier(ts.SyntaxKind.ExportKeyword)],
+            alias.name,
+            alias.typeParameters,
+            alias.type
+          );
+        }
+        return alias;
+      });
+    
+    const allEnumEntries = [...enumEntries, ...unionTypeEnums];
+    
+    if (allEnumEntries.length > 0) {
       allTypeDefinitions.push(
         factory.createModuleDeclaration(
           [factory.createModifier(ts.SyntaxKind.ExportKeyword)],
           factory.createIdentifier('Enum'),
-          factory.createModuleBlock(enumEntries),
+          factory.createModuleBlock(allEnumEntries),
           ts.NodeFlags.Namespace
         )
       );
@@ -210,7 +232,9 @@ export async function generateApi(
       const aliasEntries = apiGen.aliases
         .filter(alias => {
           if (ts.isTypeAliasDeclaration(alias)) {
-            return !definedTypeNames.has(alias.name.text);
+            const isDefinedInComponents = definedTypeNames.has(alias.name.text);
+            const isUnionTypeEnum = ts.isUnionTypeNode(alias.type);
+            return !isDefinedInComponents && !isUnionTypeEnum;
           }
           return false;
         })
@@ -686,12 +710,27 @@ export async function generateApi(
   function wrapWithSchemeIfComponent(typeNode: ts.TypeNode): ts.TypeNode {
     if (ts.isTypeReferenceNode(typeNode) && ts.isIdentifier(typeNode.typeName)) {
       const typeName = typeNode.typeName.text;
-      if (useEnumType && apiGen.enumAliases.some(enumDecl => {
-        if (ts.isEnumDeclaration(enumDecl) || ts.isTypeAliasDeclaration(enumDecl)) {
-          return enumDecl.name.text === typeName;
-        }
-        return false;
-      })) {
+      
+      // 檢查是否為 enum 類型（包括在 enumAliases 和 aliases 中的）
+      const isEnumType = useEnumType && (
+        apiGen.enumAliases.some(enumDecl => {
+          if (ts.isEnumDeclaration(enumDecl) || ts.isTypeAliasDeclaration(enumDecl)) {
+            return enumDecl.name.text === typeName;
+          }
+          return false;
+        }) ||
+        apiGen.aliases.some(alias => {
+          if (ts.isTypeAliasDeclaration(alias) && alias.type) {
+            // 檢查是否為 union type 的 enum
+            if (ts.isUnionTypeNode(alias.type)) {
+              return alias.name.text === typeName;
+            }
+          }
+          return false;
+        })
+      );
+      
+      if (isEnumType) {
         return factory.createTypeReferenceNode(
           factory.createQualifiedName(
             factory.createIdentifier('Enum'),
@@ -700,6 +739,7 @@ export async function generateApi(
           typeNode.typeArguments?.map(wrapWithSchemeIfComponent)
         );
       }
+      
       if (schemeTypeNames.has(typeName)) {
         return factory.createTypeReferenceNode(
           factory.createQualifiedName(
@@ -720,6 +760,52 @@ export async function generateApi(
       return factory.createArrayTypeNode(wrapWithSchemeIfComponent(typeNode.elementType));
     }
     if (ts.isUnionTypeNode(typeNode)) {
+      // 檢查是否為 enum 的 union type
+      const unionTypes = typeNode.types;
+      if (unionTypes.length > 0 && unionTypes.every(type => 
+        ts.isLiteralTypeNode(type) && 
+        (ts.isStringLiteral(type.literal) || ts.isNumericLiteral(type.literal))
+      )) {
+        // 這是一個 enum 的 union type，我們需要找到對應的 enum 類型
+        const enumValues = unionTypes.map(type => {
+          if (ts.isLiteralTypeNode(type)) {
+            if (ts.isStringLiteral(type.literal)) {
+              return type.literal.text;
+            } else if (ts.isNumericLiteral(type.literal)) {
+              return type.literal.text;
+            }
+          }
+          return null;
+        }).filter(Boolean);
+        
+        // 查找對應的 enum 類型
+        const matchingEnum = apiGen.aliases.find(alias => {
+          if (ts.isTypeAliasDeclaration(alias) && ts.isUnionTypeNode(alias.type)) {
+            const aliasValues = alias.type.types.map(type => {
+              if (ts.isLiteralTypeNode(type)) {
+                if (ts.isStringLiteral(type.literal)) {
+                  return type.literal.text;
+                } else if (ts.isNumericLiteral(type.literal)) {
+                  return type.literal.text;
+                }
+              }
+              return null;
+            }).filter(Boolean);
+            
+            return aliasValues.length === enumValues.length && 
+                   aliasValues.every(val => enumValues.includes(val));
+          }
+          return false;
+        });
+        
+        // 對於所有的 enum 類型，直接使用字串型別，不轉換為 Enum
+        // 這樣可以避免自動命名造成的變更問題
+        if (matchingEnum && ts.isTypeAliasDeclaration(matchingEnum)) {
+          // 直接返回原始的 union type，不轉換為 Enum
+          return typeNode;
+        }
+      }
+      
       return factory.createUnionTypeNode(typeNode.types.map(wrapWithSchemeIfComponent));
     }
     if (ts.isTypeLiteralNode(typeNode)) {
