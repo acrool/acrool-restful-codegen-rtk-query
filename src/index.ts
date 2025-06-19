@@ -3,7 +3,7 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 import { generateApi } from './generate';
 import type { CommonOptions, ConfigFile, GenerationOptions, OutputFileOptions } from './types';
-import { isValidUrl, prettify } from './utils';
+import { isValidUrl, prettify, getV3Doc } from './utils';
 import camelCase from 'lodash.camelcase';
 export type { OutputFilesConfig, ConfigFile } from './types';
 
@@ -89,6 +89,95 @@ export async function generateEndpoints(options: GenerationOptions): Promise<str
     ? options.schemaFile
     : path.resolve(process.cwd(), schemaLocation);
 
+  // 如果是 URL 且使用 outputFiles 配置，需要特殊處理
+  if (isValidUrl(options.schemaFile) && 'outputFiles' in options) {
+    const { outputFiles, ...commonConfig } = options as any;
+    
+    // 異步獲取 OpenAPI 文檔
+    const openApiDoc = await getV3Doc(options.schemaFile, options.httpResolverOptions);
+    const paths = Object.keys(openApiDoc.paths);
+
+    // 從配置中獲取分類規則
+    const outputFilesEntries = Object.entries(outputFiles);
+    const [outputPath, config] = outputFilesEntries[0];
+    const patterns = (config as any).groupMatch;
+    const filterEndpoint = (config as any).filterEndpoint;
+
+    const pattern = patterns;
+    // 根據路徑自動分類
+    const groupedPaths = paths.reduce((acc, path) => {
+      const groupName = getGroupNameFromPath(path, pattern);
+      if (!acc[groupName]) {
+        acc[groupName] = [];
+      }
+      acc[groupName].push(path);
+      return acc;
+    }, {} as Record<string, string[]>);
+
+    // 為每個分類生成配置並執行
+    for (const [groupName, paths] of Object.entries(groupedPaths)) {
+      const finalOutputPath = outputPath.replace('$1', groupName);
+
+      if (filterEndpoint) {
+        // 如果有 filterEndpoint，使用基於路徑的篩選函數
+        const pathBasedFilter = (operationName: string, operationDefinition: any) => {
+          const path = operationDefinition.path;
+          
+          // 檢查路徑是否匹配當前分組
+          const pathGroupName = getGroupNameFromPath(path, pattern);
+          if (pathGroupName !== groupName) {
+            return false;
+          }
+
+          // 使用 filterEndpoint 進行額外篩選
+          const endpointFilter = filterEndpoint(groupName);
+          if (endpointFilter instanceof RegExp) {
+            return endpointFilter.test(operationName);
+          }
+
+          return true;
+        };
+
+        const groupOptions = {
+          ...commonConfig,
+          outputFile: finalOutputPath,
+          filterEndpoints: pathBasedFilter,
+        };
+
+        await generateSingleEndpoint(groupOptions);
+      } else {
+        // 如果沒有 filterEndpoint，只使用路徑分組
+        const pathBasedFilter = (operationName: string, operationDefinition: any) => {
+          const path = operationDefinition.path;
+          
+          // 檢查路徑是否匹配當前分組
+          const pathGroupName = getGroupNameFromPath(path, pattern);
+          return pathGroupName === groupName;
+        };
+
+        const groupOptions = {
+          ...commonConfig,
+          outputFile: finalOutputPath,
+          filterEndpoints: pathBasedFilter,
+        };
+
+        await generateSingleEndpoint(groupOptions);
+      }
+    }
+    return;
+  }
+
+  // 原有的邏輯處理非 outputFiles 配置或本地文件
+  await generateSingleEndpoint(options);
+}
+
+async function generateSingleEndpoint(options: GenerationOptions): Promise<string | void> {
+  const schemaLocation = options.schemaFile;
+
+  const schemaAbsPath = isValidUrl(options.schemaFile)
+    ? options.schemaFile
+    : path.resolve(process.cwd(), schemaLocation);
+
   const sourceCode = await enforceOazapftsTsVersion(async () => {
     return generateApi(schemaAbsPath, options);
   });
@@ -110,21 +199,30 @@ export async function generateEndpoints(options: GenerationOptions): Promise<str
   }
 }
 
-
 export function parseConfig(fullConfig: ConfigFile) {
   const outFiles: (CommonOptions & OutputFileOptions)[] = [];
 
   if ('outputFiles' in fullConfig) {
     const { outputFiles, ...commonConfig } = fullConfig;
 
-    // 讀取 OpenAPI 文檔
-    const openApiDoc = JSON.parse(fs.readFileSync(fullConfig.schemaFile, 'utf-8'));
+    // 讀取 OpenAPI 文檔 - 支援 URL 和本地文件
+    let openApiDoc: any;
+    if (isValidUrl(fullConfig.schemaFile)) {
+      // 如果是 URL，直接返回原始配置，讓 generateEndpoints 處理
+      outFiles.push(fullConfig as any);
+      return outFiles;
+    } else {
+      // 如果是本地文件，直接讀取
+      openApiDoc = JSON.parse(fs.readFileSync(fullConfig.schemaFile, 'utf-8'));
+    }
+
     const paths = Object.keys(openApiDoc.paths);
 
     // 從配置中獲取分類規則
-    const [outputPath, config] = Object.entries(outputFiles)[0];
-    const patterns = config.groupMatch;
-    const filterEndpoint = config.filterEndpoint;
+    const outputFilesEntries = Object.entries(outputFiles);
+    const [outputPath, config] = outputFilesEntries[0];
+    const patterns = (config as any).groupMatch;
+    const filterEndpoint = (config as any).filterEndpoint;
 
     const pattern = patterns;
     // 根據路徑自動分類
