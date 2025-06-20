@@ -127,6 +127,7 @@ export interface OutputFileOptions extends Partial<CommonOptions> {
   outputFile: string;
   filterEndpoints?: EndpointMatcher;
   endpointOverrides?: EndpointOverrides[];
+  queryMatch?: (method: string, path: string) => boolean;
   /**
    * defaults to false
    * If passed as true it will generate TS enums instead of union of strings
@@ -145,6 +146,7 @@ export type EndpointOverrides = {
 export type OutputFilesConfig = {
   [outputFile: string]: {
       groupMatch: RegExp,
+      queryMatch?: (method: string, path: string) => boolean;
       filterEndpoint?: (groupName: string) => RegExp
     }
 };

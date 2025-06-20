@@ -60,7 +60,7 @@
   ],
   "paths": {
     "/Manager/LoginLog/ReadLoginLogList": {
-      "get": {
+      "post": {
         "summary": "查詢登入記錄",
         "deprecated": false,
         "description": "",

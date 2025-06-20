@@ -102,6 +102,7 @@ export async function generateEndpoints(options: GenerationOptions): Promise<str
     const [outputPath, config] = outputFilesEntries[0];
     const patterns = (config as any).groupMatch;
     const filterEndpoint = (config as any).filterEndpoint;
+    const queryMatch = (config as any).queryMatch;
 
     const pattern = patterns;
     // 根據路徑自動分類
@@ -142,6 +143,7 @@ export async function generateEndpoints(options: GenerationOptions): Promise<str
           ...commonConfig,
           outputFile: finalOutputPath,
           filterEndpoints: pathBasedFilter,
+          queryMatch,
         };
 
         await generateSingleEndpoint(groupOptions);
@@ -159,6 +161,7 @@ export async function generateEndpoints(options: GenerationOptions): Promise<str
           ...commonConfig,
           outputFile: finalOutputPath,
           filterEndpoints: pathBasedFilter,
+          queryMatch,
         };
 
         await generateSingleEndpoint(groupOptions);
@@ -223,6 +226,7 @@ export function parseConfig(fullConfig: ConfigFile) {
     const [outputPath, config] = outputFilesEntries[0];
     const patterns = (config as any).groupMatch;
     const filterEndpoint = (config as any).filterEndpoint;
+    const queryMatch = (config as any).queryMatch;
 
     const pattern = patterns;
     // 根據路徑自動分類
@@ -263,6 +267,7 @@ export function parseConfig(fullConfig: ConfigFile) {
           ...commonConfig,
           outputFile: finalOutputPath,
           filterEndpoints: pathBasedFilter,
+          queryMatch,
         });
       } else {
         // 如果沒有 filterEndpoint，只使用路徑分組
@@ -278,6 +283,7 @@ export function parseConfig(fullConfig: ConfigFile) {
           ...commonConfig,
           outputFile: finalOutputPath,
           filterEndpoints: pathBasedFilter,
+          queryMatch,
         });
       }
     });

@@ -118,6 +118,7 @@ export async function generateApi(
     mergeReadWriteOnly = false,
     httpResolverOptions,
     sharedTypesFile,
+    queryMatch,
   }: GenerationOptions
 ) {
   const v3Doc = (v3DocCache[spec] ??= await getV3Doc(spec, httpResolverOptions));
@@ -369,6 +370,7 @@ export async function generateApi(
                 operationDefinition,
                 overrides: getOverrides(operationDefinition, endpointOverrides),
                 sharedTypesFile: !!sharedTypesFile,
+                queryMatch,
               })
             ),
             true
@@ -410,10 +412,12 @@ export async function generateApi(
     operationDefinition,
     overrides,
     sharedTypesFile,
+    queryMatch,
   }: {
     operationDefinition: OperationDefinition;
     overrides?: EndpointOverrides;
     sharedTypesFile: boolean;
+    queryMatch?: (method: string, path: string) => boolean;
   }) {
     const {
       verb,
@@ -424,7 +428,7 @@ export async function generateApi(
     } = operationDefinition;
     const operationName = getOperationName({ verb, path });
     const tags = tag ? getTags({ verb, pathItem }) : [];
-    const isQuery = testIsQuery(verb, overrides);
+    const isQuery = testIsQuery(verb, path, overrides, queryMatch);
 
     const returnsJson = apiGen.getResponseType(responses) === 'json';
     let ResponseType: ts.TypeNode = factory.createKeywordTypeNode(ts.SyntaxKind.UnknownKeyword);

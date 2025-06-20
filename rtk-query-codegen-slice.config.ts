@@ -7,6 +7,11 @@ const generateOutputFiles = (): OutputFilesConfig => {
     './test_output3/$1/query.generated.ts': {
       // groupMatch: /^\/([^\/]+)/,
       groupMatch: /^\/Manager\/([^\/]+)/,
+      queryMatch: (method: string, path: string) => {
+        const paths = path.split('/');
+        const lastPath = paths[paths.length - 1];
+        return lastPath.startsWith('Read');
+      }
     },
   };
 };
