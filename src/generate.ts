@@ -386,6 +386,7 @@ export async function generateApi(
                 operationDefinitions,
                 endpointOverrides,
                 config: hooks,
+                queryMatch,
               }),
             ]
           : []),
