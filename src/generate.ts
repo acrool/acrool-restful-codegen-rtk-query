@@ -615,12 +615,23 @@ export async function generateApi(
     encodePathParams: boolean;
     encodeQueryParams: boolean;
   }) {
-    const { path, verb } = operationDefinition;
+    const { path, verb, operation } = operationDefinition;
 
     const bodyParameter = Object.values(queryArg).find((def) => def.origin === 'body');
 
     const rootObject = factory.createIdentifier('queryArg');
     const variablesObject = factory.createPropertyAccessExpression(rootObject, factory.createIdentifier('variables'));
+
+    // 提取 content type 的輔助函數
+    function getContentType(): string | undefined {
+      if (operation.requestBody) {
+        const requestBody = apiGen.resolve(operation.requestBody);
+        const contentTypes = Object.keys(requestBody.content || {});
+        // 直接返回第一個可用的 content type
+        return contentTypes[0];
+      }
+      return undefined;
+    }
 
     function pickParams(paramIn: string) {
       return Object.values(queryArg).filter((def) => def.origin === 'param' && def.param.in === paramIn);
@@ -656,6 +667,8 @@ export async function generateApi(
       );
     }
 
+    const contentType = getContentType();
+
     return factory.createArrowFunction(
       undefined,
       undefined,
@@ -675,6 +688,12 @@ export async function generateApi(
                   factory.createIdentifier('method'),
                   factory.createStringLiteral(verb.toUpperCase())
                 ),
+            contentType
+              ? factory.createPropertyAssignment(
+                  factory.createIdentifier('contentType'),
+                  factory.createStringLiteral(contentType)
+                )
+              : undefined,
             bodyParameter === undefined
               ? undefined
               : factory.createPropertyAssignment(
