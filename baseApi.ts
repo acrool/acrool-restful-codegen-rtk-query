@@ -36,7 +36,7 @@ const mutex = new Mutex();
 //     }
 // }
 
-interface IQuery {
+export interface IQuery {
   url: string;
   method?: string;
   variables?: Record<string, any>;
