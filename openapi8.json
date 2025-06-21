@@ -1,7 +1,7 @@
 {
   "openapi": "3.0.1",
   "info": {
-    "title": "[合規] 後台",
+    "title": "[合規] 後台(g)",
     "description": "",
     "version": "1.0.0"
   },
@@ -60,7 +60,7 @@
   ],
   "paths": {
     "/Manager/LoginLog/ReadLoginLogList": {
-      "post": {
+      "get": {
         "summary": "查詢登入記錄",
         "deprecated": false,
         "description": "",
@@ -3225,23 +3225,6 @@
                       "$ref": "#/components/schemas/SiteResponseVO"
                     }
                   ]
-                },
-                "example": {
-                  "isSuccess": false,
-                  "errorMessage": null,
-                  "returnObject": {
-                    "name": "RR",
-                    "vlogoUrl": "/common/upload-images/20240730_3w4h8l1ivnp.svg",
-                    "hlogoUrl": "/common/upload-images/20240124_31h8mn3stvs.png",
-                    "faviconUrl": "/common/upload-images/20230913_0tdkh1jxptbh.ico",
-                    "directLink": "data-openwidget-action=maximize",
-                    "widgetCode": "  window.__ow = window.__ow || {};\n  window.__ow.organizationId = \"e86b637c-45d4-48ce-b0ce-1ef8ee42fe50\";\n  ;(function(n,t,c){function i(n){return e._h?e._h.apply(null,n):e._q.push(n)}var e={_q:[],_h:null,_v:\"2.0\",on:function(){i([\"on\",c.call(arguments)])},once:function(){i([\"once\",c.call(arguments)])},off:function(){i([\"off\",c.call(arguments)])},get:function(){if(!e._h)throw new Error(\"[OpenWidget] You can't use getters before load.\");return i([\"get\",c.call(arguments)])},call:function(){i([\"call\",c.call(arguments)])},init:function(){var n=t.createElement(\"script\");n.async=!0,n.type=\"text/javascript\",n.src=\"https://cdn.openwidget.com/openwidget.js\",t.head.appendChild(n)}};!n.__ow.asyncInit&&e.init(),n.OpenWidget=n.OpenWidget||e}(window,document,[].slice))\nOpenWidget.call('hide')",
-                    "clientIP": "127.0.0.1",
-                    "country": "JP",
-                    "region": "Tokyo",
-                    "city": "Tokyo",
-                    "ISP": "Google LLC"
-                  }
                 }
               }
             },
@@ -5114,8 +5097,7 @@
                     "example": 100
                   },
                   "upgradeRewards": {
-                    "$ref": "#/components/schemas/UpgradeRewards",
-                    "example": ""
+                    "$ref": "#/components/schemas/UpgradeRewards"
                   }
                 },
                 "required": [
@@ -5473,8 +5455,7 @@
                     "example": 100
                   },
                   "upgradeRewards": {
-                    "$ref": "#/components/schemas/UpgradeRewards",
-                    "example": ""
+                    "$ref": "#/components/schemas/UpgradeRewards"
                   }
                 },
                 "required": [
@@ -6602,7 +6583,11 @@
                     "example": "active"
                   },
                   "nameMap.key": {
-                    "type": "",
+                    "type": "object",
+                    "items": {
+                      "type": "string"
+                    },
+                    "properties": {},
                     "example": ""
                   },
                   "memo": {
@@ -6643,7 +6628,8 @@
                 },
                 "required": [
                   "type",
-                  "status"
+                  "status",
+                  "nameMap.key"
                 ]
               },
               "examples": {}
@@ -6656,8 +6642,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/BaseResponseVO",
-                  "description": "com.app.common.vo.response.BaseResponseVO"
+                  "$ref": "#/components/schemas/BaseResponseVO"
                 },
                 "example": {
                   "code": 0,
@@ -14285,10 +14270,7 @@
           },
           "errorMessage": {
             "type": "string",
-            "description": "錯誤訊息",
-            "examples": [
-              ""
-            ]
+            "description": "錯誤訊息"
           },
           "account": {
             "type": "string",
@@ -14306,7 +14288,7 @@
           },
           "forceAuth": {
             "type": "boolean",
-            "description": "綁定二次驗證",
+            "description": "強制綁定二次驗證",
             "examples": [
               false
             ]
@@ -15860,16 +15842,12 @@
         "type": "object"
       }
     },
-    "securitySchemes": {
-      "ManagerAuth": {
-        "type": "http",
-        "name": "ManagerAuth",
-        "in": "header",
-        "scheme": "bearer",
-        "bearerFormat": "JWT"
-      }
-    }
+    "securitySchemes": {}
   },
-  "servers": [],
-  "security": []
+  "servers": [
+    {
+      "url": "https://gke-lab-mgr.hnymmy.com",
+      "description": "Lab"
+    }
+  ]
 }

@@ -116,40 +116,37 @@ export async function generateEndpoints(options: GenerationOptions): Promise<str
     const paths = Object.keys(openApiDoc.paths);
 
     // 從配置中獲取分類規則
-    const outputFilesEntries = Object.entries(outputFiles);
-    const [outputPath, config] = outputFilesEntries[0];
-    const patterns = (config as any).groupMatch;
-    const filterEndpoint = (config as any).filterEndpoint;
-    const queryMatch = (config as any).queryMatch;
+    const { groupKeyMatch, outputDir, filterEndpoint, queryMatch } = outputFiles;
 
-    const pattern = patterns;
     // 根據路徑自動分類
     const groupedPaths = paths.reduce((acc, path) => {
-      const groupName = getGroupNameFromPath(path, pattern);
-      if (!acc[groupName]) {
-        acc[groupName] = [];
+      // 使用 groupKeyMatch 方法獲取 groupKey
+      const groupKey = groupKeyMatch('GET', path); // 暫時使用 GET，實際應該根據操作類型
+      if (!acc[groupKey]) {
+        acc[groupKey] = [];
       }
-      acc[groupName].push(path);
+      acc[groupKey].push(path);
       return acc;
     }, {} as Record<string, string[]>);
 
     // 為每個分類生成配置並執行
-    for (const [groupName, paths] of Object.entries(groupedPaths)) {
-      const finalOutputPath = outputPath.replace('$1', groupName);
+    for (const [groupKey, paths] of Object.entries(groupedPaths)) {
+      const finalOutputPath = `${outputDir}/${groupKey}/query.generated.ts`;
 
       if (filterEndpoint) {
         // 如果有 filterEndpoint，使用基於路徑的篩選函數
         const pathBasedFilter = (operationName: string, operationDefinition: any) => {
           const path = operationDefinition.path;
+          const method = operationDefinition.verb;
           
           // 檢查路徑是否匹配當前分組
-          const pathGroupName = getGroupNameFromPath(path, pattern);
-          if (pathGroupName !== groupName) {
+          const pathGroupKey = groupKeyMatch(method, path);
+          if (pathGroupKey !== groupKey) {
             return false;
           }
 
           // 使用 filterEndpoint 進行額外篩選
-          const endpointFilter = filterEndpoint(groupName);
+          const endpointFilter = filterEndpoint(groupKey);
           if (endpointFilter instanceof RegExp) {
             return endpointFilter.test(operationName);
           }
@@ -160,6 +157,7 @@ export async function generateEndpoints(options: GenerationOptions): Promise<str
         const groupOptions = {
           ...commonConfig,
           outputFile: finalOutputPath,
+          sharedTypesFile: `${outputDir}/shared-types.ts`,
           filterEndpoints: pathBasedFilter,
           queryMatch,
         };
@@ -169,15 +167,17 @@ export async function generateEndpoints(options: GenerationOptions): Promise<str
         // 如果沒有 filterEndpoint，只使用路徑分組
         const pathBasedFilter = (operationName: string, operationDefinition: any) => {
           const path = operationDefinition.path;
+          const method = operationDefinition.verb;
           
           // 檢查路徑是否匹配當前分組
-          const pathGroupName = getGroupNameFromPath(path, pattern);
-          return pathGroupName === groupName;
+          const pathGroupKey = groupKeyMatch(method, path);
+          return pathGroupKey === groupKey;
         };
 
         const groupOptions = {
           ...commonConfig,
           outputFile: finalOutputPath,
+          sharedTypesFile: `${outputDir}/shared-types.ts`,
           filterEndpoints: pathBasedFilter,
           queryMatch,
         };
@@ -240,40 +240,37 @@ export function parseConfig(fullConfig: ConfigFile) {
     const paths = Object.keys(openApiDoc.paths);
 
     // 從配置中獲取分類規則
-    const outputFilesEntries = Object.entries(outputFiles);
-    const [outputPath, config] = outputFilesEntries[0];
-    const patterns = (config as any).groupMatch;
-    const filterEndpoint = (config as any).filterEndpoint;
-    const queryMatch = (config as any).queryMatch;
+    const { groupKeyMatch, outputDir, filterEndpoint, queryMatch } = outputFiles;
 
-    const pattern = patterns;
     // 根據路徑自動分類
     const groupedPaths = paths.reduce((acc, path) => {
-      const groupName = getGroupNameFromPath(path, pattern);
-      if (!acc[groupName]) {
-        acc[groupName] = [];
+      // 使用 groupKeyMatch 方法獲取 groupKey
+      const groupKey = groupKeyMatch('GET', path); // 暫時使用 GET，實際應該根據操作類型
+      if (!acc[groupKey]) {
+        acc[groupKey] = [];
       }
-      acc[groupName].push(path);
+      acc[groupKey].push(path);
       return acc;
     }, {} as Record<string, string[]>);
 
     // 為每個分類生成配置
-    Object.entries(groupedPaths).forEach(([groupName, paths]) => {
-      const finalOutputPath = outputPath.replace('$1', groupName);
+    Object.entries(groupedPaths).forEach(([groupKey, paths]) => {
+      const finalOutputPath = `${outputDir}/${groupKey}/query.generated.ts`;
 
       if (filterEndpoint) {
         // 如果有 filterEndpoint，使用基於路徑的篩選函數
         const pathBasedFilter = (operationName: string, operationDefinition: any) => {
           const path = operationDefinition.path;
+          const method = operationDefinition.verb;
           
           // 檢查路徑是否匹配當前分組
-          const pathGroupName = getGroupNameFromPath(path, pattern);
-          if (pathGroupName !== groupName) {
+          const pathGroupKey = groupKeyMatch(method, path);
+          if (pathGroupKey !== groupKey) {
             return false;
           }
 
           // 使用 filterEndpoint 進行額外篩選
-          const endpointFilter = filterEndpoint(groupName);
+          const endpointFilter = filterEndpoint(groupKey);
           if (endpointFilter instanceof RegExp) {
             return endpointFilter.test(operationName);
           }
@@ -284,6 +281,7 @@ export function parseConfig(fullConfig: ConfigFile) {
         outFiles.push({
           ...commonConfig,
           outputFile: finalOutputPath,
+          sharedTypesFile: `${outputDir}/shared-types.ts`,
           filterEndpoints: pathBasedFilter,
           queryMatch,
         });
@@ -291,15 +289,17 @@ export function parseConfig(fullConfig: ConfigFile) {
         // 如果沒有 filterEndpoint，只使用路徑分組
         const pathBasedFilter = (operationName: string, operationDefinition: any) => {
           const path = operationDefinition.path;
+          const method = operationDefinition.verb;
           
           // 檢查路徑是否匹配當前分組
-          const pathGroupName = getGroupNameFromPath(path, pattern);
-          return pathGroupName === groupName;
+          const pathGroupKey = groupKeyMatch(method, path);
+          return pathGroupKey === groupKey;
         };
 
         outFiles.push({
           ...commonConfig,
           outputFile: finalOutputPath,
+          sharedTypesFile: `${outputDir}/shared-types.ts`,
           filterEndpoints: pathBasedFilter,
           queryMatch,
         });

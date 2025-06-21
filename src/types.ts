@@ -148,11 +148,10 @@ export type EndpointOverrides = {
 }>;
 
 export type OutputFilesConfig = {
-  [outputFile: string]: {
-      groupMatch: RegExp,
-      queryMatch?: (method: string, path: string) => boolean;
-      filterEndpoint?: (groupName: string) => RegExp
-    }
+  groupKeyMatch: (method: string, path: string) => string;
+  outputDir: string;
+  queryMatch?: (method: string, path: string) => boolean;
+  filterEndpoint?: (groupName: string) => RegExp;
 };
 
 export type ConfigFile =
