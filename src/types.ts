@@ -38,6 +38,10 @@ export interface CommonOptions {
    */
   schemaFile: string;
   /**
+   * download path for schema file when schemaFile is a URL
+   */
+  downloadPath?: string;
+  /**
    * defaults to "api"
    */
   apiImport?: string;

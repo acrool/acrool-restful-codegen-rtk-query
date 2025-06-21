@@ -1,4 +1,5 @@
 export * from './capitalize';
+export * from './downloadSchema';
 export * from './getOperationDefinitions';
 export * from './getV3Doc';
 export * from './isQuery';
