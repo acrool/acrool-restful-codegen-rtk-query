@@ -148,7 +148,7 @@ export type EndpointOverrides = {
 }>;
 
 export type OutputFilesConfig = {
-  groupKeyMatch: (method: string, path: string) => string;
+  groupKeyMatch: (path: string) => string;
   outputDir: string;
   queryMatch?: (method: string, path: string) => boolean;
   filterEndpoint?: (groupName: string) => RegExp;

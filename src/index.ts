@@ -9,8 +9,6 @@ export type { OutputFilesConfig, ConfigFile } from './types';
 
 const require = createRequire(__filename);
 
-
-
 // 確保目錄存在的函數
 async function ensureDirectoryExists(filePath: string) {
   const dirname = path.dirname(filePath);
@@ -18,7 +16,6 @@ async function ensureDirectoryExists(filePath: string) {
     await fs.promises.mkdir(dirname, { recursive: true });
   }
 }
-
 
 // 檢查檔案是否存在的函數
 function fileExists(filePath: string): boolean {
@@ -71,24 +68,6 @@ export {default as ${apiName}} from './enhanceEndpoints';
   }
 }
 
-
-// 從路徑中提取分類名稱
-function getGroupNameFromPath(path: string, pattern: RegExp): string {
-  // console.log('pattern', pattern);
-
-  const match = path.match(pattern);
-  // console.log('match', path, match);
-
-  if (match && match[1]) {
-    return camelCase(match[1]);
-  }
-  return 'common';
-}
-
-
-
-
-
 export async function generateEndpoints(options: GenerationOptions): Promise<string | void> {
   // 如果有 remoteFile，先下載到 schemaFile 路徑
   let actualSchemaFile = options.schemaFile;
@@ -120,8 +99,8 @@ export async function generateEndpoints(options: GenerationOptions): Promise<str
 
     // 根據路徑自動分類
     const groupedPaths = paths.reduce((acc, path) => {
-      // 使用 groupKeyMatch 方法獲取 groupKey
-      const groupKey = groupKeyMatch('GET', path); // 暫時使用 GET，實際應該根據操作類型
+      // 使用 groupKeyMatch 方法獲取 groupKey，並轉換為小駝峰格式
+      const groupKey = camelCase(groupKeyMatch(path));
       if (!acc[groupKey]) {
         acc[groupKey] = [];
       }
@@ -137,10 +116,9 @@ export async function generateEndpoints(options: GenerationOptions): Promise<str
         // 如果有 filterEndpoint，使用基於路徑的篩選函數
         const pathBasedFilter = (operationName: string, operationDefinition: any) => {
           const path = operationDefinition.path;
-          const method = operationDefinition.verb;
-          
+
           // 檢查路徑是否匹配當前分組
-          const pathGroupKey = groupKeyMatch(method, path);
+          const pathGroupKey = camelCase(groupKeyMatch(path));
           if (pathGroupKey !== groupKey) {
             return false;
           }
@@ -167,10 +145,9 @@ export async function generateEndpoints(options: GenerationOptions): Promise<str
         // 如果沒有 filterEndpoint，只使用路徑分組
         const pathBasedFilter = (operationName: string, operationDefinition: any) => {
           const path = operationDefinition.path;
-          const method = operationDefinition.verb;
-          
+
           // 檢查路徑是否匹配當前分組
-          const pathGroupKey = groupKeyMatch(method, path);
+          const pathGroupKey = camelCase(groupKeyMatch(path));
           return pathGroupKey === groupKey;
         };
 
@@ -244,8 +221,8 @@ export function parseConfig(fullConfig: ConfigFile) {
 
     // 根據路徑自動分類
     const groupedPaths = paths.reduce((acc, path) => {
-      // 使用 groupKeyMatch 方法獲取 groupKey
-      const groupKey = groupKeyMatch('GET', path); // 暫時使用 GET，實際應該根據操作類型
+      // 使用 groupKeyMatch 方法獲取 groupKey，並轉換為小駝峰格式
+      const groupKey = camelCase(groupKeyMatch(path));
       if (!acc[groupKey]) {
         acc[groupKey] = [];
       }
@@ -261,10 +238,9 @@ export function parseConfig(fullConfig: ConfigFile) {
         // 如果有 filterEndpoint，使用基於路徑的篩選函數
         const pathBasedFilter = (operationName: string, operationDefinition: any) => {
           const path = operationDefinition.path;
-          const method = operationDefinition.verb;
-          
+
           // 檢查路徑是否匹配當前分組
-          const pathGroupKey = groupKeyMatch(method, path);
+          const pathGroupKey = camelCase(groupKeyMatch(path));
           if (pathGroupKey !== groupKey) {
             return false;
           }
@@ -289,10 +265,9 @@ export function parseConfig(fullConfig: ConfigFile) {
         // 如果沒有 filterEndpoint，只使用路徑分組
         const pathBasedFilter = (operationName: string, operationDefinition: any) => {
           const path = operationDefinition.path;
-          const method = operationDefinition.verb;
-          
+
           // 檢查路徑是否匹配當前分組
-          const pathGroupKey = groupKeyMatch(method, path);
+          const pathGroupKey = camelCase(groupKeyMatch(path));
           return pathGroupKey === groupKey;
         };
 

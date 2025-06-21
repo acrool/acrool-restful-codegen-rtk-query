@@ -7,7 +7,7 @@ const config: ConfigFile = {
   apiImport: 'baseApi',
   outputFiles: {
     outputDir: './test_output3',
-    groupKeyMatch: (method: string, path: string) => {
+    groupKeyMatch: (path: string) => {
       // 根據路徑模式提取 groupKey
       const paths = path.split('/')
         .filter(path => path !== '');
