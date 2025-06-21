@@ -163,3 +163,8 @@ export type ConfigFile =
         outputFiles: OutputFilesConfig
       }
     >;
+
+export type GenerateApiResult = {
+  sourceCode: string;
+  operationNames: string[];
+};

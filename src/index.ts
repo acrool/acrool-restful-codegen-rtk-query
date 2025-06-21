@@ -36,17 +36,23 @@ function getApiNameFromDir(dirPath: string): string {
 }
 
 // 確保基礎文件存在的函數
-async function ensureBaseFilesExist(outputDir: string) {
+async function ensureBaseFilesExist(outputDir: string, operationNames: string[]) {
   const enhanceEndpointsPath = path.join(outputDir, 'enhanceEndpoints.ts');
   const indexPath = path.join(outputDir, 'index.ts');
   const apiName = getApiNameFromDir(outputDir);
 
   // 如果 enhanceEndpoints.ts 不存在，創建它
   if (!fileExists(enhanceEndpointsPath)) {
+    // 生成操作名稱的字符串
+    const operationNamesString = operationNames
+      .map(name => `    ${name}: {},`)
+      .join('\n');
+
     const enhanceEndpointsContent = `import api from './query.generated';
 
 const enhancedApi = api.enhanceEndpoints({
     endpoints: {
+  ${operationNamesString}
     },
 });
 
@@ -54,6 +60,7 @@ export default enhancedApi;
 `;
     await fs.promises.writeFile(enhanceEndpointsPath, enhanceEndpointsContent, 'utf-8');
   }
+  // 如果文件已存在，不做任何修改
 
   // 如果 index.ts 不存在，創建它
   if (!fileExists(indexPath)) {
@@ -98,8 +105,8 @@ export async function generateEndpoints(options: GenerationOptions): Promise<str
     ? updatedOptions.schemaFile
     : path.resolve(process.cwd(), schemaLocation);
 
-  // 如果是 URL 且使用 outputFiles 配置，需要特殊處理
-  if (isValidUrl(options.schemaFile) && 'outputFiles' in options) {
+  // 如果是使用 outputFiles 配置，需要特殊處理
+  if ('outputFiles' in options) {
     const { outputFiles, ...commonConfig } = updatedOptions as any;
     
     // 異步獲取 OpenAPI 文檔
@@ -190,9 +197,10 @@ async function generateSingleEndpoint(options: GenerationOptions): Promise<strin
     ? options.schemaFile
     : path.resolve(process.cwd(), schemaLocation);
 
-  const sourceCode = await enforceOazapftsTsVersion(async () => {
+  const result = await enforceOazapftsTsVersion(async () => {
     return generateApi(schemaAbsPath, options);
   });
+  
   const { outputFile, prettierConfigFile } = options;
   if (outputFile) {
     const outputPath = path.resolve(process.cwd(), outputFile);
@@ -200,14 +208,14 @@ async function generateSingleEndpoint(options: GenerationOptions): Promise<strin
 
     // 確保基礎文件存在
     const outputDir = path.dirname(outputPath);
-    await ensureBaseFilesExist(outputDir);
+    await ensureBaseFilesExist(outputDir, result.operationNames);
 
     fs.writeFileSync(
       outputPath,
-      await prettify(outputFile, sourceCode, prettierConfigFile)
+      await prettify(outputFile, result.sourceCode, prettierConfigFile)
     );
   } else {
-    return await prettify(null, sourceCode, prettierConfigFile);
+    return await prettify(null, result.sourceCode, prettierConfigFile);
   }
 }
 

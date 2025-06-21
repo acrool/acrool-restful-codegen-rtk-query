@@ -23,6 +23,7 @@ import type {
   ParameterDefinition,
   ParameterMatcher,
   TextMatcher,
+  GenerateApiResult,
 } from './types';
 import { capitalize, getOperationDefinitions, getV3Doc, removeUndefined, isQuery as testIsQuery } from './utils';
 import { factory } from './utils/factory';
@@ -120,7 +121,7 @@ export async function generateApi(
     sharedTypesFile,
     queryMatch,
   }: GenerationOptions
-) {
+): Promise<GenerateApiResult> {
   const v3Doc = (v3DocCache[spec] ??= await getV3Doc(spec, httpResolverOptions));
 
   const apiGen = new ApiGenerator(v3Doc, {
@@ -347,7 +348,10 @@ export async function generateApi(
         })()
       : './shared-types';
 
-  return printer.printNode(
+  // 收集操作名稱
+  const operationNames: string[] = [];
+
+  const sourceCode = printer.printNode(
     ts.EmitHint.Unspecified,
     factory.createSourceFile(
       [
@@ -365,14 +369,18 @@ export async function generateApi(
         generateCreateApiCall({
           tag,
           endpointDefinitions: factory.createObjectLiteralExpression(
-            operationDefinitions.map((operationDefinition) =>
-              generateEndpoint({
+            operationDefinitions.map((operationDefinition) => {
+              const operationName = getOperationName({ verb: operationDefinition.verb, path: operationDefinition.path });
+              const finalOperationName = operationNameSuffix ? capitalize(operationName + operationNameSuffix) : operationName;
+              operationNames.push(finalOperationName);
+              
+              return generateEndpoint({
                 operationDefinition,
                 overrides: getOverrides(operationDefinition, endpointOverrides),
                 sharedTypesFile: !!sharedTypesFile,
                 queryMatch,
-              })
-            ),
+              });
+            }),
             true
           ),
         }),
@@ -396,6 +404,11 @@ export async function generateApi(
     ),
     resultFile
   );
+
+  return {
+    sourceCode,
+    operationNames,
+  };
 
   function extractAllTagTypes({ operationDefinitions }: { operationDefinitions: OperationDefinition[] }) {
     const allTagTypes = new Set<string>();

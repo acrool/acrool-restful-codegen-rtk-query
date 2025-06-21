@@ -20,7 +20,7 @@ const config: ConfigFile = {
   // schemaFile: './openapi.json',
   // schemaFile: './openapi8.json',
   // schemaFile: 'http://127.0.0.1:4523/export/openapi/2?version=3.0',
-  schemaFile: 'http://127.0.0.1:4523/export/openapi/6541886/0',
+  schemaFile: 'http://127.0.0.1:4523/export/openapi/6541975/3235',
   downloadPath: './openapi9.json',
   apiFile: './baseApi.ts',
   apiImport: 'baseApi',
