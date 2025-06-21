@@ -3,6 +3,7 @@ import fs from 'node:fs/promises';
 import path, { resolve } from 'node:path';
 import { rimraf } from 'rimraf';
 import { isDir, removeTempDir } from './cli.test';
+import { vi } from 'vitest';
 
 const tmpDir = path.resolve(__dirname, 'tmp');
 
@@ -589,5 +590,75 @@ describe('query parameters', () => {
       apiFile: './fixtures/emptyApi.ts',
     });
     expect(api).toMatchSnapshot();
+  });
+});
+
+describe('downloadPath functionality', () => {
+  it('should download schema from URL when downloadPath is specified', async () => {
+    const downloadPath = path.join(tmpDir, 'downloaded-schema.json');
+    
+    // Mock fetch to return a simple schema
+    const originalFetch = global.fetch;
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      text: () => Promise.resolve(JSON.stringify({
+        openapi: '3.0.0',
+        info: { title: 'Test API', version: '1.0.0' },
+        paths: {
+          '/test': {
+            get: {
+              responses: {
+                '200': {
+                  description: 'OK',
+                  content: {
+                    'application/json': {
+                      schema: { type: 'string' }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }))
+    });
+
+    try {
+      await generateEndpoints({
+        apiFile: './fixtures/emptyApi.ts',
+        schemaFile: 'https://example.com/api.json',
+        downloadPath,
+        outputFile: path.join(tmpDir, 'test-output.ts')
+      });
+
+      // Check if file was downloaded
+      const downloadedContent = await fs.readFile(downloadPath, 'utf-8');
+      expect(JSON.parse(downloadedContent)).toHaveProperty('openapi');
+      expect(JSON.parse(downloadedContent)).toHaveProperty('paths');
+    } finally {
+      // Restore original fetch
+      global.fetch = originalFetch;
+      
+      // Clean up downloaded file
+      try {
+        await fs.unlink(downloadPath);
+      } catch {
+        // File might not exist, ignore
+      }
+    }
+  });
+
+  it('should not download when schemaFile is a local path', async () => {
+    const downloadPath = path.join(tmpDir, 'should-not-exist.json');
+    
+    await generateEndpoints({
+      apiFile: './fixtures/emptyApi.ts',
+      schemaFile: resolve(__dirname, 'fixtures/petstore.json'),
+      downloadPath,
+      outputFile: path.join(tmpDir, 'test-output.ts')
+    });
+
+    // Check that no download file was created
+    await expect(fs.access(downloadPath)).rejects.toThrow();
   });
 });
