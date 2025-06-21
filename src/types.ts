@@ -115,6 +115,11 @@ export interface CommonOptions {
    * resolution mechanism will be used.
    */
   prettierConfigFile?: string;
+  /**
+   * defaults to "@acrool/react-fetcher"
+   * File path for importing IRestFulEndpointsQueryReturn type
+   */
+  endpointsQueryReturnTypeFile?: string;
 }
 
 export type TextMatcher = string | RegExp | (string | RegExp)[];

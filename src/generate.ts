@@ -120,6 +120,7 @@ export async function generateApi(
     httpResolverOptions,
     sharedTypesFile,
     queryMatch,
+    endpointsQueryReturnTypeFile = './endpointsQueryReturnType',
   }: GenerationOptions
 ): Promise<GenerateApiResult> {
   const v3Doc = (v3DocCache[spec] ??= await getV3Doc(spec, httpResolverOptions));
@@ -333,8 +334,14 @@ export async function generateApi(
       apiFile = apiFile.replace(/\\/g, '/');
       if (!apiFile.startsWith('.')) apiFile = `./${apiFile}`;
     }
+    if (endpointsQueryReturnTypeFile.startsWith('.')) {
+      endpointsQueryReturnTypeFile = path.relative(path.dirname(outputFile), endpointsQueryReturnTypeFile);
+      endpointsQueryReturnTypeFile = endpointsQueryReturnTypeFile.replace(/\\/g, '/');
+      if (!endpointsQueryReturnTypeFile.startsWith('.')) endpointsQueryReturnTypeFile = `./${endpointsQueryReturnTypeFile}`;
+    }
   }
   apiFile = apiFile.replace(/\.[jt]sx?$/, '');
+  endpointsQueryReturnTypeFile = endpointsQueryReturnTypeFile.replace(/\.[jt]sx?$/, '');
 
   const sharedTypesImportPath =
     sharedTypesFile && outputFile
@@ -356,7 +363,7 @@ export async function generateApi(
     factory.createSourceFile(
       [
         generateImportNode(apiFile, { [apiImport]: 'api' }),
-        generateImportNode('@acrool/react-fetcher', { IRestFulEndpointsQueryReturn: 'IRestFulEndpointsQueryReturn' }),
+        generateImportNode(endpointsQueryReturnTypeFile, { IRestFulEndpointsQueryReturn: 'IRestFulEndpointsQueryReturn' }),
         ...(sharedTypesFile
           ? [
               generateImportNode(sharedTypesImportPath, {

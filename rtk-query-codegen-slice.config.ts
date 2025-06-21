@@ -20,6 +20,7 @@ const config: ConfigFile = {
       return lastPath.startsWith('Read');
     },
   },
+  endpointsQueryReturnTypeFile: '@acrool/react-fetcher',
   hooks: true,
   useEnumType: false,
 };
