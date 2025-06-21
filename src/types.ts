@@ -34,13 +34,13 @@ export type GenerationOptions = Id<
 export interface CommonOptions {
   apiFile: string;
   /**
-   * filename or url
+   * local schema file path (only supports local files)
    */
   schemaFile: string;
   /**
-   * download path for schema file when schemaFile is a URL
+   * remote schema file URL (when provided, will download to schemaFile path)
    */
-  downloadPath?: string;
+  remoteFile?: string;
   /**
    * defaults to "api"
    */

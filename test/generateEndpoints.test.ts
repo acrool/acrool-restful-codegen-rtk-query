@@ -593,9 +593,9 @@ describe('query parameters', () => {
   });
 });
 
-describe('downloadPath functionality', () => {
-  it('should download schema from URL when downloadPath is specified', async () => {
-    const downloadPath = path.join(tmpDir, 'downloaded-schema.json');
+describe('remoteFile functionality', () => {
+  it('should download schema from URL when remoteFile is specified', async () => {
+    const schemaFile = path.join(tmpDir, 'downloaded-schema.json');
     
     // Mock fetch to return a simple schema
     const originalFetch = global.fetch;
@@ -626,13 +626,13 @@ describe('downloadPath functionality', () => {
     try {
       await generateEndpoints({
         apiFile: './fixtures/emptyApi.ts',
-        schemaFile: 'https://example.com/api.json',
-        downloadPath,
+        schemaFile,
+        remoteFile: 'https://example.com/api.json',
         outputFile: path.join(tmpDir, 'test-output.ts')
       });
 
       // Check if file was downloaded
-      const downloadedContent = await fs.readFile(downloadPath, 'utf-8');
+      const downloadedContent = await fs.readFile(schemaFile, 'utf-8');
       expect(JSON.parse(downloadedContent)).toHaveProperty('openapi');
       expect(JSON.parse(downloadedContent)).toHaveProperty('paths');
     } finally {
@@ -641,24 +641,23 @@ describe('downloadPath functionality', () => {
       
       // Clean up downloaded file
       try {
-        await fs.unlink(downloadPath);
+        await fs.unlink(schemaFile);
       } catch {
         // File might not exist, ignore
       }
     }
   });
 
-  it('should not download when schemaFile is a local path', async () => {
-    const downloadPath = path.join(tmpDir, 'should-not-exist.json');
+  it('should not download when only schemaFile is provided (local path)', async () => {
+    const schemaFile = path.join(tmpDir, 'should-not-exist.json');
     
     await generateEndpoints({
       apiFile: './fixtures/emptyApi.ts',
       schemaFile: resolve(__dirname, 'fixtures/petstore.json'),
-      downloadPath,
       outputFile: path.join(tmpDir, 'test-output.ts')
     });
 
     // Check that no download file was created
-    await expect(fs.access(downloadPath)).rejects.toThrow();
+    await expect(fs.access(schemaFile)).rejects.toThrow();
   });
 });

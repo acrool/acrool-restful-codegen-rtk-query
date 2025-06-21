@@ -17,25 +17,25 @@ This is a utility library meant to be used with [RTK Query](https://redux-toolki
 
 ### Features
 
-- **URL Schema Download**: When `schemaFile` is a URL, you can specify `downloadPath` to download the schema to a local file before processing
-- **Local File Support**: Direct processing of local schema files
+- **Local Schema File Support**: Direct processing of local schema files via `schemaFile`
+- **Remote Schema Download**: Download remote schemas to local files via `remoteFile` and `schemaFile`
 - **Type Generation**: Generates TypeScript types from OpenAPI schemas
 - **RTK Query Integration**: Seamless integration with RTK Query
 
 ### Configuration Options
 
-- `schemaFile`: The OpenAPI schema file path or URL
-- `downloadPath`: (Optional) When `schemaFile` is a URL, specifies where to download the schema file locally
+- `schemaFile`: The local OpenAPI schema file path (required)
+- `remoteFile`: (Optional) Remote schema URL to download to `schemaFile` path
 - `outputFile`: The output file path for generated code
 - `apiFile`: The base API file path
 
 ### Example Configuration
 
 ```typescript
-// For URL schemas with download
+// For remote schemas with download
 {
-  schemaFile: 'https://api.example.com/openapi.json',
-  downloadPath: './schemas/api-schema.json',
+  schemaFile: './schemas/api-schema.json',
+  remoteFile: 'https://api.example.com/openapi.json',
   apiFile: './baseApi',
   outputFile: './generated-api.ts'
 }

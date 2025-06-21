@@ -3,7 +3,7 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 import { generateApi } from './generate';
 import type { CommonOptions, ConfigFile, GenerationOptions, OutputFileOptions } from './types';
-import { isValidUrl, prettify, getV3Doc, downloadSchemaFile } from './utils';
+import { prettify, getV3Doc, downloadSchemaFile } from './utils';
 import camelCase from 'lodash.camelcase';
 export type { OutputFilesConfig, ConfigFile } from './types';
 
@@ -45,14 +45,14 @@ async function ensureBaseFilesExist(outputDir: string, operationNames: string[])
   if (!fileExists(enhanceEndpointsPath)) {
     // 生成操作名稱的字符串
     const operationNamesString = operationNames
-      .map(name => `    ${name}: {},`)
+      .map(name => `        ${name}: {},`)
       .join('\n');
 
     const enhanceEndpointsContent = `import api from './query.generated';
 
 const enhancedApi = api.enhanceEndpoints({
     endpoints: {
-  ${operationNamesString}
+${operationNamesString}
     },
 });
 
@@ -90,8 +90,12 @@ function getGroupNameFromPath(path: string, pattern: RegExp): string {
 
 
 export async function generateEndpoints(options: GenerationOptions): Promise<string | void> {
-  // 如果是網址，先下載到指定路徑
-  const actualSchemaFile = await downloadSchemaFile(options.schemaFile, options.downloadPath);
+  // 如果有 remoteFile，先下載到 schemaFile 路徑
+  let actualSchemaFile = options.schemaFile;
+  
+  if (options.remoteFile) {
+    actualSchemaFile = await downloadSchemaFile(options.remoteFile, options.schemaFile);
+  }
   
   // 更新 options 中的 schemaFile 為實際的檔案路徑
   const updatedOptions = {
@@ -101,9 +105,7 @@ export async function generateEndpoints(options: GenerationOptions): Promise<str
 
   const schemaLocation = updatedOptions.schemaFile;
 
-  const schemaAbsPath = isValidUrl(updatedOptions.schemaFile)
-    ? updatedOptions.schemaFile
-    : path.resolve(process.cwd(), schemaLocation);
+  const schemaAbsPath = path.resolve(process.cwd(), schemaLocation);
 
   // 如果是使用 outputFiles 配置，需要特殊處理
   if ('outputFiles' in options) {
@@ -193,9 +195,7 @@ export async function generateEndpoints(options: GenerationOptions): Promise<str
 async function generateSingleEndpoint(options: GenerationOptions): Promise<string | void> {
   const schemaLocation = options.schemaFile;
 
-  const schemaAbsPath = isValidUrl(options.schemaFile)
-    ? options.schemaFile
-    : path.resolve(process.cwd(), schemaLocation);
+  const schemaAbsPath = path.resolve(process.cwd(), schemaLocation);
 
   const result = await enforceOazapftsTsVersion(async () => {
     return generateApi(schemaAbsPath, options);
@@ -225,10 +225,11 @@ export function parseConfig(fullConfig: ConfigFile) {
   if ('outputFiles' in fullConfig) {
     const { outputFiles, ...commonConfig } = fullConfig;
 
-    // 讀取 OpenAPI 文檔 - 支援 URL 和本地文件
+    // 讀取 OpenAPI 文檔 - 支援本地文件
     let openApiDoc: any;
-    if (isValidUrl(fullConfig.schemaFile)) {
-      // 如果是 URL，直接返回原始配置，讓 generateEndpoints 處理下載
+    
+    // 如果有 remoteFile，直接返回原始配置，讓 generateEndpoints 處理下載
+    if (fullConfig.remoteFile) {
       outFiles.push(fullConfig as any);
       return outFiles;
     } else {
