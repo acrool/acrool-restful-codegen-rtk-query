@@ -24,8 +24,17 @@ export class OpenApiParserService {
    */
   initialize(): void {
     if (this.apiGen.spec.components?.schemas) {
+      // 原因：oazapfts 會優先使用 schema.title 作為類型名稱，但應該使用 schema key
+      // 這只在記憶體中修改，不影響原始 OpenAPI 文件
+      Object.keys(this.apiGen.spec.components.schemas).forEach(schemaName => {
+        const schema = this.apiGen.spec.components!.schemas![schemaName];
+        if (schema && typeof schema === 'object' && 'title' in schema) {
+          delete schema.title;
+        }
+      });
+
       this.apiGen.preprocessComponents(this.apiGen.spec.components.schemas);
-      
+
       // 手動為每個 schema 生成 type alias
       Object.keys(this.apiGen.spec.components.schemas).forEach(schemaName => {
         try {

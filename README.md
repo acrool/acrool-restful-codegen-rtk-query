@@ -55,14 +55,6 @@ This is a utility library meant to be used with [RTK Query](https://redux-toolki
 ### Test
 
 ```bash
-yarn build && npx acrool-rtk-query-codegen-openapi ./rtk-query-codegen.config.ts
-yarn build && npx acrool-rtk-query-codegen-openapi ./rtk-query-codegen-slice.config.ts
-rm -rf test_output3/* && node lib/bin/cli.mjs rtk-query-codegen-slice.config.ts
-```
-
-new
-
-```bash
 yarn cli ./react-rtk-query.config.ts
 ```
 
