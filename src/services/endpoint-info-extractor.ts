@@ -19,6 +19,7 @@ export interface EndpointInfo {
   isVoidArg: boolean;
   summary: string;
   contentType: string;
+  hasRequestBody: boolean;
 }
 
 /**
@@ -65,7 +66,7 @@ export class EndpointInfoExtractor {
     const summary = operation.summary || `${verb.toUpperCase()} ${path}`;
 
     // 解析參數
-    const { queryParams, pathParams, isVoidArg } = this.extractParameters(operationDefinition);
+    const { queryParams, pathParams, isVoidArg, hasRequestBody } = this.extractParameters(operationDefinition);
 
     // 提取 content type
     const contentType = this.extractContentType(operation);
@@ -82,7 +83,8 @@ export class EndpointInfoExtractor {
       pathParams,
       isVoidArg,
       summary,
-      contentType
+      contentType,
+      hasRequestBody
     };
   }
 
@@ -97,12 +99,15 @@ export class EndpointInfoExtractor {
     const operationParameters = this.resolveArray(operation.parameters);
     const pathItemParameters = this.resolveArray(pathItem.parameters)
       .filter((pp) => !operationParameters.some((op) => op.name === pp.name && op.in === pp.in));
-    
+
     const allParameters = supportDeepObjects([...pathItemParameters, ...operationParameters])
       .filter((param) => param.in !== 'header');
 
     const queryParams = allParameters.filter(param => param.in === 'query');
     const pathParams = allParameters.filter(param => param.in === 'path');
+
+    // 檢查是否有 request body
+    const hasRequestBody = !!operation.requestBody;
 
     // 檢查是否為 void 類型參數
     const isVoidArg = queryParams.length === 0 && pathParams.length === 0 && !operation.requestBody;
@@ -110,7 +115,8 @@ export class EndpointInfoExtractor {
     return {
       queryParams,
       pathParams,
-      isVoidArg
+      isVoidArg,
+      hasRequestBody
     };
   }
 

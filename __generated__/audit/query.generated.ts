@@ -14,7 +14,7 @@ const injectedRtkApi = api.injectEndpoints({
       IRestFulEndpointsQueryReturn<PostOperatorIdAuditByIdSignatureReq>
     >({
       query: (queryArg) => ({
-        url: "/operatorId/audit/{id}/signature",
+        url: `/operatorId/audit/${queryArg.variables.id}/signature`,
         method: "POST",
         contentType: "multipart/form-data",
         body: queryArg.variables.body,
@@ -26,10 +26,12 @@ const injectedRtkApi = api.injectEndpoints({
       IRestFulEndpointsQueryReturn<GetOperatorIdAuditByIdReq>
     >({
       query: (queryArg) => ({
-        url: "/operatorId/audit/{id}",
+        url: `/operatorId/audit/${queryArg.variables.id}`,
         method: "GET",
         contentType: "application/json",
-        body: queryArg.variables.body,
+        params: {
+          password: queryArg.variables.password,
+        },
         fetchOptions: queryArg?.fetchOptions,
       }),
     }),

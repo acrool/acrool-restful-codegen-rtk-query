@@ -13,6 +13,7 @@ export function generateRtkQueryFile(endpointInfos: Array<{
   isVoidArg: boolean;
   summary: string;
   contentType: string;
+  hasRequestBody: boolean;
 }>, options: GenerationOptions) {
 
   const { groupKey } = options;
@@ -25,15 +26,40 @@ export function generateRtkQueryFile(endpointInfos: Array<{
     const methodType = info.isQuery ? 'query' : 'mutation';
     const argType = info.isVoidArg ? 'void' : `${httpClientTypeName}<${info.argTypeName}>`;
 
+    // 處理 path parameters - 替換 {id} 為 ${queryArg.variables.id}
+    let urlPath = info.path;
+    if (info.pathParams && info.pathParams.length > 0) {
+      info.pathParams.forEach((param: any) => {
+        urlPath = urlPath.replace(`{${param.name}}`, `\${queryArg.variables.${param.name}}`);
+      });
+      // 使用模板字符串
+      urlPath = '`' + urlPath + '`';
+    } else {
+      // 使用普通字符串
+      urlPath = `"${urlPath}"`;
+    }
+
+    // 處理 query parameters
+    let paramsSection = '';
+    if (info.queryParams && info.queryParams.length > 0) {
+      const paramsLines = info.queryParams.map((param: any) =>
+        `          ${param.name}: queryArg.variables.${param.name},`
+      ).join('\n');
+      paramsSection = `
+        params: {
+${paramsLines}
+        },`;
+    }
+
     return `    ${info.operationName}: build.${methodType}<
       ${info.responseTypeName},
       ${argType}
     >({
       query: (queryArg) => ({
-        url: "${info.path}",
+        url: ${urlPath},
         method: "${info.verb.toUpperCase()}",
-        contentType: "${info.contentType}",${info.isVoidArg ? '' : `
-        body: queryArg.variables.body,`}${info.isVoidArg ? '' : `
+        contentType: "${info.contentType}",${paramsSection}${info.hasRequestBody ? `
+        body: queryArg.variables.body,` : ''}${info.isVoidArg ? '' : `
         fetchOptions: queryArg?.fetchOptions,`}
       }),
     }),`;
@@ -79,22 +105,22 @@ ${endpoints}
 
 export const {
 ${endpointInfos.map(info => {
-  const capitalizedOperationName = info.operationName.charAt(0).toUpperCase() + info.operationName.slice(1);
-  if (info.isQuery) {
-    // For queries, generate both regular and lazy hooks if useLazyQueries is enabled
-    const regularHook = `use${capitalizedOperationName}Query`;
-    if (options.useLazyQueries) {
-      const lazyHook = `useLazy${capitalizedOperationName}Query`;
-      return `  ${regularHook},\n  ${lazyHook},`;
+    const capitalizedOperationName = info.operationName.charAt(0).toUpperCase() + info.operationName.slice(1);
+    if (info.isQuery) {
+      // For queries, generate both regular and lazy hooks if useLazyQueries is enabled
+      const regularHook = `use${capitalizedOperationName}Query`;
+      if (options.useLazyQueries) {
+        const lazyHook = `useLazy${capitalizedOperationName}Query`;
+        return `  ${regularHook},\n  ${lazyHook},`;
+      } else {
+        return `  ${regularHook},`;
+      }
     } else {
-      return `  ${regularHook},`;
+      // For mutations, only generate regular hook
+      const mutationHook = `use${capitalizedOperationName}Mutation`;
+      return `  ${mutationHook},`;
     }
-  } else {
-    // For mutations, only generate regular hook
-    const mutationHook = `use${capitalizedOperationName}Mutation`;
-    return `  ${mutationHook},`;
-  }
-}).join('\n')}
+  }).join('\n')}
 } = injectedRtkApi;
 
 export default injectedRtkApi;

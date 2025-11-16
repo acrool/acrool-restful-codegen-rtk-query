@@ -14,10 +14,9 @@ const injectedRtkApi = api.injectEndpoints({
       IRestFulEndpointsQueryReturn<GetAuditByIdReq>
     >({
       query: (queryArg) => ({
-        url: "/audit/{id}",
+        url: `/audit/${queryArg.variables.id}`,
         method: "GET",
         contentType: "application/json",
-        body: queryArg.variables.body,
         fetchOptions: queryArg?.fetchOptions,
       }),
     }),
@@ -26,7 +25,7 @@ const injectedRtkApi = api.injectEndpoints({
       IRestFulEndpointsQueryReturn<PutAuditByIdReq>
     >({
       query: (queryArg) => ({
-        url: "/audit/{id}",
+        url: `/audit/${queryArg.variables.id}`,
         method: "PUT",
         contentType: "application/json",
         body: queryArg.variables.body,
@@ -38,7 +37,7 @@ const injectedRtkApi = api.injectEndpoints({
       IRestFulEndpointsQueryReturn<PostAuditByIdReq>
     >({
       query: (queryArg) => ({
-        url: "/audit/{id}",
+        url: `/audit/${queryArg.variables.id}`,
         method: "POST",
         contentType: "application/json",
         body: queryArg.variables.body,
@@ -50,7 +49,7 @@ const injectedRtkApi = api.injectEndpoints({
       IRestFulEndpointsQueryReturn<PutAuditByIdProfileReq>
     >({
       query: (queryArg) => ({
-        url: "/audit/{id}/profile",
+        url: `/audit/${queryArg.variables.id}/profile`,
         method: "PUT",
         contentType: "multipart/form-data",
         body: queryArg.variables.body,
@@ -62,7 +61,7 @@ const injectedRtkApi = api.injectEndpoints({
       IRestFulEndpointsQueryReturn<PostAuditByIdAuditSignatureReq>
     >({
       query: (queryArg) => ({
-        url: "/audit/{id}/auditSignature",
+        url: `/audit/${queryArg.variables.id}/auditSignature`,
         method: "POST",
         contentType: "multipart/form-data",
         body: queryArg.variables.body,
@@ -74,7 +73,7 @@ const injectedRtkApi = api.injectEndpoints({
       IRestFulEndpointsQueryReturn<PostAuditByIdManagerSignatureReq>
     >({
       query: (queryArg) => ({
-        url: "/audit/{id}/managerSignature",
+        url: `/audit/${queryArg.variables.id}/managerSignature`,
         method: "POST",
         contentType: "multipart/form-data",
         body: queryArg.variables.body,
@@ -86,10 +85,9 @@ const injectedRtkApi = api.injectEndpoints({
       IRestFulEndpointsQueryReturn<PostAuditByIdExportAuditReq>
     >({
       query: (queryArg) => ({
-        url: "/audit/{id}/exportAudit",
+        url: `/audit/${queryArg.variables.id}/exportAudit`,
         method: "POST",
         contentType: "application/json",
-        body: queryArg.variables.body,
         fetchOptions: queryArg?.fetchOptions,
       }),
     }),
@@ -98,10 +96,9 @@ const injectedRtkApi = api.injectEndpoints({
       IRestFulEndpointsQueryReturn<PostAuditByIdExportAssetsReq>
     >({
       query: (queryArg) => ({
-        url: "/audit/{id}/exportAssets",
+        url: `/audit/${queryArg.variables.id}/exportAssets`,
         method: "POST",
         contentType: "application/json",
-        body: queryArg.variables.body,
         fetchOptions: queryArg?.fetchOptions,
       }),
     }),
@@ -110,7 +107,7 @@ const injectedRtkApi = api.injectEndpoints({
       IRestFulEndpointsQueryReturn<DeleteAuditByIdAnnexReq>
     >({
       query: (queryArg) => ({
-        url: "/audit/{id}/annex",
+        url: `/audit/${queryArg.variables.id}/annex`,
         method: "DELETE",
         contentType: "application/x-www-form-urlencoded",
         body: queryArg.variables.body,
@@ -122,10 +119,9 @@ const injectedRtkApi = api.injectEndpoints({
       IRestFulEndpointsQueryReturn<GetAuditByIdOperatorPasswordReq>
     >({
       query: (queryArg) => ({
-        url: "/audit/{id}/operatorPassword",
+        url: `/audit/${queryArg.variables.id}/operatorPassword`,
         method: "GET",
         contentType: "application/json",
-        body: queryArg.variables.body,
         fetchOptions: queryArg?.fetchOptions,
       }),
     }),
@@ -134,7 +130,7 @@ const injectedRtkApi = api.injectEndpoints({
       IRestFulEndpointsQueryReturn<PostAuditByIdInvalidReq>
     >({
       query: (queryArg) => ({
-        url: "/audit/{id}/invalid",
+        url: `/audit/${queryArg.variables.id}/invalid`,
         method: "POST",
         contentType: "multipart/form-data",
         body: queryArg.variables.body,
@@ -146,7 +142,7 @@ const injectedRtkApi = api.injectEndpoints({
       IRestFulEndpointsQueryReturn<PostAuditByIdReturnsReq>
     >({
       query: (queryArg) => ({
-        url: "/audit/{id}/returns",
+        url: `/audit/${queryArg.variables.id}/returns`,
         method: "POST",
         contentType: "multipart/form-data",
         body: queryArg.variables.body,
