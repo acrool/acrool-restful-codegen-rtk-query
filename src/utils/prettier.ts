@@ -22,25 +22,30 @@ const EXTENSION_TO_PARSER: Record<string, BuiltInParserName> = {
 
 export async function prettify(filePath: string | null, content: string, prettierConfigFile?: string): Promise<string> {
   let config = null;
-  let parser = 'typescript';
+  let parser: BuiltInParserName = 'typescript';
 
-  if (filePath) {
-    const fileExtension = path.extname(filePath).slice(1);
-    parser = EXTENSION_TO_PARSER[fileExtension];
-    config = await prettier.resolveConfig(process.cwd(), {
-      useCache: true,
-      editorconfig: !prettierConfigFile,
-      config: prettierConfigFile,
+  try {
+    if (filePath) {
+      const fileExtension = path.extname(filePath).slice(1);
+      parser = EXTENSION_TO_PARSER[fileExtension] || 'typescript';
+      config = await prettier.resolveConfig(process.cwd(), {
+        useCache: true,
+        editorconfig: !prettierConfigFile,
+        config: prettierConfigFile,
+      });
+    } else if (prettierConfigFile) {
+      config = await prettier.resolveConfig(process.cwd(), {
+        useCache: true,
+        config: prettierConfigFile,
+      });
+    }
+
+    return prettier.format(content, {
+      parser,
+      ...config,
     });
-  } else if (prettierConfigFile) {
-    config = await prettier.resolveConfig(process.cwd(), {
-      useCache: true,
-      config: prettierConfigFile,
-    });
+  } catch (error) {
+    console.warn('Prettier formatting failed, returning original content:', error);
+    return content;
   }
-
-  return prettier.format(content, {
-    parser,
-    ...config,
-  });
 }

@@ -1,3 +1,4 @@
+// import {dialog} from '@acrool/react-dialog';
 import {
   createRestFulFetcher,
   ERequestContentType,
@@ -35,7 +36,7 @@ const mutex = new Mutex();
 //     }
 // }
 
-interface IQuery {
+export interface IQuery {
   url: string;
   method?: string;
   variables?: Record<string, any>;
@@ -79,5 +80,3 @@ export const baseApi = createApi({
   endpoints: () => ({}),
   tagTypes: ['Audit'],
 });
-
-export type {IRestFulEndpointsQueryReturn} from "@acrool/react-fetcher";

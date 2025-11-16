@@ -24,7 +24,7 @@ export default defineConfig((options): Options[] => {
       ...commonOptions,
       format: ['esm'],
       name: 'CLI Development',
-      external: ['@acrool/rtk-query-codegen-openapi'],
+      external: ['@acrool/ng-query-codegen-openapi'],
       minify: true,
       entry: { 'bin/cli': 'src/bin/cli.ts' },
     },

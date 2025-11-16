@@ -1,66 +1,77 @@
 #!/usr/bin/env node
 
-import { generateEndpoints, parseConfig } from '@acrool/rtk-query-codegen-openapi';
 import program from 'commander';
 import { createRequire } from 'node:module';
+import { cleanOutputDirectory, setupTypeScriptSupport, validateConfigFile, validateTypeScriptSupport } from './utils';
 import { dirname, resolve } from 'node:path';
+import { generateEndpoints } from '../index';
 
 const require = createRequire(__filename);
 
-let ts = false;
-try {
-  if (require.resolve('esbuild') && require.resolve('esbuild-runner')) {
-    require('esbuild-runner/register');
-  }
-  ts = true;
-} catch {}
 
-try {
-  if (!ts) {
-    if (require.resolve('typescript') && require.resolve('ts-node')) {
-      (require('ts-node') as typeof import('ts-node')).register({
-        transpileOnly: true,
-        compilerOptions: {
-          target: 'es6',
-          module: 'commonjs',
-        },
-      });
-    }
 
-    ts = true;
-  }
-} catch {}
 
-// tslint:disable-next-line
-const meta = require('../../package.json');
 
-program.version(meta.version).usage('</path/to/config.js>').parse(process.argv);
+/**
+ * 執行代碼生成流程
+ * 載入設定檔並驗證是否包含 outputFiles 屬性，清理輸出目錄，然後執行端點生成
+ * @param {string} configFile - 設定檔案路徑
+ */
+export async function runGeneration(configFile: string): Promise<void> {
+  const absoluteConfigPath = resolve(process.cwd(), configFile);
+  process.chdir(dirname(absoluteConfigPath));
 
-const configFile = program.args[0];
+  const unparsedConfig = require(absoluteConfigPath);
+  const config = unparsedConfig.default ?? unparsedConfig;
 
-if (program.args.length === 0 || !/\.([mc]?(jsx?|tsx?)|jsonc?)?$/.test(configFile)) {
-  program.help();
-} else {
-  if (/\.[mc]?tsx?$/.test(configFile) && !ts) {
-    console.error('Encountered a TypeScript configfile, but neither esbuild-runner nor ts-node are installed.');
+  if (!('outputFiles' in config)) {
+    console.error('Configuration must include "outputFiles" property. Single file output is no longer supported.');
     process.exit(1);
   }
-  run(resolve(process.cwd(), configFile));
-}
 
-async function run(configFile: string) {
-  process.chdir(dirname(configFile));
+  // 清理輸出目錄
+  if (config.outputFiles && config.outputFiles.outputDir) {
+    cleanOutputDirectory(config.outputFiles.outputDir);
+  }
 
-  const unparsedConfig = require(configFile);
-
-  for (const config of parseConfig(unparsedConfig.default ?? unparsedConfig)) {
-    try {
-      console.log(`Generating ${config.outputFile}`);
-      await generateEndpoints(config);
-      console.log(`Done`);
-    } catch (err) {
-      console.error(err);
-      process.exit(1);
-    }
+  try {
+    console.log('Generating multiple outputs...');
+    await generateEndpoints(config);
+    console.log('Done');
+  } catch (err) {
+    console.error('Generation failed:', err);
+    process.exit(1);
   }
 }
+
+
+/**
+ * CLI 主要執行函數
+ * 設置 TypeScript 支援、解析命令列參數、驗證設定檔並執行代碼生成
+ */
+async function main(): Promise<void> {
+  const meta = require('../../package.json');
+  const hasTypeScriptSupport = setupTypeScriptSupport();
+
+  program
+    .version(meta.version)
+    .usage('<path/to/config.js>')
+    .parse(process.argv);
+
+  const configFile = program.args[0];
+
+  if (program.args.length === 0) {
+    program.help();
+    return;
+  }
+
+  validateConfigFile(configFile);
+  validateTypeScriptSupport(configFile, hasTypeScriptSupport);
+
+  await runGeneration(configFile);
+}
+
+main().catch((err) => {
+  console.error('CLI execution failed:', err);
+  process.exit(1);
+});
