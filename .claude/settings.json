@@ -1,0 +1,26 @@
+{
+  "hooks": {
+      "Stop": [
+          {
+              "matcher": "",
+              "hooks": [
+                  {
+                      "type": "command",
+                      "command": "afplay /Users/imagine/Documents/sound/done.wav"
+                  }
+              ]
+          }
+      ],
+      "Notification": [
+          {
+              "matcher": "permission",
+              "hooks": [
+                  {
+                      "type": "command",
+                      "command": "afplay /Users/imagine/Documents/sound/ask.wav"
+                  }
+              ]
+          }
+      ]
+  }
+}

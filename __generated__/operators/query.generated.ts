@@ -1,25 +1,26 @@
 /* eslint-disable */
 // [Warning] Generated automatically - do not edit manually
 
-import { baseApi as api } from "./src/library/redux/baseApi";
-import { IRestFulEndpointsQueryReturn } from "@acrool/react-fetcher";
+import {baseApi as api } from "./src/library/redux/baseApi";
+import {IRestFulEndpointsQueryReturn} from "@acrool/react-fetcher";
 
 import type { GetParameterOperatorsReq, GetParameterOperatorsRes } from "./types";
 
 
 const injectedRtkApi = api.injectEndpoints({
-  endpoints: (build) => ({
-    getParameterOperators: build.mutation<
-      GetParameterOperatorsRes,
-      void
-    >({
-      query: (queryArg) => ({
-        url: "/parameter/operators",
-        method: "GET",
-        contentType: "application/json",
-      }),
+    endpoints: (build) => ({
+        /** 查詢 所有老闆 */
+        getParameterOperators: build.mutation<
+            GetParameterOperatorsRes,
+            void
+        >({
+            query: (queryArg) => ({
+                url: "/parameter/operators",
+                method: "GET",
+                contentType: "application/json",
+            }),
+        }),
     }),
-  }),
 });
 
 export const {

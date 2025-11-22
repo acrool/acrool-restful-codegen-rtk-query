@@ -43,26 +43,27 @@ export function generateRtkQueryFile(endpointInfos: Array<{
     let paramsSection = '';
     if (info.queryParams && info.queryParams.length > 0) {
       const paramsLines = info.queryParams.map((param: any) =>
-        `          ${param.name}: queryArg.variables.${param.name},`
+        `                    ${param.name}: queryArg.variables.${param.name},`
       ).join('\n');
       paramsSection = `
-        params: {
+                params: {
 ${paramsLines}
-        },`;
+                },`;
     }
 
-    return `    ${info.operationName}: build.${methodType}<
-      ${info.responseTypeName},
-      ${argType}
-    >({
-      query: (queryArg) => ({
-        url: ${urlPath},
-        method: "${info.verb.toUpperCase()}",
-        contentType: "${info.contentType}",${paramsSection}${info.hasRequestBody ? `
-        body: queryArg.variables.body,` : ''}${info.isVoidArg ? '' : `
-        fetchOptions: queryArg?.fetchOptions,`}
-      }),
-    }),`;
+    return `        /** ${info.summary || info.operationName} */
+        ${info.operationName}: build.${methodType}<
+            ${info.responseTypeName},
+            ${argType}
+        >({
+            query: (queryArg) => ({
+                url: ${urlPath},
+                method: "${info.verb.toUpperCase()}",
+                contentType: "${info.contentType}",${paramsSection}${info.hasRequestBody ? `
+                body: queryArg.variables.body,` : ''}${info.isVoidArg ? '' : `
+                fetchOptions: queryArg?.fetchOptions,`}
+            }),
+        }),`;
   }).join('\n');
 
   // 生成類型導入
@@ -79,15 +80,15 @@ ${paramsLines}
 
   // 根據配置生成 import 語句
   const apiImport = options.apiConfiguration
-    ? `import { ${options.apiConfiguration.importName} as api } from "${options.apiConfiguration.file.replace(/\.ts$/, '')}";
+    ? `import {${options.apiConfiguration.importName} as api } from "${options.apiConfiguration.file.replace(/\.ts$/, '')}";
 `
-    : `import { baseApi as api } from "../../../library/redux/baseApi";
+    : `import {baseApi as api} from "../../../library/redux/baseApi";
 `;
 
   const httpClientImport = options.httpClient
-    ? `import { ${options.httpClient.importReturnTypeName || options.httpClient.importName} } from "${options.httpClient.file}";
+    ? `import {${options.httpClient.importReturnTypeName || options.httpClient.importName}} from "${options.httpClient.file}";
 `
-    : `import { IRestFulEndpointsQueryReturn } from "@acrool/react-fetcher";
+    : `import {IRestFulEndpointsQueryReturn} from "@acrool/react-fetcher";
 `;
 
   return `/* eslint-disable */
@@ -98,9 +99,9 @@ ${typeImportStatement}
 
 
 const injectedRtkApi = api.injectEndpoints({
-  endpoints: (build) => ({
+    endpoints: (build) => ({
 ${endpoints}
-  }),
+    }),
 });
 
 export const {
