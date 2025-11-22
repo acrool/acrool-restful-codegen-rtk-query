@@ -80,7 +80,7 @@ ${paramsLines}
 
   // 根據配置生成 import 語句
   const apiImport = options.apiConfiguration
-    ? `import {${options.apiConfiguration.importName} as api } from "${options.apiConfiguration.file.replace(/\.ts$/, '')}";
+    ? `import {${options.apiConfiguration.importName} as api} from "${options.apiConfiguration.file.replace(/\.ts$/, '')}";
 `
     : `import {baseApi as api} from "../../../library/redux/baseApi";
 `;
