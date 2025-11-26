@@ -86,7 +86,7 @@ ${paramsLines}
 `;
 
   const httpClientImport = options.httpClient
-    ? `import {${options.httpClient.importReturnTypeName || options.httpClient.importName}} from "${options.httpClient.file}";
+    ? `import {${options.httpClient.importReturnTypeName}} from "${options.httpClient.file}";
 `
     : `import {IRestFulEndpointsQueryReturn} from "@acrool/react-fetcher";
 `;
