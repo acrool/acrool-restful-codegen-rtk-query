@@ -14,7 +14,7 @@ export function generateRtkEnhanceEndpointsFile(endpointInfos: Array<{
   summary: string;
 }>, options: GenerationOptions) {
 
-  const { groupKey } = options;
+  const { groupKey, cacheTagTypes } = options;
 
   // 生成端點配置
   const endpointConfigs = endpointInfos.map(info => {
@@ -32,12 +32,20 @@ export function generateRtkEnhanceEndpointsFile(endpointInfos: Array<{
     }
   }).join('\n');
 
-  return `/* eslint-disable */
+  // 生成 import 語句
+  let importStatements = `/* eslint-disable */
 // [Warning] Generated automatically - do not edit manually
 
-import { ECacheTagTypes } from "@/store/tagTypes";
-import api from "./query.generated";
+`;
 
+  // 如果有 cacheTagTypes 配置，則添加導入
+  if (cacheTagTypes) {
+    importStatements += `import { ${cacheTagTypes.importReturnTypeName} } from "${cacheTagTypes.file}";\n`;
+  }
+
+  importStatements += `import api from "./query.generated";\n`;
+
+  return `${importStatements}
 const enhancedApi = api.enhanceEndpoints({
   endpoints: {
 ${endpointConfigs}

@@ -3,13 +3,13 @@ import type { OpenAPIV3 } from 'openapi-types';
 import ts from 'typescript';
 
 // 重新匯出服務相關類型
-export type { 
+export type {
   GroupConfig,
-  GroupInfo 
+  GroupInfo
 } from './services/group-service';
 
-export type { 
-  FileWriteResult 
+export type {
+  FileWriteResult
 } from './services/file-writer-service';
 
 
@@ -38,14 +38,14 @@ export const operationKeys = ['get', 'put', 'post', 'delete', 'options', 'head',
 
 export type GenerationOptions = Id<
   CommonOptions &
-    Optional<OutputFileOptions, 'outputFile'> & {
-      isDataResponse?(
-        code: string,
-        includeDefault: boolean,
-        response: OpenAPIV3.ResponseObject,
-        allResponses: OpenAPIV3.ResponsesObject
-      ): boolean;
-    }
+  Optional<OutputFileOptions, 'outputFile'> & {
+  isDataResponse?(
+    code: string,
+    includeDefault: boolean,
+    response: OpenAPIV3.ResponseObject,
+    allResponses: OpenAPIV3.ResponsesObject
+  ): boolean;
+}
 >;
 
 export interface CommonOptions {
@@ -72,7 +72,15 @@ export interface CommonOptions {
   httpClient?: {
     file: string;
     importReturnTypeName: string; // 用於指定別名導入，例如 IRestFulEndpointsQueryReturn
-    importName: string;
+  };
+  /**
+   * Cache tag types configuration for RTK Query cache invalidation
+   * If provided, will import the specified type from the given file in enhanceEndpoints.ts
+   * Example: { file: "@/store/tagTypes", importName: "ECacheTagTypes" }
+   */
+  cacheTagTypes?: {
+    file: string;
+    importReturnTypeName: string;
   };
   /**
    * defaults to "enhancedApi"
@@ -190,11 +198,11 @@ export type OutputFilesConfig = {
 export type ConfigFile =
   | Id<Require<CommonOptions & OutputFileOptions, 'outputFile'>>
   | Id<
-      Omit<CommonOptions, 'outputFile'> & {
-        // outputFiles: { [outputFile: string]: Omit<OutputFileOptions, 'outputFile'> };
-        outputFiles: OutputFilesConfig
-      }
-    >;
+  Omit<CommonOptions, 'outputFile'> & {
+  // outputFiles: { [outputFile: string]: Omit<OutputFileOptions, 'outputFile'> };
+  outputFiles: OutputFilesConfig
+}
+>;
 
 export type GenerateApiResult = {
   operationNames: string[];

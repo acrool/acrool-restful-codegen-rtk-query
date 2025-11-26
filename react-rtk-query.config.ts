@@ -11,6 +11,10 @@ const config: ConfigFile = {
         file: "@acrool/react-fetcher",
         importReturnTypeName: "IRestFulEndpointsQueryReturn",
     },
+    cacheTagTypes: {
+      file: "@/store/tagTypes",
+      importReturnTypeName: "ECacheTagTypes",
+    },
     outputFiles: {
         outputDir: "./__generated__",
         // filterEndpoint: 沒有提供時默認允許所有端點
