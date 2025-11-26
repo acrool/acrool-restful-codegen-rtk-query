@@ -264,13 +264,16 @@ function parseSchemaProperties(schema: any, schemaTypeMap: Record<string, string
       const optional = isRequired ? '' : '?';
       // indentLevel=1 因為屬性已經在類型定義內（有 2 個空格縮排）
       const propType = getTypeFromSchema(propSchema, schemaTypeMap, 1);
-      const description = propSchema.description ? ` // ${propSchema.description}` : '';
 
       // 如果屬性名包含特殊字符（如 -），需要加上引號
       const needsQuotes = /[^a-zA-Z0-9_$]/.test(propName);
       const quotedPropName = needsQuotes ? `"${propName}"` : propName;
 
-      properties.push(`  ${quotedPropName}${optional}: ${propType};${description}`);
+      // 生成 JSDoc 註解
+      if (propSchema.description) {
+        properties.push(`  /** ${propSchema.description} */`);
+      }
+      properties.push(`  ${quotedPropName}${optional}: ${propType};`);
     });
   }
 
@@ -346,7 +349,8 @@ function getTypeFromSchema(schema: any, schemaTypeMap: Record<string, string> = 
           const nextIndent = '  '.repeat(indentLevel + 1);
           const currentIndent = '  '.repeat(indentLevel);
 
-          const props = entries.map(([key, propSchema]: [string, any]) => {
+          const props: string[] = [];
+          entries.forEach(([key, propSchema]: [string, any]) => {
             const required = schema.required || [];
             const optional = required.includes(key) ? '' : '?';
             const type = getTypeFromSchema(propSchema, schemaTypeMap, indentLevel + 1);
@@ -355,10 +359,14 @@ function getTypeFromSchema(schema: any, schemaTypeMap: Record<string, string> = 
             const needsQuotes = /[^a-zA-Z0-9_$]/.test(key);
             const quotedKey = needsQuotes ? `"${key}"` : key;
 
-            return `${nextIndent}${quotedKey}${optional}: ${type};`;
-          }).join('\n');
+            // 生成 JSDoc 註解
+            if (propSchema.description) {
+              props.push(`${nextIndent}/** ${propSchema.description} */`);
+            }
+            props.push(`${nextIndent}${quotedKey}${optional}: ${type};`);
+          });
 
-          baseType = `{\n${props}\n${currentIndent}}`;
+          baseType = `{\n${props.join('\n')}\n${currentIndent}}`;
         }
       } else if (schema.additionalProperties) {
         // 如果沒有 properties 但有 additionalProperties
