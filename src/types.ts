@@ -72,6 +72,7 @@ export interface CommonOptions {
   httpClient?: {
     file: string;
     importReturnTypeName: string; // 用於指定別名導入，例如 IRestFulEndpointsQueryReturn
+    importName: string;
   };
   /**
    * defaults to "enhancedApi"
