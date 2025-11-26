@@ -331,9 +331,16 @@ function getTypeFromSchema(schema: any, schemaTypeMap: Record<string, string> = 
         // 如果有具體的屬性定義，生成內聯對象類型（多行格式）
         const entries = Object.entries(schema.properties);
 
-        // 如果沒有屬性，返回空物件
+        // 如果沒有屬性但有 additionalProperties，生成 Record 類型
         if (entries.length === 0) {
-          baseType = '{}';
+          if (schema.additionalProperties) {
+            const valueType = schema.additionalProperties === true
+              ? 'any'
+              : getTypeFromSchema(schema.additionalProperties, schemaTypeMap, indentLevel);
+            baseType = `Record<string, ${valueType}>`;
+          } else {
+            baseType = '{}';
+          }
         } else {
           // 計算下一層的縮排
           const nextIndent = '  '.repeat(indentLevel + 1);
@@ -353,6 +360,12 @@ function getTypeFromSchema(schema: any, schemaTypeMap: Record<string, string> = 
 
           baseType = `{\n${props}\n${currentIndent}}`;
         }
+      } else if (schema.additionalProperties) {
+        // 如果沒有 properties 但有 additionalProperties
+        const valueType = schema.additionalProperties === true
+          ? 'any'
+          : getTypeFromSchema(schema.additionalProperties, schemaTypeMap, indentLevel);
+        baseType = `Record<string, ${valueType}>`;
       } else {
         baseType = 'any';
       }
