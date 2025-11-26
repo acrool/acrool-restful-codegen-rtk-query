@@ -56,30 +56,30 @@ export function generateTypesFile(
 // [Warning] Generated automatically - do not edit manually 
   
 `;
-  
+
   // 檢查是否需要引入 schema.ts
   const hasSchemaTypes = schemaInterfaces && Object.keys(schemaInterfaces).length > 0;
   if (hasSchemaTypes) {
     importStatement += `import * as Schema from "../schema";\n`;
   }
-  
+
   importStatement += '\n';
-  
+
   // 收集所有需要的類型定義
   const typeDefinitions: string[] = [];
-  
+
   // 注意：不再在 types.ts 中重複生成 schema 類型
   // schema 類型已經在 schema.ts 中生成，這裡直接使用 Schema.* 引用
-  
+
   // 無論是否有 schema，都要生成 endpoint 特定的 Req/Res 類型
   const endpointTypes: string[] = [];
-  
+
   // 為每個端點生成 Req/Res 類型
   endpointInfos.forEach(endpoint => {
     // 使用 endpoint 中提供的準確類型名稱
     const reqTypeName = endpoint.argTypeName;
     const resTypeName = endpoint.responseTypeName;
-    
+
     // 生成 Request 類型（總是生成）
     if (reqTypeName) {
       const requestTypeContent = generateRequestTypeContent(endpoint, operationDefinitions, schemaTypeMap);
@@ -99,7 +99,7 @@ export function generateTypesFile(
         );
       }
     }
-    
+
     // 生成 Response 類型（總是生成）
     if (resTypeName) {
       const responseTypeContent = generateResponseTypeContent(endpoint, operationDefinitions, schemaTypeMap);
@@ -120,11 +120,11 @@ export function generateTypesFile(
       }
     }
   });
-  
+
   if (endpointTypes.length > 0) {
     typeDefinitions.push(endpointTypes.join('\n'));
   }
-  
+
   // 如果沒有任何類型定義，至少添加一些基本說明
   if (typeDefinitions.length === 0) {
     typeDefinitions.push(
@@ -133,7 +133,7 @@ export function generateTypesFile(
       ``
     );
   }
-  
+
   return importStatement + typeDefinitions.join('\n\n');
 }
 
@@ -142,7 +142,7 @@ export function generateTypesFile(
  */
 function generateRequestTypeContent(endpoint: EndpointInfo, operationDefinitions?: any[], schemaTypeMap: Record<string, string> = {}): string {
   const properties: string[] = [];
-  
+
   // 如果有 query 參數
   if (endpoint.queryParams && endpoint.queryParams.length > 0) {
     endpoint.queryParams.forEach(param => {
@@ -151,7 +151,7 @@ function generateRequestTypeContent(endpoint: EndpointInfo, operationDefinitions
       properties.push(`  ${param.name}${optional}: ${paramType};`);
     });
   }
-  
+
   // 如果有 path 參數
   if (endpoint.pathParams && endpoint.pathParams.length > 0) {
     endpoint.pathParams.forEach(param => {
@@ -160,22 +160,22 @@ function generateRequestTypeContent(endpoint: EndpointInfo, operationDefinitions
       properties.push(`  ${param.name}${optional}: ${paramType};`);
     });
   }
-  
+
   // 如果有 request body（從 operationDefinitions 中獲取）
   const operationDef = operationDefinitions?.find(op => {
     // 嘗試多種匹配方式
     return op.operation?.operationId === endpoint.operationName ||
-           op.operation?.operationId === endpoint.operationName.toLowerCase() ||
-           // 也嘗試匹配 verb + path 組合
-           (op.verb === endpoint.verb.toLowerCase() && op.path === endpoint.path);
+      op.operation?.operationId === endpoint.operationName.toLowerCase() ||
+      // 也嘗試匹配 verb + path 組合
+      (op.verb === endpoint.verb.toLowerCase() && op.path === endpoint.path);
   });
-  
+
   if (operationDef?.operation?.requestBody) {
     const requestBody = operationDef.operation.requestBody;
     const content = requestBody.content;
 
-    // 處理不同的 content types
-    const jsonContent = content['application/json'];
+    // 處理不同的 content types，優先使用 application/json，其次嘗試其他類型
+    const jsonContent = content['application/json'] || content['*/*'];
     const formContent = content['multipart/form-data'] || content['application/x-www-form-urlencoded'];
 
     if (jsonContent?.schema) {
@@ -187,15 +187,22 @@ function generateRequestTypeContent(endpoint: EndpointInfo, operationDefinitions
       const bodyType = getTypeFromSchema(formContent.schema, schemaTypeMap, 1);
       properties.push(`  body: ${bodyType};`);
     } else {
-      properties.push(`  body?: any; // Request body from OpenAPI`);
+      // fallback 到第一個可用的 content-type
+      const firstContent = Object.values(content)[0] as any;
+      if (firstContent?.schema) {
+        const bodyType = getTypeFromSchema(firstContent.schema, schemaTypeMap, 1);
+        properties.push(`  body: ${bodyType};`);
+      } else {
+        properties.push(`  body?: any; // Request body from OpenAPI`);
+      }
     }
   }
-  
+
   // 如果沒有任何參數，返回空內容（將由調用方處理為 void）
   if (properties.length === 0) {
     return ''; // 返回空字串，讓調用方決定使用 void
   }
-  
+
   return properties.join('\n');
 }
 
@@ -204,23 +211,27 @@ function generateRequestTypeContent(endpoint: EndpointInfo, operationDefinitions
  */
 function generateResponseTypeContent(endpoint: EndpointInfo, operationDefinitions?: any[], schemaTypeMap: Record<string, string> = {}): string {
   const properties: string[] = [];
-  
+
   // 嘗試從 operationDefinitions 中獲取響應結構
   const operationDef = operationDefinitions?.find(op => {
     // 嘗試多種匹配方式
     return op.operation?.operationId === endpoint.operationName ||
-           op.operation?.operationId === endpoint.operationName.toLowerCase() ||
-           // 也嘗試匹配 verb + path 組合
-           (op.verb === endpoint.verb.toLowerCase() && op.path === endpoint.path);
+      op.operation?.operationId === endpoint.operationName.toLowerCase() ||
+      // 也嘗試匹配 verb + path 組合
+      (op.verb === endpoint.verb.toLowerCase() && op.path === endpoint.path);
   });
-  
+
   if (operationDef?.operation?.responses) {
     // 檢查 200 響應
-    const successResponse = operationDef.operation.responses['200'] || 
-                           operationDef.operation.responses['201'];
-    
+    const successResponse = operationDef.operation.responses['200'] ||
+      operationDef.operation.responses['201'];
+
     if (successResponse?.content) {
-      const jsonContent = successResponse.content['application/json'];
+      // 優先使用 application/json，其次嘗試其他 content-type（包括 */*）
+      const jsonContent = successResponse.content['application/json'] ||
+        successResponse.content['*/*'] ||
+        Object.values(successResponse.content)[0]; // fallback 到第一個可用的 content-type
+
       if (jsonContent?.schema) {
         const responseProps = parseSchemaProperties(jsonContent.schema, schemaTypeMap);
         properties.push(...responseProps);
@@ -230,12 +241,12 @@ function generateResponseTypeContent(endpoint: EndpointInfo, operationDefinition
       }
     }
   }
-  
+
   // 如果沒有響應定義，返回空內容（將由調用方處理為 void）
   if (properties.length === 0) {
     return ''; // 返回空字串，讓調用方決定使用 void
   }
-  
+
   return properties.join('\n');
 }
 
