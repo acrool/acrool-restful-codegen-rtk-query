@@ -74,15 +74,6 @@ export interface CommonOptions {
     importReturnTypeName: string; // 用於指定別名導入，例如 IRestFulEndpointsQueryReturn
   };
   /**
-   * Cache tag types configuration for RTK Query cache invalidation
-   * If provided, will import the specified type from the given file in enhanceEndpoints.ts
-   * Example: { file: "@/store/tagTypes", importName: "ECacheTagTypes" }
-   */
-  cacheTagTypes?: {
-    file: string;
-    importReturnTypeName: string;
-  };
-  /**
    * defaults to "enhancedApi"
    */
   exportName?: string;
