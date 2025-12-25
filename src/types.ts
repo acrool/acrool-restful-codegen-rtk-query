@@ -206,6 +206,7 @@ export type ConfigFile =
 
 export type GenerateApiResult = {
   operationNames: string[];
+  tags: string[]; // 收集到的所有 tags
   files: {
     types: string;
     queryService: string; // RTK Query generated file
