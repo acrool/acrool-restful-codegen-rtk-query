@@ -14,6 +14,7 @@ export function generateRtkQueryFile(endpointInfos: Array<{
   summary: string;
   contentType: string;
   hasRequestBody: boolean;
+  tags: string[];
 }>, options: GenerationOptions) {
 
   const { groupKey } = options;
@@ -51,11 +52,24 @@ ${paramsLines}
                 },`;
     }
 
+    // 處理 tags
+    let tagsSection = '';
+    if (info.tags && info.tags.length > 0) {
+      const tagsArray = info.tags.map(tag => `"${tag}"`).join(', ');
+      if (info.isQuery) {
+        tagsSection = `
+            providesTags: [${tagsArray}],`;
+      } else {
+        tagsSection = `
+            invalidatesTags: [${tagsArray}],`;
+      }
+    }
+
     return `        /** ${info.summary || info.operationName} */
         ${info.operationName}: build.${methodType}<
             ${info.responseTypeName},
             ${argType}
-        >({
+        >({${tagsSection}
             query: (queryArg) => ({
                 url: ${urlPath},
                 method: "${info.verb.toUpperCase()}",
