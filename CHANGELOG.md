@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.2.0-alpha.0](https://github.com/reduxjs/redux-toolkit/compare/v1.1.2...v1.2.0-alpha.0) (2025-12-25)
+
+
+### Features
+
+* 增加對 tags 的支持 ([5eb91aa](https://github.com/reduxjs/redux-toolkit/commit/5eb91aafc423743f38d54b0c5b0de50ed204bca8))
+
 ### [1.1.2](https://github.com/reduxjs/redux-toolkit/compare/v1.1.1...v1.1.2) (2025-11-26)
 
 
