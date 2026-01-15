@@ -61,7 +61,7 @@ ${paramsLines}
             providesTags: [${tagsArray}],`;
       } else {
         tagsSection = `
-            invalidatesTags: [${tagsArray}],`;
+            invalidatesTags: (result, error) => error ? [] : [${tagsArray}],`;
       }
     }
 
