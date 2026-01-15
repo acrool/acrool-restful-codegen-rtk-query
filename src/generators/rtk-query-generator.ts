@@ -14,12 +14,13 @@ export function generateRtkQueryFile(endpointInfos: Array<{
   summary: string;
   contentType: string;
   hasRequestBody: boolean;
+  tags: string[];
 }>, options: GenerationOptions) {
 
   const { groupKey } = options;
 
   // 獲取類型名稱
-  const httpClientTypeName = options.httpClient?.importReturnTypeName || options.httpClient?.importName || 'IRestFulEndpointsQueryReturn';
+  const httpClientTypeName = options.httpClient?.importReturnTypeName || 'IRestFulEndpointsQueryReturn';
 
   // 生成端點定義
   const endpoints = endpointInfos.map(info => {
@@ -51,11 +52,24 @@ ${paramsLines}
                 },`;
     }
 
+    // 處理 tags
+    let tagsSection = '';
+    if (info.tags && info.tags.length > 0) {
+      const tagsArray = info.tags.map(tag => `ECacheTagTypes.${tag}`).join(', ');
+      if (info.isQuery) {
+        tagsSection = `
+            providesTags: [${tagsArray}],`;
+      } else {
+        tagsSection = `
+            invalidatesTags: (result, error) => error ? [] : [${tagsArray}],`;
+      }
+    }
+
     return `        /** ${info.summary || info.operationName} */
         ${info.operationName}: build.${methodType}<
             ${info.responseTypeName},
             ${argType}
-        >({
+        >({${tagsSection}
             query: (queryArg) => ({
                 url: ${urlPath},
                 method: "${info.verb.toUpperCase()}",
@@ -91,10 +105,17 @@ ${paramsLines}
     : `import {IRestFulEndpointsQueryReturn} from "@acrool/react-fetcher";
 `;
 
+  // 檢查是否有任何 endpoint 使用了 tags
+  const hasTags = endpointInfos.some(info => info.tags && info.tags.length > 0);
+  const tagTypesImport = hasTags
+    ? `import {ECacheTagTypes} from "../tagTypes";
+`
+    : '';
+
   return `/* eslint-disable */
 // [Warning] Generated automatically - do not edit manually
 
-${apiImport}${httpClientImport}
+${apiImport}${httpClientImport}${tagTypesImport}
 ${typeImportStatement}
 
 

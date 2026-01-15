@@ -20,6 +20,7 @@ export interface EndpointInfo {
   summary: string;
   contentType: string;
   hasRequestBody: boolean;
+  tags: string[];
 }
 
 /**
@@ -71,6 +72,9 @@ export class EndpointInfoExtractor {
     // 提取 content type
     const contentType = this.extractContentType(operation);
 
+    // 提取 tags
+    const tags = Array.isArray(operation.tags) ? operation.tags : [];
+
     return {
       operationName: finalOperationName,
       argTypeName,
@@ -84,7 +88,8 @@ export class EndpointInfoExtractor {
       isVoidArg,
       summary,
       contentType,
-      hasRequestBody
+      hasRequestBody,
+      tags
     };
   }
 

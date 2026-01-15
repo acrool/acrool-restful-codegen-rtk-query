@@ -11,6 +11,7 @@ import { generateDoNotModifyFile } from '../generators/do-not-modify-generator';
 import type { GenerationOptions, CommonOptions } from '../types';
 import { ApiCodeGenerator } from './api-code-generator';
 import { generateUtilsFile } from '../generators/utils-generator';
+import { generateTagTypesFile } from '../generators/tag-types-generator';
 
 /**
  * 統一代碼生成器選項
@@ -68,13 +69,18 @@ export class UnifiedCodeGenerator {
     componentSchema: string;
     doNotModify: string;
     utils: string;
+    tagTypes: string;
   } = {
     groups: [],
     commonTypes: '',
     componentSchema: '',
     doNotModify: '',
-    utils: ''
+    utils: '',
+    tagTypes: ''
   };
+
+  // 收集所有 tags
+  private allTags: Set<string> = new Set();
 
 
   constructor(options: UnifiedGenerationOptions) {
@@ -98,6 +104,7 @@ export class UnifiedCodeGenerator {
     this.generateSchemaContent()
     this.generateUtilsContent()
     this.generateDoNotModifyContent()
+    this.generateTagTypesContent()
 
     return await this.release();
   }
@@ -176,6 +183,11 @@ export class UnifiedCodeGenerator {
             outputPath: groupInfo.outputPath,
             content: groupContent
           });
+
+          // 收集此群組的所有 tags
+          if (groupContent.tags && Array.isArray(groupContent.tags)) {
+            groupContent.tags.forEach((tag: string) => this.allTags.add(tag));
+          }
         }
         // 如果沒有任何 endpoint，則跳過此群組，不創建資料夾
       } catch (error) {
@@ -215,6 +227,14 @@ export class UnifiedCodeGenerator {
    */
   private async generateUtilsContent(): Promise<void> {
     this.generatedContent.utils = generateUtilsFile();
+  }
+
+  /**
+   * 生成 Tag Types
+   */
+  private async generateTagTypesContent(): Promise<void> {
+    const tagsArray = Array.from(this.allTags);
+    this.generatedContent.tagTypes = generateTagTypesFile(tagsArray);
   }
 
 
@@ -271,6 +291,15 @@ export class UnifiedCodeGenerator {
           }
         );
         results.push(...sharedResults);
+      }
+
+      // 寫入 tagTypes.ts
+      if (this.generatedContent.tagTypes) {
+        const tagTypesResult = await this.fileWriterService.writeFile(
+          path.join(outputDir, 'tagTypes.ts'),
+          this.generatedContent.tagTypes
+        );
+        results.push(tagTypesResult);
       }
 
       // 寫入 component schema

@@ -60,8 +60,17 @@ export class ApiCodeGenerator {
     // 步驟 6: 收集操作名稱
     const operationNames = endpointInfos.map(info => info.operationName);
 
+    // 步驟 7: 收集所有 tags
+    const allTags = new Set<string>();
+    endpointInfos.forEach(info => {
+      if (info.tags && Array.isArray(info.tags)) {
+        info.tags.forEach((tag: string) => allTags.add(tag));
+      }
+    });
+
     return {
       operationNames,
+      tags: Array.from(allTags),
       files: {
         types: typesContent,
         queryService: rtkQueryContent, // RTK Query 檔案

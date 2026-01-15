@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.2.0-alpha.2](https://github.com/reduxjs/redux-toolkit/compare/v1.2.0-alpha.1...v1.2.0-alpha.2) (2025-12-25)
+
+## [1.2.0-alpha.1](https://github.com/reduxjs/redux-toolkit/compare/v1.2.0-alpha.0...v1.2.0-alpha.1) (2025-12-25)
+
+
+### Features
+
+* 增加對 API 標籤的支持 ([80305db](https://github.com/reduxjs/redux-toolkit/commit/80305db07df1dc20335ecadc15a7a841ac49301c))
+* 新增生成 RTK Query 的 cache tag types 枚舉文件功能 ([f6331af](https://github.com/reduxjs/redux-toolkit/commit/f6331afd5d0ee5ad4837026e366c6b1e4f2f4b08))
+
+## [1.2.0-alpha.0](https://github.com/reduxjs/redux-toolkit/compare/v1.1.2...v1.2.0-alpha.0) (2025-12-25)
+
+
+### Features
+
+* 增加對 tags 的支持 ([5eb91aa](https://github.com/reduxjs/redux-toolkit/commit/5eb91aafc423743f38d54b0c5b0de50ed204bca8))
+
 ### [1.1.2](https://github.com/reduxjs/redux-toolkit/compare/v1.1.1...v1.1.2) (2025-11-26)
 
 
