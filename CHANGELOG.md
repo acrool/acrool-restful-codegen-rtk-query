@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.2.0](https://github.com/reduxjs/redux-toolkit/compare/v1.2.0-alpha.2...v1.2.0) (2026-01-15)
+
+
+### Features
+
+* 更新 invalidatesTags 的邏輯以處理錯誤情況 ([334d761](https://github.com/reduxjs/redux-toolkit/commit/334d761846fdbbfecc7972485d4a7241d9fd0ae0))
+
 ## [1.2.0-alpha.2](https://github.com/reduxjs/redux-toolkit/compare/v1.2.0-alpha.1...v1.2.0-alpha.2) (2025-12-25)
 
 ## [1.2.0-alpha.1](https://github.com/reduxjs/redux-toolkit/compare/v1.2.0-alpha.0...v1.2.0-alpha.1) (2025-12-25)
