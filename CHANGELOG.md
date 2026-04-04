@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.3.0-alpha.1](https://github.com/reduxjs/redux-toolkit/compare/v1.3.0-alpha.0...v1.3.0-alpha.1) (2026-04-04)
+
+
+### Features
+
+* 更新 tags 處理邏輯以符合大駝峰命名規則 ([90f2a21](https://github.com/reduxjs/redux-toolkit/commit/90f2a21d5617172eb062ce4b83a2f2a1ebb3ec36))
+
 ## [1.3.0-alpha.0](https://github.com/reduxjs/redux-toolkit/compare/v1.2.0...v1.3.0-alpha.0) (2026-04-04)
 
 
