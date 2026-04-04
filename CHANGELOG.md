@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.3.0-alpha.0](https://github.com/reduxjs/redux-toolkit/compare/v1.2.0...v1.3.0-alpha.0) (2026-04-04)
+
+
+### Features
+
+* 新增觀察表相關API及更新類型定義 ([6def3ea](https://github.com/reduxjs/redux-toolkit/commit/6def3ea77923faca707abb94f56b0f31564272f7))
+
 ## [1.2.0](https://github.com/reduxjs/redux-toolkit/compare/v1.2.0-alpha.2...v1.2.0) (2026-01-15)
 
 
