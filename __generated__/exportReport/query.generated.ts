@@ -4,20 +4,20 @@
 import {baseApi as api} from "./src/library/redux/baseApi";
 import {IRestFulEndpointsQueryReturn} from "@acrool/react-fetcher";
 
-import type { PutAuthPasswordReq, PutAuthPasswordRes } from "./types";
+import type { PostAuditExportReportReq, PostAuditExportReportRes } from "./types";
 
 
 const injectedRtkApi = api.injectEndpoints({
     endpoints: (build) => ({
-        /** 更改密碼 */
-        putAuthPassword: build.mutation<
-            PutAuthPasswordRes,
-            IRestFulEndpointsQueryReturn<PutAuthPasswordReq>
+        /** 匯出 觀察報表(Excel) */
+        postAuditExportReport: build.mutation<
+            PostAuditExportReportRes,
+            IRestFulEndpointsQueryReturn<PostAuditExportReportReq>
         >({
             query: (queryArg) => ({
-                url: "/auth/password",
-                method: "PUT",
-                contentType: "application/x-www-form-urlencoded",
+                url: "/audit/exportReport",
+                method: "POST",
+                contentType: "multipart/form-data",
                 body: queryArg.variables.body,
                 fetchOptions: queryArg?.fetchOptions,
             }),
@@ -26,7 +26,7 @@ const injectedRtkApi = api.injectEndpoints({
 });
 
 export const {
-  usePutAuthPasswordMutation,
+  usePostAuditExportReportMutation,
 } = injectedRtkApi;
 
 export default injectedRtkApi;

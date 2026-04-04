@@ -102,18 +102,24 @@ export function generateTypesFile(
 
     // 生成 Response 類型（總是生成）
     if (resTypeName) {
-      const responseTypeContent = generateResponseTypeContent(endpoint, operationDefinitions, schemaTypeMap);
-      if (responseTypeContent.trim() === '') {
+      const responseTypeResult = generateResponseTypeContent(endpoint, operationDefinitions, schemaTypeMap);
+      if (responseTypeResult.content.trim() === '') {
         // 如果沒有實際內容，使用 void
         endpointTypes.push(
           `export type ${resTypeName} = void;`,
           ``
         );
+      } else if (responseTypeResult.isDirectType) {
+        // 直接類型引用（如 $ref、array、primitive），使用 type alias
+        endpointTypes.push(
+          `export type ${resTypeName} = ${responseTypeResult.content};`,
+          ``
+        );
       } else {
-        // 有實際內容，使用 type 定義
+        // 有 object 屬性內容，使用 type 定義
         endpointTypes.push(
           `export type ${resTypeName} = {`,
-          responseTypeContent,
+          responseTypeResult.content,
           `};`,
           ``
         );
@@ -206,12 +212,16 @@ function generateRequestTypeContent(endpoint: EndpointInfo, operationDefinitions
   return properties.join('\n');
 }
 
+interface ResponseTypeResult {
+  content: string;
+  /** true when content is a direct type (e.g. Schema.Pet, string[]) rather than object properties */
+  isDirectType: boolean;
+}
+
 /**
  * 生成 Response 類型的內容
  */
-function generateResponseTypeContent(endpoint: EndpointInfo, operationDefinitions?: any[], schemaTypeMap: Record<string, string> = {}): string {
-  const properties: string[] = [];
-
+function generateResponseTypeContent(endpoint: EndpointInfo, operationDefinitions?: any[], schemaTypeMap: Record<string, string> = {}): ResponseTypeResult {
   // 嘗試從 operationDefinitions 中獲取響應結構
   const operationDef = operationDefinitions?.find(op => {
     // 嘗試多種匹配方式
@@ -233,21 +243,27 @@ function generateResponseTypeContent(endpoint: EndpointInfo, operationDefinition
         Object.values(successResponse.content)[0]; // fallback 到第一個可用的 content-type
 
       if (jsonContent?.schema) {
-        const responseProps = parseSchemaProperties(jsonContent.schema, schemaTypeMap);
-        properties.push(...responseProps);
-      } else {
-        properties.push(`  // Success response from OpenAPI`);
-        properties.push(`  data?: any;`);
+        const schema = jsonContent.schema;
+
+        // 如果 schema 是 $ref 引用、array、或 primitive，直接使用 getTypeFromSchema
+        if (schema.$ref || schema.type !== 'object' || !schema.properties) {
+          const directType = getTypeFromSchema(schema, schemaTypeMap, 0);
+          if (directType && directType !== 'any') {
+            return { content: directType, isDirectType: true };
+          }
+        }
+
+        // 如果是有 properties 的 object，展開為屬性列表
+        const responseProps = parseSchemaProperties(schema, schemaTypeMap);
+        if (responseProps.length > 0) {
+          return { content: responseProps.join('\n'), isDirectType: false };
+        }
       }
     }
   }
 
   // 如果沒有響應定義，返回空內容（將由調用方處理為 void）
-  if (properties.length === 0) {
-    return ''; // 返回空字串，讓調用方決定使用 void
-  }
-
-  return properties.join('\n');
+  return { content: '', isDirectType: false };
 }
 
 /**
