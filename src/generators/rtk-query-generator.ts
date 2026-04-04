@@ -55,7 +55,11 @@ ${paramsLines}
     // 處理 tags
     let tagsSection = '';
     if (info.tags && info.tags.length > 0) {
-      const tagsArray = info.tags.map(tag => `ECacheTagTypes.${tag}`).join(', ');
+      const tagsArray = info.tags.map(tag => {
+        // 將 tag 轉為大駝峰（去除空格），與 ECacheTagTypes 枚舉 key 一致
+        const pascalTag = tag.split(/\s+/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('');
+        return `ECacheTagTypes.${pascalTag}`;
+      }).join(', ');
       if (info.isQuery) {
         tagsSection = `
             providesTags: [${tagsArray}],`;
