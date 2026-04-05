@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.4.0-alpha.1](https://github.com/reduxjs/redux-toolkit/compare/v1.4.0-alpha.0...v1.4.0-alpha.1) (2026-04-05)
+
+
+### Features
+
+* 新增 string literal union 轉換為 enum 的功能 ([c0785a6](https://github.com/reduxjs/redux-toolkit/commit/c0785a6ef1e51f8dc84aec447298c4db063c989c))
+
 ## [1.4.0-alpha.0](https://github.com/reduxjs/redux-toolkit/compare/v1.3.0...v1.4.0-alpha.0) (2026-04-05)
 
 
