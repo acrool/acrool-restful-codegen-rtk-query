@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.4.0-alpha.0](https://github.com/reduxjs/redux-toolkit/compare/v1.3.0...v1.4.0-alpha.0) (2026-04-05)
+
+
+### Features
+
+* 新增 schema 引用分析功能及相關類型生成邏輯 ([c6c3d7d](https://github.com/reduxjs/redux-toolkit/commit/c6c3d7d2fc200103e4e376c54a37f3edc7cce900))
+
 ## [1.3.0](https://github.com/reduxjs/redux-toolkit/compare/v1.3.0-alpha.1...v1.3.0) (2026-04-04)
 
 ## [1.3.0-alpha.1](https://github.com/reduxjs/redux-toolkit/compare/v1.3.0-alpha.0...v1.3.0-alpha.1) (2026-04-04)
