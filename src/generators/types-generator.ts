@@ -73,6 +73,34 @@ export interface EndpointInfo {
 }
 
 /**
+ * 判斷 TypeAliasDeclaration 是否為 string literal union（即 OpenAPI enum）
+ */
+function isStringEnumType(node: ts.TypeAliasDeclaration): string[] | null {
+  if (!ts.isUnionTypeNode(node.type)) return null;
+
+  const members: string[] = [];
+  for (const member of node.type.types) {
+    if (ts.isLiteralTypeNode(member) && ts.isStringLiteral(member.literal)) {
+      members.push(member.literal.text);
+    } else {
+      return null;
+    }
+  }
+  return members.length > 0 ? members : null;
+}
+
+/**
+ * 將 string union type 轉換為 enum 宣告字串
+ */
+function generateEnumDeclaration(name: string, members: string[]): string {
+  const enumMembers = members.map(value => {
+    const key = value.charAt(0).toUpperCase() + value.slice(1);
+    return `  ${key} = "${value}"`;
+  });
+  return `export enum ${name} {\n${enumMembers.join(',\n')}\n}`;
+}
+
+/**
  * Group-local schema 類型生成選項
  */
 export interface LocalSchemaOptions {
@@ -146,6 +174,16 @@ export function generateTypesFile(
 
     for (const [originalName, node] of Object.entries(localSchemaInterfaces)) {
       const pascalCaseName = toPascalCase(originalName);
+
+      // 偵測 string union type 並轉換為 enum
+      if (ts.isTypeAliasDeclaration(node)) {
+        const enumMembers = isStringEnumType(node);
+        if (enumMembers) {
+          localTypeDefs.push(generateEnumDeclaration(pascalCaseName, enumMembers));
+          continue;
+        }
+      }
+
       // 重新命名節點中的宣告名稱
       let transformedNode = renameIdentifier(node, originalName, pascalCaseName);
       // 將引用到 shared schema 的標識符加上 Schema. 前綴
