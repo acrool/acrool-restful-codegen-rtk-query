@@ -392,13 +392,7 @@ export class UnifiedCodeGenerator {
         results.push(...schemaResults);
       }
 
-      // 生成主 index.ts 檔案
-      const mainIndexContent = this.generateMainIndex(generatedGroups);
-      const mainIndexResult = await this.fileWriterService.writeFile(
-        path.join(outputDir, 'index.ts'),
-        mainIndexContent
-      );
-      results.push(mainIndexResult);
+      // 主 index.ts 由使用者自行管理，不自動產出
 
     } catch (error) {
       errors.push(error as Error);

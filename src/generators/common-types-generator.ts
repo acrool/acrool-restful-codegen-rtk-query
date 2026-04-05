@@ -25,18 +25,17 @@ export type IRestFulEndpointsQueryReturn<TVariables> = TVariables extends void ?
       fetchOptions?: IRequestConfig;
   };
 
-export type UseSimpleQuery<TRes, TArg = void> = (
-  arg: TArg,
-  options?: {
-    skip?: boolean;
-    pollingInterval?: number;
-    refetchOnMountOrArgChange?: boolean | number;
-    refetchOnFocus?: boolean;
-    refetchOnReconnect?: boolean;
-  }
-) => {
-  data: TRes | undefined;
-  currentData: TRes | undefined;
+export interface RtkQueryBaseOptions {
+  skip?: boolean;
+  pollingInterval?: number;
+  refetchOnMountOrArgChange?: boolean | number;
+  refetchOnFocus?: boolean;
+  refetchOnReconnect?: boolean;
+}
+
+export interface RtkQueryResult<TData> {
+  data: TData | undefined;
+  currentData: TData | undefined;
   isLoading: boolean;
   isFetching: boolean;
   isSuccess: boolean;
@@ -44,10 +43,24 @@ export type UseSimpleQuery<TRes, TArg = void> = (
   isUninitialized: boolean;
   error: unknown;
   refetch: () => void;
-};
+}
 
-export type UseSimpleMutation<TRes, TArg = void> = () => [
-  (arg: TArg) => {unwrap: () => Promise<TRes>} & PromiseLike<{data: TRes} | {error: unknown}>,
+export type SimpleQueryHook<TData, TArg> = (
+  arg: TArg,
+  options?: RtkQueryBaseOptions
+) => RtkQueryResult<TData>;
+
+export type SimpleVoidQueryHook<TData> = (
+  options?: RtkQueryBaseOptions
+) => RtkQueryResult<TData>;
+
+export type SimpleLazyQueryHook<TData, TArg> = () => readonly [
+  (arg: TArg) => void,
+  RtkQueryResult<TData>
+];
+
+export type UseSimpleMutation<TRes, TArg = void> = () => readonly [
+  (arg: TArg) => Promise<TRes>,
   {
     data: TRes | undefined;
     isLoading: boolean;
@@ -57,21 +70,6 @@ export type UseSimpleMutation<TRes, TArg = void> = () => [
     error: unknown;
     reset: () => void;
   }
-];
-
-export type UseSimpleLazyQuery<TRes, TArg = void> = () => [
-  (arg: TArg, preferCacheValue?: boolean) => void,
-  {
-    data: TRes | undefined;
-    currentData: TRes | undefined;
-    isLoading: boolean;
-    isFetching: boolean;
-    isSuccess: boolean;
-    isError: boolean;
-    isUninitialized: boolean;
-    error: unknown;
-  },
-  {lastArg: TArg | undefined}
 ];
 `;
 
