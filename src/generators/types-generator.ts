@@ -8,6 +8,56 @@ const toPascalCase = (name: string): string => {
   return name.charAt(0).toUpperCase() + name.slice(1);
 };
 
+/**
+ * 重新命名 TypeScript 節點中的標識符
+ */
+function renameIdentifier(node: ts.Node, oldName: string, newName: string): ts.Node {
+  return ts.transform(node, [
+    context => rootNode => ts.visitNode(rootNode, function visit(node): ts.Node {
+      if (ts.isIdentifier(node) && node.text === oldName) {
+        return ts.factory.createIdentifier(newName);
+      }
+      return ts.visitEachChild(node, visit, context);
+    })
+  ]).transformed[0];
+}
+
+/**
+ * 將節點中引用到 shared schema 的標識符加上 Schema. 前綴
+ * 例如: TaskDto → Schema.TaskDto（如果 TaskDto 是 shared schema）
+ */
+function prefixSharedSchemaRefs(
+  node: ts.Node,
+  allSchemaNames: Set<string>,
+  localSchemaNames: Set<string>,
+  declarationName: string
+): ts.Node {
+  // 建立需要加前綴的 schema 名稱集合（shared = all - local）
+  const sharedNames = new Set<string>();
+  for (const name of allSchemaNames) {
+    if (!localSchemaNames.has(name)) {
+      sharedNames.add(toPascalCase(name));
+    }
+  }
+
+  return ts.transform(node, [
+    context => rootNode => ts.visitNode(rootNode, function visit(node): ts.Node {
+      // 對於類型引用中的標識符，如果是 shared schema 名稱，加上 Schema. 前綴
+      if (ts.isTypeReferenceNode(node) && ts.isIdentifier(node.typeName)) {
+        const name = node.typeName.text;
+        if (sharedNames.has(name) && name !== declarationName) {
+          const qualifiedName = ts.factory.createQualifiedName(
+            ts.factory.createIdentifier('Schema'),
+            ts.factory.createIdentifier(name)
+          );
+          return ts.factory.createTypeReferenceNode(qualifiedName, node.typeArguments);
+        }
+      }
+      return ts.visitEachChild(node, visit, context);
+    })
+  ]).transformed[0];
+}
+
 export interface EndpointInfo {
   operationName: string;
   argTypeName: string;
@@ -22,12 +72,25 @@ export interface EndpointInfo {
   summary: string;
 }
 
+/**
+ * Group-local schema 類型生成選項
+ */
+export interface LocalSchemaOptions {
+  /** 此 group 專屬的 schema interfaces（會直接生成在 types.ts 中） */
+  localSchemaInterfaces?: Record<string, ts.InterfaceDeclaration | ts.TypeAliasDeclaration>;
+  /** 此 group 專屬的 schema 名稱集合（用於判斷引用時使用本地名稱還是 Schema.*） */
+  localSchemaNames?: Set<string>;
+}
+
 export function generateTypesFile(
   endpointInfos: EndpointInfo[],
   _options: GenerationOptions,
   schemaInterfaces?: Record<string, ts.InterfaceDeclaration | ts.TypeAliasDeclaration>,
-  operationDefinitions?: any[]
+  operationDefinitions?: any[],
+  localSchemaOptions?: LocalSchemaOptions
 ) {
+  const localSchemaNames = localSchemaOptions?.localSchemaNames ?? new Set<string>();
+  const localSchemaInterfaces = localSchemaOptions?.localSchemaInterfaces ?? {};
 
   // 創建 schema 類型名稱映射表 - 使用實際生成的類型名稱
   const schemaTypeMap: Record<string, string> = {};
@@ -51,15 +114,19 @@ export function generateTypesFile(
     });
   }
 
+  // 判斷是否有 shared schema 類型需要引用（排除 local 之後仍有 shared 的情況）
+  const hasSharedSchemaTypes = schemaInterfaces && Object.keys(schemaInterfaces).some(
+    name => !localSchemaNames.has(name)
+  );
+
   // 生成 import 語句
   let importStatement = `/* eslint-disable */
-// [Warning] Generated automatically - do not edit manually 
-  
+// [Warning] Generated automatically - do not edit manually
+
 `;
 
-  // 檢查是否需要引入 schema.ts
-  const hasSchemaTypes = schemaInterfaces && Object.keys(schemaInterfaces).length > 0;
-  if (hasSchemaTypes) {
+  // 只有在有 shared schema 類型時才引入 schema.ts
+  if (hasSharedSchemaTypes) {
     importStatement += `import * as Schema from "../schema";\n`;
   }
 
@@ -68,8 +135,29 @@ export function generateTypesFile(
   // 收集所有需要的類型定義
   const typeDefinitions: string[] = [];
 
-  // 注意：不再在 types.ts 中重複生成 schema 類型
-  // schema 類型已經在 schema.ts 中生成，這裡直接使用 Schema.* 引用
+  // 生成 group-local schema 類型定義（原本在 schema.ts，現在移到此 group 的 types.ts）
+  if (Object.keys(localSchemaInterfaces).length > 0) {
+    const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
+    const resultFile = ts.createSourceFile('types.ts', '', ts.ScriptTarget.Latest, false, ts.ScriptKind.TS);
+    const localTypeDefs: string[] = [];
+
+    // 建立所有 schema 名稱集合（用於判斷哪些引用需要加 Schema. 前綴）
+    const allSchemaNameSet = new Set(schemaInterfaces ? Object.keys(schemaInterfaces) : []);
+
+    for (const [originalName, node] of Object.entries(localSchemaInterfaces)) {
+      const pascalCaseName = toPascalCase(originalName);
+      // 重新命名節點中的宣告名稱
+      let transformedNode = renameIdentifier(node, originalName, pascalCaseName);
+      // 將引用到 shared schema 的標識符加上 Schema. 前綴
+      transformedNode = prefixSharedSchemaRefs(transformedNode, allSchemaNameSet, localSchemaNames, pascalCaseName);
+      const printed = printer.printNode(ts.EmitHint.Unspecified, transformedNode, resultFile);
+      localTypeDefs.push(printed);
+    }
+
+    if (localTypeDefs.length > 0) {
+      typeDefinitions.push(localTypeDefs.join('\n'));
+    }
+  }
 
   // 無論是否有 schema，都要生成 endpoint 特定的 Req/Res 類型
   const endpointTypes: string[] = [];
@@ -82,7 +170,7 @@ export function generateTypesFile(
 
     // 生成 Request 類型（總是生成）
     if (reqTypeName) {
-      const requestTypeContent = generateRequestTypeContent(endpoint, operationDefinitions, schemaTypeMap);
+      const requestTypeContent = generateRequestTypeContent(endpoint, operationDefinitions, schemaTypeMap, localSchemaNames);
       if (requestTypeContent.trim() === '') {
         // 如果沒有實際內容，使用 void
         endpointTypes.push(
@@ -102,7 +190,7 @@ export function generateTypesFile(
 
     // 生成 Response 類型（總是生成）
     if (resTypeName) {
-      const responseTypeResult = generateResponseTypeContent(endpoint, operationDefinitions, schemaTypeMap);
+      const responseTypeResult = generateResponseTypeContent(endpoint, operationDefinitions, schemaTypeMap, localSchemaNames);
       if (responseTypeResult.content.trim() === '') {
         // 如果沒有實際內容，使用 void
         endpointTypes.push(
@@ -146,14 +234,14 @@ export function generateTypesFile(
 /**
  * 生成 Request 類型的內容
  */
-function generateRequestTypeContent(endpoint: EndpointInfo, operationDefinitions?: any[], schemaTypeMap: Record<string, string> = {}): string {
+function generateRequestTypeContent(endpoint: EndpointInfo, operationDefinitions?: any[], schemaTypeMap: Record<string, string> = {}, localSchemaNames: Set<string> = new Set()): string {
   const properties: string[] = [];
 
   // 如果有 query 參數
   if (endpoint.queryParams && endpoint.queryParams.length > 0) {
     endpoint.queryParams.forEach(param => {
       const optional = param.required ? '' : '?';
-      const paramType = getTypeFromParameter(param, schemaTypeMap);
+      const paramType = getTypeFromParameter(param, schemaTypeMap, localSchemaNames);
       properties.push(`  ${param.name}${optional}: ${paramType};`);
     });
   }
@@ -162,7 +250,7 @@ function generateRequestTypeContent(endpoint: EndpointInfo, operationDefinitions
   if (endpoint.pathParams && endpoint.pathParams.length > 0) {
     endpoint.pathParams.forEach(param => {
       const optional = param.required ? '' : '?';
-      const paramType = getTypeFromParameter(param, schemaTypeMap);
+      const paramType = getTypeFromParameter(param, schemaTypeMap, localSchemaNames);
       properties.push(`  ${param.name}${optional}: ${paramType};`);
     });
   }
@@ -185,18 +273,16 @@ function generateRequestTypeContent(endpoint: EndpointInfo, operationDefinitions
     const formContent = content['multipart/form-data'] || content['application/x-www-form-urlencoded'];
 
     if (jsonContent?.schema) {
-      // indentLevel=1 因為 body 屬性已經在類型定義內（有 2 個空格縮排）
-      const bodyType = getTypeFromSchema(jsonContent.schema, schemaTypeMap, 1);
+      const bodyType = getTypeFromSchema(jsonContent.schema, schemaTypeMap, 1, localSchemaNames);
       properties.push(`  body: ${bodyType};`);
     } else if (formContent?.schema) {
-      // indentLevel=1 因為 body 屬性已經在類型定義內（有 2 個空格縮排）
-      const bodyType = getTypeFromSchema(formContent.schema, schemaTypeMap, 1);
+      const bodyType = getTypeFromSchema(formContent.schema, schemaTypeMap, 1, localSchemaNames);
       properties.push(`  body: ${bodyType};`);
     } else {
       // fallback 到第一個可用的 content-type
       const firstContent = Object.values(content)[0] as any;
       if (firstContent?.schema) {
-        const bodyType = getTypeFromSchema(firstContent.schema, schemaTypeMap, 1);
+        const bodyType = getTypeFromSchema(firstContent.schema, schemaTypeMap, 1, localSchemaNames);
         properties.push(`  body: ${bodyType};`);
       } else {
         properties.push(`  body?: any; // Request body from OpenAPI`);
@@ -221,7 +307,7 @@ interface ResponseTypeResult {
 /**
  * 生成 Response 類型的內容
  */
-function generateResponseTypeContent(endpoint: EndpointInfo, operationDefinitions?: any[], schemaTypeMap: Record<string, string> = {}): ResponseTypeResult {
+function generateResponseTypeContent(endpoint: EndpointInfo, operationDefinitions?: any[], schemaTypeMap: Record<string, string> = {}, localSchemaNames: Set<string> = new Set()): ResponseTypeResult {
   // 嘗試從 operationDefinitions 中獲取響應結構
   const operationDef = operationDefinitions?.find(op => {
     // 嘗試多種匹配方式
@@ -247,14 +333,14 @@ function generateResponseTypeContent(endpoint: EndpointInfo, operationDefinition
 
         // 如果 schema 是 $ref 引用、array、或 primitive，直接使用 getTypeFromSchema
         if (schema.$ref || schema.type !== 'object' || !schema.properties) {
-          const directType = getTypeFromSchema(schema, schemaTypeMap, 0);
+          const directType = getTypeFromSchema(schema, schemaTypeMap, 0, localSchemaNames);
           if (directType && directType !== 'any') {
             return { content: directType, isDirectType: true };
           }
         }
 
         // 如果是有 properties 的 object，展開為屬性列表
-        const responseProps = parseSchemaProperties(schema, schemaTypeMap);
+        const responseProps = parseSchemaProperties(schema, schemaTypeMap, localSchemaNames);
         if (responseProps.length > 0) {
           return { content: responseProps.join('\n'), isDirectType: false };
         }
@@ -269,7 +355,7 @@ function generateResponseTypeContent(endpoint: EndpointInfo, operationDefinition
 /**
  * 解析 OpenAPI schema 的 properties 並生成 TypeScript 屬性定義
  */
-function parseSchemaProperties(schema: any, schemaTypeMap: Record<string, string> = {}): string[] {
+function parseSchemaProperties(schema: any, schemaTypeMap: Record<string, string> = {}, localSchemaNames: Set<string> = new Set()): string[] {
   const properties: string[] = [];
 
   if (schema.type === 'object' && schema.properties) {
@@ -279,7 +365,7 @@ function parseSchemaProperties(schema: any, schemaTypeMap: Record<string, string
       const isRequired = required.includes(propName);
       const optional = isRequired ? '' : '?';
       // indentLevel=1 因為屬性已經在類型定義內（有 2 個空格縮排）
-      const propType = getTypeFromSchema(propSchema, schemaTypeMap, 1);
+      const propType = getTypeFromSchema(propSchema, schemaTypeMap, 1, localSchemaNames);
 
       // 如果屬性名包含特殊字符（如 -），需要加上引號
       const needsQuotes = /[^a-zA-Z0-9_$]/.test(propName);
@@ -302,10 +388,10 @@ function parseSchemaProperties(schema: any, schemaTypeMap: Record<string, string
  * @param schemaTypeMap 類型名稱映射表
  * @param indentLevel 縮排層級，用於格式化內嵌物件
  */
-function getTypeFromSchema(schema: any, schemaTypeMap: Record<string, string> = {}, indentLevel: number = 0): string {
+function getTypeFromSchema(schema: any, schemaTypeMap: Record<string, string> = {}, indentLevel: number = 0, localSchemaNames: Set<string> = new Set()): string {
   if (!schema) return 'any';
 
-  // 處理 $ref 引用，使用 Schema.TypeName 格式
+  // 處理 $ref 引用
   if (schema.$ref) {
     const refPath = schema.$ref;
     if (refPath.startsWith('#/components/schemas/')) {
@@ -313,7 +399,10 @@ function getTypeFromSchema(schema: any, schemaTypeMap: Record<string, string> = 
       // 使用映射表查找實際的類型名稱，並轉換為大駝峰
       const actualTypeName = schemaTypeMap[originalTypeName] || originalTypeName;
       const pascalCaseTypeName = toPascalCase(actualTypeName);
-      const baseType = `Schema.${pascalCaseTypeName}`;
+      // 如果是 local schema，直接使用本地名稱；否則使用 Schema.TypeName
+      const baseType = localSchemaNames.has(originalTypeName)
+        ? pascalCaseTypeName
+        : `Schema.${pascalCaseTypeName}`;
       // 處理 nullable
       return schema.nullable ? `${baseType} | null` : baseType;
     }
@@ -340,7 +429,7 @@ function getTypeFromSchema(schema: any, schemaTypeMap: Record<string, string> = 
       baseType = 'boolean';
       break;
     case 'array':
-      const itemType = schema.items ? getTypeFromSchema(schema.items, schemaTypeMap, indentLevel) : 'any';
+      const itemType = schema.items ? getTypeFromSchema(schema.items, schemaTypeMap, indentLevel, localSchemaNames) : 'any';
       // 如果 itemType 包含聯合類型（包含 |），需要加括號
       const needsParentheses = itemType.includes('|');
       baseType = needsParentheses ? `(${itemType})[]` : `${itemType}[]`;
@@ -355,7 +444,7 @@ function getTypeFromSchema(schema: any, schemaTypeMap: Record<string, string> = 
           if (schema.additionalProperties) {
             const valueType = schema.additionalProperties === true
               ? 'any'
-              : getTypeFromSchema(schema.additionalProperties, schemaTypeMap, indentLevel);
+              : getTypeFromSchema(schema.additionalProperties, schemaTypeMap, indentLevel, localSchemaNames);
             baseType = `Record<string, ${valueType}>`;
           } else {
             baseType = '{}';
@@ -369,7 +458,7 @@ function getTypeFromSchema(schema: any, schemaTypeMap: Record<string, string> = 
           entries.forEach(([key, propSchema]: [string, any]) => {
             const required = schema.required || [];
             const optional = required.includes(key) ? '' : '?';
-            const type = getTypeFromSchema(propSchema, schemaTypeMap, indentLevel + 1);
+            const type = getTypeFromSchema(propSchema, schemaTypeMap, indentLevel + 1, localSchemaNames);
 
             // 如果屬性名包含特殊字符（如 -），需要加上引號
             const needsQuotes = /[^a-zA-Z0-9_$]/.test(key);
@@ -388,7 +477,7 @@ function getTypeFromSchema(schema: any, schemaTypeMap: Record<string, string> = 
         // 如果沒有 properties 但有 additionalProperties
         const valueType = schema.additionalProperties === true
           ? 'any'
-          : getTypeFromSchema(schema.additionalProperties, schemaTypeMap, indentLevel);
+          : getTypeFromSchema(schema.additionalProperties, schemaTypeMap, indentLevel, localSchemaNames);
         baseType = `Record<string, ${valueType}>`;
       } else {
         baseType = 'any';
@@ -406,7 +495,7 @@ function getTypeFromSchema(schema: any, schemaTypeMap: Record<string, string> = 
 /**
  * 從參數定義中獲取 TypeScript 類型
  */
-function getTypeFromParameter(param: any, schemaTypeMap: Record<string, string> = {}): string {
+function getTypeFromParameter(param: any, schemaTypeMap: Record<string, string> = {}, localSchemaNames: Set<string> = new Set()): string {
   if (!param.schema) return 'any';
-  return getTypeFromSchema(param.schema, schemaTypeMap);
+  return getTypeFromSchema(param.schema, schemaTypeMap, 0, localSchemaNames);
 }

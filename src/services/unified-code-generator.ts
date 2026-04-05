@@ -8,10 +8,13 @@ import { OpenApiParserService } from './openapi-parser-service';
 import { generateCommonTypesFile } from '../generators/common-types-generator';
 import { generateComponentSchemaFile } from '../generators/component-schema-generator';
 import { generateDoNotModifyFile } from '../generators/do-not-modify-generator';
-import type { GenerationOptions, CommonOptions } from '../types';
+import type { GenerationOptions, CommonOptions, OperationDefinition } from '../types';
 import { ApiCodeGenerator } from './api-code-generator';
+import { EndpointInfoExtractor } from './endpoint-info-extractor';
 import { generateUtilsFile } from '../generators/utils-generator';
 import { generateTagTypesFile } from '../generators/tag-types-generator';
+import { analyzeSchemaRefs } from '../utils/schema-ref-analyzer';
+import { generateTypesFile } from '../generators/types-generator';
 
 /**
  * 統一代碼生成器選項
@@ -82,6 +85,11 @@ export class UnifiedCodeGenerator {
   // 收集所有 tags
   private allTags: Set<string> = new Set();
 
+  // 收集每個 group 的 operation definitions（用於 schema 引用分析）
+  private groupOperationDefs: Map<string, OperationDefinition[]> = new Map();
+  // 收集每個 group 的生成選項（用於重新生成 types）
+  private groupGenerationOptions: Map<string, GenerationOptions> = new Map();
+
 
   constructor(options: UnifiedGenerationOptions) {
     this._options = options;
@@ -95,16 +103,18 @@ export class UnifiedCodeGenerator {
   async generateAll(): Promise<UnifiedGenerationResult> {
     await this.prepare();
 
-    // 生成各API文件
+    // 生成各API文件（第一階段：生成所有 group 的內容）
     await this.generateApi();
-    // await this.generateQuery();
+
+    // 分析 schema 引用並拆分（第二階段：將 group-local schema 移到各 group 的 types.ts）
+    this.splitSchemaByUsage();
 
     // 生成共用
-    this.generateCommonTypesContent()
-    this.generateSchemaContent()
-    this.generateUtilsContent()
-    this.generateDoNotModifyContent()
-    this.generateTagTypesContent()
+    this.generateCommonTypesContent();
+    this.generateSchemaContent();
+    this.generateUtilsContent();
+    this.generateDoNotModifyContent();
+    this.generateTagTypesContent();
 
     return await this.release();
   }
@@ -201,6 +211,74 @@ export class UnifiedCodeGenerator {
 
 
   /**
+   * 分析 schema 引用，將只被單一 group 使用的 schema 移到該 group 的 types.ts
+   */
+  private splitSchemaByUsage(): void {
+    if (!this.openApiDoc || this.groupOperationDefs.size === 0) return;
+
+    // 獲取 OpenAPI 原始 schema 定義（用於遞迴分析 $ref 依賴）
+    const rawSchemas = this.openApiDoc.components?.schemas ?? {};
+    const allSchemaNames = Object.keys(this.schemaInterfaces);
+
+    // 分析引用
+    const analysis = analyzeSchemaRefs(
+      this.groupOperationDefs,
+      rawSchemas as Record<string, any>,
+      allSchemaNames
+    );
+
+    // 儲存 shared schema 名稱（供 generateSchemaContent 使用）
+    this.sharedSchemaNames = analysis.sharedSchemas;
+
+    // 為每個 group 重新生成 types.ts（包含 local schema 定義）
+    for (const group of this.generatedContent.groups) {
+      const localNames = analysis.groupLocalSchemas.get(group.groupKey);
+      if (!localNames || localNames.size === 0) continue;
+
+      const groupOptions = this.groupGenerationOptions.get(group.groupKey);
+      if (!groupOptions || !this.parserService) continue;
+
+      // 收集 local schema interfaces
+      const localSchemaInterfaces: Record<string, ts.InterfaceDeclaration | ts.TypeAliasDeclaration> = {};
+      for (const name of localNames) {
+        if (this.schemaInterfaces[name]) {
+          localSchemaInterfaces[name] = this.schemaInterfaces[name];
+        }
+      }
+
+      // 獲取 endpoint infos（需要重新提取以重新生成 types）
+      const infoExtractor = new EndpointInfoExtractor(groupOptions);
+      const operationDefs = this.groupOperationDefs.get(group.groupKey) ?? [];
+      const endpointInfos = infoExtractor.extractEndpointInfos(operationDefs);
+
+      const generatorOptions = {
+        ...groupOptions,
+        apiConfiguration: groupOptions.apiConfiguration || {
+          file: '@/store/webapi',
+          importName: 'WebApiConfiguration'
+        }
+      };
+
+      // 重新生成 types.ts，帶入 local schema 資訊
+      const newTypesContent = generateTypesFile(
+        endpointInfos,
+        generatorOptions,
+        this.schemaInterfaces,
+        operationDefs,
+        {
+          localSchemaInterfaces,
+          localSchemaNames: localNames,
+        }
+      );
+
+      group.content.files.types = newTypesContent;
+    }
+  }
+
+  // 儲存 shared schema 名稱（只有這些會寫入 schema.ts）
+  private sharedSchemaNames: Set<string> | null = null;
+
+  /**
    * 生成 common types
    */
   private async generateCommonTypesContent(): Promise<void> {
@@ -208,10 +286,13 @@ export class UnifiedCodeGenerator {
   }
 
   /**
-   * 生成Schema
+   * 生成Schema（只包含 shared types，排除 group-local 和未使用的 types）
    */
   private async generateSchemaContent(): Promise<void> {
-    this.generatedContent.componentSchema = generateComponentSchemaFile(this.schemaInterfaces);
+    this.generatedContent.componentSchema = generateComponentSchemaFile(
+      this.schemaInterfaces,
+      this.sharedSchemaNames ?? undefined
+    );
   }
 
   /**
@@ -358,10 +439,14 @@ export class UnifiedCodeGenerator {
     if (!this.openApiDoc || !this.parserService) {
       throw new Error('OpenAPI 文檔未初始化，請先調用 prepare()');
     }
-    
+
+    // 收集此 group 的 operation definitions（用於後續 schema 引用分析）
+    const groupOpDefs = this.parserService.getOperationDefinitions(groupOptions.filterEndpoints);
+    this.groupOperationDefs.set(groupInfo.groupKey, groupOpDefs);
+    this.groupGenerationOptions.set(groupInfo.groupKey, groupOptions);
+
     const apiGenerator = new ApiCodeGenerator(this.parserService, groupOptions);
     const result = await apiGenerator.generate();
-
 
     return result;
   }
@@ -370,12 +455,13 @@ export class UnifiedCodeGenerator {
    * 生成主 index.ts 檔案
    */
   private generateMainIndex(generatedGroups: string[]): string {
-    const exports = generatedGroups.map(groupKey => `export * from "./${groupKey}";`).join('\n');
+    const groupExports = generatedGroups.map(groupKey => `export * from "./${groupKey}";`).join('\n');
 
     return `/* eslint-disable */
 // [Warning] Generated automatically - do not edit manually
 
-${exports}
+export * from "./schema";
+${groupExports}
 `;
   }
 

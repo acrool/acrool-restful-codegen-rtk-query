@@ -24,8 +24,12 @@ function renameIdentifier(node: ts.Node, oldName: string, newName: string): ts.N
 /**
  * 產生 component-schema.ts 內容
  * @param interfaces
+ * @param includeOnly - 若提供，則只輸出此 Set 中的類型名稱
  */
-export function generateComponentSchemaFile(interfaces: Record<string, ts.InterfaceDeclaration | ts.TypeAliasDeclaration>) {
+export function generateComponentSchemaFile(
+  interfaces: Record<string, ts.InterfaceDeclaration | ts.TypeAliasDeclaration>,
+  includeOnly?: Set<string>
+) {
   const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
 
   const resultFile = ts.createSourceFile(
@@ -43,6 +47,11 @@ export function generateComponentSchemaFile(interfaces: Record<string, ts.Interf
   Object.entries(interfaces).forEach(([originalName, node]) => {
     const pascalCaseName = toPascalCase(originalName);
     typeNameMapping[originalName] = pascalCaseName;
+
+    // 如果有過濾條件，跳過不在名單中的類型
+    if (includeOnly && !includeOnly.has(originalName)) {
+      return;
+    }
 
     // 重新命名節點
     const renamedNode = renameIdentifier(node, originalName, pascalCaseName);
