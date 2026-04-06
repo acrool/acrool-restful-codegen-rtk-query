@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import path from 'node:path';
 import ts from 'typescript';
 import type { OpenAPIV3 } from 'openapi-types';
@@ -332,6 +333,17 @@ export class UnifiedCodeGenerator {
     // console.log('UnifiedCodeGenerator: 發佈階段開始...');
 
     try {
+      // 計算輸出根目錄
+      const outputDir = this.generatedContent.groups[0] ?
+        path.dirname(path.dirname(this.generatedContent.groups[0].outputPath)) :
+        './generated';
+      const resolvedOutputDir = path.resolve(process.cwd(), outputDir);
+
+      // 清除輸出目錄（保留 enhanceEndpoints.ts）
+      if (fs.existsSync(resolvedOutputDir)) {
+        this.cleanOutputDirectory(resolvedOutputDir);
+      }
+
       // 寫入群組檔案
       for (const group of this.generatedContent.groups) {
         try {
@@ -355,11 +367,6 @@ export class UnifiedCodeGenerator {
           errors.push(new Error(`寫入群組 ${group.groupKey} 失敗: ${error}`));
         }
       }
-
-      // 寫入共用檔案
-      const outputDir = this.generatedContent.groups[0] ? 
-        path.dirname(path.dirname(this.generatedContent.groups[0].outputPath)) : 
-        './generated';
 
       // 寫入共用檔案 (包含 DO_NOT_MODIFY.md)
       if (this.generatedContent.commonTypes || this.generatedContent.doNotModify || this.generatedContent.utils) {
@@ -408,6 +415,52 @@ export class UnifiedCodeGenerator {
     };
   }
 
+
+  /**
+   * 清除輸出目錄，保留 enhanceEndpoints.ts
+   */
+  private cleanOutputDirectory(dirPath: string): void {
+    const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+
+    for (const entry of entries) {
+      const fullPath = path.join(dirPath, entry.name);
+
+      if (entry.isDirectory()) {
+        // 遞迴處理子目錄：只保留 enhanceEndpoints.ts
+        this.cleanSubDirectory(fullPath);
+      } else {
+        // 根目錄下的檔案直接刪除（會重新生成）
+        fs.unlinkSync(fullPath);
+      }
+    }
+  }
+
+  /**
+   * 清除子目錄，保留 enhanceEndpoints.ts，若目錄變空則刪除
+   */
+  private cleanSubDirectory(dirPath: string): void {
+    const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+
+    for (const entry of entries) {
+      const fullPath = path.join(dirPath, entry.name);
+
+      if (entry.name === 'enhanceEndpoints.ts') {
+        continue; // 保留
+      }
+
+      if (entry.isDirectory()) {
+        fs.rmSync(fullPath, { recursive: true, force: true });
+      } else {
+        fs.unlinkSync(fullPath);
+      }
+    }
+
+    // 如果子目錄只剩 enhanceEndpoints.ts 或已空，但此群組不在新生成列表中，則整個刪除
+    const remaining = fs.readdirSync(dirPath);
+    if (remaining.length === 0) {
+      fs.rmdirSync(dirPath);
+    }
+  }
 
   /**
    * 為單一群組生成內容
