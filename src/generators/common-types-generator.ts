@@ -60,7 +60,7 @@ export type SimpleLazyQueryHook<TData, TArg> = () => readonly [
 ];
 
 export type UseSimpleMutation<TRes, TArg = void> = () => readonly [
-  (arg: TArg) => Promise<TRes>,
+  (arg: TArg) => Promise<TRes> & { unwrap: () => Promise<TRes> },
   {
     data: TRes | undefined;
     isLoading: boolean;
