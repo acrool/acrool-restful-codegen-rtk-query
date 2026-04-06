@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.4.0-alpha.4](https://github.com/reduxjs/redux-toolkit/compare/v1.4.0-alpha.3...v1.4.0-alpha.4) (2026-04-06)
+
+
+### Features
+
+* 重構查詢和變更的型別定義 ([98772bf](https://github.com/reduxjs/redux-toolkit/commit/98772bf961e2e1046525059ca2ee045289345f50))
+
 ## [1.4.0-alpha.3](https://github.com/reduxjs/redux-toolkit/compare/v1.4.0-alpha.2...v1.4.0-alpha.3) (2026-04-05)
 
 
