@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.3.1-alpha.0](https://github.com/reduxjs/redux-toolkit/compare/v1.3.0...v1.3.1-alpha.0) (2026-09-21)
+
+
+### Bug Fixes
+
+* 修正 純 header 參數的 API 不再被誤判為 void args ([fc7fc91](https://github.com/reduxjs/redux-toolkit/commit/fc7fc912bd7054bd3345ce2f35a74096028c0d36))
+
 ## [1.3.0](https://github.com/reduxjs/redux-toolkit/compare/v1.3.0-alpha.1...v1.3.0) (2026-04-04)
 
 ## [1.3.0-alpha.1](https://github.com/reduxjs/redux-toolkit/compare/v1.3.0-alpha.0...v1.3.0-alpha.1) (2026-04-04)
