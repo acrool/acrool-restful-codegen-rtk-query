@@ -105,8 +105,12 @@ export class EndpointInfoExtractor {
     const pathItemParameters = this.resolveArray(pathItem.parameters)
       .filter((pp) => !operationParameters.some((op) => op.name === pp.name && op.in === pp.in));
 
-    const allParameters = supportDeepObjects([...pathItemParameters, ...operationParameters])
-      .filter((param) => param.in !== 'header');
+    const allParametersWithHeader = supportDeepObjects([...pathItemParameters, ...operationParameters]);
+
+    // header 參數不進入 variables/Req type（預期由全域 base API 處理），
+    // 但存在時仍需保留 fetchOptions 通道，讓呼叫端可覆寫
+    const hasHeaderParams = allParametersWithHeader.some((param) => param.in === 'header');
+    const allParameters = allParametersWithHeader.filter((param) => param.in !== 'header');
 
     const queryParams = allParameters.filter(param => param.in === 'query');
     const pathParams = allParameters.filter(param => param.in === 'path');
@@ -115,7 +119,7 @@ export class EndpointInfoExtractor {
     const hasRequestBody = !!operation.requestBody;
 
     // 檢查是否為 void 類型參數
-    const isVoidArg = queryParams.length === 0 && pathParams.length === 0 && !operation.requestBody;
+    const isVoidArg = queryParams.length === 0 && pathParams.length === 0 && !operation.requestBody && !hasHeaderParams;
 
     return {
       queryParams,
