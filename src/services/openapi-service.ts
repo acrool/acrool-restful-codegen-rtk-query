@@ -39,9 +39,10 @@ export class OpenApiService {
    * 下載遠程 Schema 文件
    * @param remoteUrl - 遠程 URL
    * @param localPath - 本地儲存路徑
+   * @param patToken - 個人存取權杖，有值時以 Bearer 送出
    */
-  async downloadSchema(remoteUrl: string, localPath: string): Promise<string> {
-    return downloadSchemaFile(remoteUrl, localPath);
+  async downloadSchema(remoteUrl: string, localPath: string, patToken?: string): Promise<string> {
+    return downloadSchemaFile(remoteUrl, localPath, patToken);
   }
 
   /**

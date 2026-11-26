@@ -133,7 +133,8 @@ export class UnifiedCodeGenerator {
     if (this._options.remoteFile) {
       this.actualSchemaFile = await this.openApiService.downloadSchema(
         this._options.remoteFile,
-        this._options.schemaFile
+        this._options.schemaFile,
+        this._options.patToken
       );
     }
 

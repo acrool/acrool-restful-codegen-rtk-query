@@ -26,6 +26,7 @@ This is a utility library meant to be used with [RTK Query](https://redux-toolki
 
 - `schemaFile`: The local OpenAPI schema file path (required)
 - `remoteFile`: (Optional) Remote schema URL to download to `schemaFile` path
+- `patToken`: (Optional) Personal access token sent as `Authorization: Bearer <patToken>` when downloading `remoteFile`
 - `outputFile`: The output file path for generated code
 - `apiFile`: The base API file path
 

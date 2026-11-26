@@ -58,6 +58,10 @@ export interface CommonOptions {
    */
   remoteFile?: string;
   /**
+   * 下載 remoteFile 時使用的個人存取權杖（PAT），以 `Authorization: Bearer <patToken>` 送出
+   */
+  patToken?: string;
+  /**
    * Configuration for WebApiConfiguration import
    * defaults to { file: "@core/api/web-api-configuration", importName: "WebApiConfiguration" }
    */
