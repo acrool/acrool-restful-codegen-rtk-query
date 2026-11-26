@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.5.0](https://github.com/reduxjs/redux-toolkit/compare/v1.4.0...v1.5.0) (2026-11-26)
+
+
+### Features
+
+* 新增 patToken 選項，下載 remoteFile 時以 Bearer 送出 ([5784cf4](https://github.com/reduxjs/redux-toolkit/commit/5784cf4e5933638a93f600f1fc433ee3ec4443b9))
+
 ## [1.4.0](https://github.com/reduxjs/redux-toolkit/compare/v1.3.1...v1.4.0) (2026-11-26)
 
 
