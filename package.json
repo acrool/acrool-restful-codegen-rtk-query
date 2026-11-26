@@ -68,7 +68,6 @@
     "cz-customizable": "6.6.0",
     "cz-git": "^1.11.1",
     "del": "^6.0.0",
-    "esbuild": "^0.25.1",
     "esbuild-runner": "^2.2.1",
     "husky": "^4.3.6",
     "msw": "^2.1.5",
@@ -86,6 +85,7 @@
   "dependencies": {
     "@apidevtools/swagger-parser": "^10.1.1",
     "commander": "^6.2.0",
+    "esbuild": "^0.25.1",
     "lodash.camelcase": "^4.3.0",
     "oazapfts": "^6.1.0",
     "prettier": "^3.2.5",
