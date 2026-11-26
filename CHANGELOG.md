@@ -2,6 +2,56 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.4.0-alpha.7](https://github.com/reduxjs/redux-toolkit/compare/v1.4.0-alpha.6...v1.4.0-alpha.7) (2026-09-21)
+
+## [1.4.0-alpha.6](https://github.com/reduxjs/redux-toolkit/compare/v1.4.0-alpha.5...v1.4.0-alpha.6) (2026-04-06)
+
+
+### Features
+
+* 重構查詢和變更的型別定義 ([dc63cea](https://github.com/reduxjs/redux-toolkit/commit/dc63cea50d85d12a16a4776cb6496aa19f97226a))
+
+## [1.4.0-alpha.5](https://github.com/reduxjs/redux-toolkit/compare/v1.4.0-alpha.4...v1.4.0-alpha.5) (2026-04-06)
+
+
+### Features
+
+* 重構查詢和變更的型別定義 ([d954ea9](https://github.com/reduxjs/redux-toolkit/commit/d954ea948f6a06f611d3ae227a54331195e7ab75))
+
+## [1.4.0-alpha.4](https://github.com/reduxjs/redux-toolkit/compare/v1.4.0-alpha.3...v1.4.0-alpha.4) (2026-04-06)
+
+
+### Features
+
+* 重構查詢和變更的型別定義 ([98772bf](https://github.com/reduxjs/redux-toolkit/commit/98772bf961e2e1046525059ca2ee045289345f50))
+
+## [1.4.0-alpha.3](https://github.com/reduxjs/redux-toolkit/compare/v1.4.0-alpha.2...v1.4.0-alpha.3) (2026-04-05)
+
+
+### Features
+
+* 重構查詢和變更的型別定義 ([5a6fdfb](https://github.com/reduxjs/redux-toolkit/commit/5a6fdfbec87c64f10545b476f63a377613880403))
+
+## [1.4.0-alpha.2](https://github.com/reduxjs/redux-toolkit/compare/v1.4.0-alpha.1...v1.4.0-alpha.2) (2026-04-05)
+
+
+### Features
+
+* 新增簡化查詢和變更的型別定義 ([b2e8a36](https://github.com/reduxjs/redux-toolkit/commit/b2e8a3620eff389bf157a226c18534b3239aa47c))
+
+## [1.4.0-alpha.1](https://github.com/reduxjs/redux-toolkit/compare/v1.4.0-alpha.0...v1.4.0-alpha.1) (2026-04-05)
+
+
+### Features
+
+* 新增 string literal union 轉換為 enum 的功能 ([c0785a6](https://github.com/reduxjs/redux-toolkit/commit/c0785a6ef1e51f8dc84aec447298c4db063c989c))
+
+## [1.4.0-alpha.0](https://github.com/reduxjs/redux-toolkit/compare/v1.3.0...v1.4.0-alpha.0) (2026-04-05)
+
+
+### Features
+
+* 新增 schema 引用分析功能及相關類型生成邏輯 ([c6c3d7d](https://github.com/reduxjs/redux-toolkit/commit/c6c3d7d2fc200103e4e376c54a37f3edc7cce900))
 ### [1.3.1](https://github.com/reduxjs/redux-toolkit/compare/v1.3.1-alpha.0...v1.3.1) (2026-09-22)
 
 ### [1.3.1-alpha.0](https://github.com/reduxjs/redux-toolkit/compare/v1.3.0...v1.3.1-alpha.0) (2026-09-21)

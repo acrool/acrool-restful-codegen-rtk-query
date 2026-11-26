@@ -102,17 +102,46 @@ export function cleanOutputDirectory(outputDir: string): void {
 }
 
 
+/** 需要先轉譯成 CommonJS 才能 require 的 TypeScript 副檔名 */
+const TYPESCRIPT_EXTENSIONS = ['.ts', '.cts', '.mts', '.tsx'] as const;
+
+/**
+ * 以 esbuild 註冊 TypeScript 的 require 載入器
+ * esbuild 是本套件的 dependency，使用者不必另外安裝；
+ * 涵蓋 .cts / .mts（esbuild-runner 不處理這兩種副檔名）
+ * @returns {boolean} 是否註冊成功
+ */
+function registerEsbuildLoader(): boolean {
+  const { transformSync } = require('esbuild') as typeof import('esbuild');
+  const Module = require('node:module') as unknown as {
+    _extensions: Record<string, (mod: { _compile: (code: string, filename: string) => void }, filename: string) => void>;
+  };
+  const readFileSync = require('node:fs').readFileSync as typeof import('node:fs').readFileSync;
+
+  for (const ext of TYPESCRIPT_EXTENSIONS) {
+    Module._extensions[ext] = (mod, filename) => {
+      const source = readFileSync(filename, 'utf8');
+      const { code } = transformSync(source, {
+        loader: ext === '.tsx' ? 'tsx' : 'ts',
+        format: 'cjs',
+        target: `node${process.versions.node.split('.')[0]}`,
+        sourcefile: filename,
+        sourcemap: 'inline',
+      });
+      mod._compile(code, filename);
+    };
+  }
+  return true;
+}
+
 /**
  * 設置 TypeScript 支援
- * 優先使用 esbuild-runner，其次使用 ts-node
+ * 優先使用內建的 esbuild 載入器，其次使用 ts-node
  * @returns {boolean} 是否成功設置 TypeScript 支援
  */
 export function setupTypeScriptSupport(): boolean {
   try {
-    if (require.resolve('esbuild') && require.resolve('esbuild-runner')) {
-      require('esbuild-runner/register');
-      return true;
-    }
+    return registerEsbuildLoader();
   } catch {}
 
   try {
@@ -150,7 +179,7 @@ export function validateConfigFile(configFile: string): void {
  */
 export function validateTypeScriptSupport(configFile: string, hasTypeScriptSupport: boolean): void {
   if (/\.[mc]?tsx?$/.test(configFile) && !hasTypeScriptSupport) {
-    console.error('Encountered a TypeScript config file, but neither esbuild-runner nor ts-node are installed.');
+    console.error('Encountered a TypeScript config file, but failed to register a TypeScript loader (esbuild or ts-node).');
     process.exit(1);
   }
 }

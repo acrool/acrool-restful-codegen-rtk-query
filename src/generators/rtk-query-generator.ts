@@ -116,10 +116,52 @@ ${paramsLines}
 `
     : '';
 
+  // 判斷是否有各種 hook 類型，決定需要導入哪些簡化型別
+  const hasVoidQuery = endpointInfos.some(info => info.isQuery && info.isVoidArg);
+  const hasArgQuery = endpointInfos.some(info => info.isQuery && !info.isVoidArg);
+  const hasLazyQuery = endpointInfos.some(info => info.isQuery) && !!options.useLazyQueries;
+  const hasMutation = endpointInfos.some(info => !info.isQuery);
+
+  const simpleTypeImports: string[] = [];
+  if (hasArgQuery) simpleTypeImports.push('SimpleQueryHook');
+  if (hasVoidQuery) simpleTypeImports.push('SimpleVoidQueryHook');
+  if (hasLazyQuery) simpleTypeImports.push('SimpleLazyQueryHook');
+  if (hasMutation) simpleTypeImports.push('UseSimpleMutation');
+
+  const simpleTypeImportStatement = simpleTypeImports.length > 0
+    ? `import type { ${simpleTypeImports.join(', ')} } from "../common-types";\n`
+    : '';
+
+  // 生成逐個導出（使用 as 切斷型別推導鏈）
+  // tuple 回傳（mutation, lazy query）使用 as unknown as；object 回傳（query）使用 as
+  const hookExports = endpointInfos.map(info => {
+    const capitalizedOperationName = info.operationName.charAt(0).toUpperCase() + info.operationName.slice(1);
+    const argType = info.isVoidArg ? 'void' : `${httpClientTypeName}<${info.argTypeName}>`;
+    const lines: string[] = [];
+
+    if (info.isQuery) {
+      const regularHook = `use${capitalizedOperationName}Query`;
+      if (info.isVoidArg) {
+        lines.push(`export const ${regularHook} = injectedRtkApi.${regularHook} as SimpleVoidQueryHook<${info.responseTypeName}>;`);
+      } else {
+        lines.push(`export const ${regularHook} = injectedRtkApi.${regularHook} as SimpleQueryHook<${info.responseTypeName}, ${argType}>;`);
+      }
+      if (options.useLazyQueries) {
+        const lazyHook = `useLazy${capitalizedOperationName}Query`;
+        lines.push(`export const ${lazyHook} = injectedRtkApi.${lazyHook} as unknown as SimpleLazyQueryHook<${info.responseTypeName}, ${argType}>;`);
+      }
+    } else {
+      const mutationHook = `use${capitalizedOperationName}Mutation`;
+      lines.push(`export const ${mutationHook} = injectedRtkApi.${mutationHook} as unknown as UseSimpleMutation<${info.responseTypeName}, ${argType}>;`);
+    }
+
+    return lines.join('\n');
+  }).join('\n');
+
   return `/* eslint-disable */
 // [Warning] Generated automatically - do not edit manually
 
-${apiImport}${httpClientImport}${tagTypesImport}
+${apiImport}${httpClientImport}${tagTypesImport}${simpleTypeImportStatement}
 ${typeImportStatement}
 
 
@@ -129,25 +171,7 @@ ${endpoints}
     }),
 });
 
-export const {
-${endpointInfos.map(info => {
-    const capitalizedOperationName = info.operationName.charAt(0).toUpperCase() + info.operationName.slice(1);
-    if (info.isQuery) {
-      // For queries, generate both regular and lazy hooks if useLazyQueries is enabled
-      const regularHook = `use${capitalizedOperationName}Query`;
-      if (options.useLazyQueries) {
-        const lazyHook = `useLazy${capitalizedOperationName}Query`;
-        return `  ${regularHook},\n  ${lazyHook},`;
-      } else {
-        return `  ${regularHook},`;
-      }
-    } else {
-      // For mutations, only generate regular hook
-      const mutationHook = `use${capitalizedOperationName}Mutation`;
-      return `  ${mutationHook},`;
-    }
-  }).join('\n')}
-} = injectedRtkApi;
+${hookExports}
 
 export default injectedRtkApi;
 `;
